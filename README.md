@@ -16,8 +16,15 @@ If you have pretrained MLIP models that you would like to contribute to the MLIP
 
 #### Molecular dynamics calculations
 
+- [ ] [MD17](http://www.sgdml.org/#datasets)
+- [ ] [MD22](http://www.sgdml.org/#datasets)
+
 
 #### Single-point density functional theory calculations
+
+- [ ] MPTrj
+- [ ] QM9
+- [ ] [Alexandria](https://alexandria.icams.rub.de/)
 
 ### Add new training datasets
 
