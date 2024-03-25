@@ -1,9 +1,10 @@
 import torch
+from ase import Atoms
+from ase.calculators.calculator import Calculator, all_changes
 from torch import nn
 from torch_geometric.data import Data
 
-from ase import Atoms
-from ase.calculators.calculator import Calculator, all_changes
+REGISTRY_FILE = 'registry.yaml'
 
 
 class MLIP(Calculator):

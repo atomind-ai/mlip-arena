@@ -1,10 +1,10 @@
 import torch
+from ase import Atoms
+from ase.calculators.calculator import all_changes
 from huggingface_hub import hf_hub_download
 from torch_geometric.data import Data
 
-from ase import Atoms
-from ase.calculators.calculator import all_changes
-from atomind_mlip.models import MLIP
+from mlip_arena.models import MLIP
 
 
 class MACE_MP_Medium(MLIP):

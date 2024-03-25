@@ -3,7 +3,7 @@ requires=["flit_core >=3.2,<4"]
 build-backend="flit_core.buildapi"
 
 [project]
-name="atomind_mlip"
+name="mlip_arena"
 version="0.0.1"
 authors=[
     {name="Yuan Chiang", email="cyrusyc@lbl.gov"},
@@ -27,8 +27,27 @@ classifiers=[
 ]
 dependencies=[
     "torch",
+    "ase",
+    "torch_dftd",
 ]
 
 [project.urls]
 Homepage = "https://github.com/atomind-ai/mlip-arena"
 Issues = "https://github.com/atomind-ai/mlip-arena/issues"
+
+[tool.ruff]
+# Enable the pycodestyle (`E`) and Pyflakes (`F`) rules by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = [
+    "I",      # isort
+    "ICN",    # flake8-import-conventions
+    "ISC",    # flake8-implicit-str-concat
+    "PD",     # pandas-vet
+    "SIM",    # flake8-simplify
+    "SLOT",   # flake8-slots
+    "TCH",    # flake8-type-checking
+    "TID",    # flake8-tidy-imports
+    "UP",     # pyupgrade
+]
+ignore = []
