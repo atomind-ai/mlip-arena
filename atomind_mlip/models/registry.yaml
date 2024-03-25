@@ -1,7 +1,0 @@
-
-MACE_MP_Medium:
-  username: cyrusyc
-  datetime: 2022-03-28T14:30:00 # TODO: Fake datetime
-  tasks:
-    - alexandria
-    - qmof
