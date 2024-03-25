@@ -5,7 +5,7 @@ colorFrom: yellow
 colorTo: indigo
 sdk: streamlit
 sdk_version: 1.25.0
-app_file: mlip_arena/serve/app.py
+app_file: "serve/app.py"
 pinned: true
 ---
 
