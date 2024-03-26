@@ -1,7 +1,11 @@
 
-import yaml
 from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
+from mlip_arena.models import MLIP
 
-from mlip_arena.models import REGISTRY_FILE
 
-yaml.load(open(REGISTRY_FILE), Loader=yaml.FullLoader)
+def whoami():
+    print(f'TEST: {__file__}')
+
+
+if __name__ == "__main__":
+    

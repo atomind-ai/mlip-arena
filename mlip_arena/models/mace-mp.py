@@ -8,15 +8,17 @@ from mlip_arena.models import MLIP
 
 
 class MACE_MP_Medium(MLIP):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, device: torch.device = None):
+        fpath = hf_hub_download(
+            repo_id="cyrusyc/mace-universal", 
+            subfolder="pretrained", 
+            filename="2023-12-12-mace-128-L1_epoch-199.model",
+            revision=None # TODO: Add revision
+        )
+        super().__init__(model_path=fpath, device=device)
+
         self.name = "MACE-MP-0 (medium)"
         self.version = "1.0.0"
-
-        fpath = hf_hub_download(repo_id="cyrusyc/mace-universal", subfolder="pretrained", filename="2023-12-12-mace-128-L1_epoch-199.model")
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = torch.load(fpath, map_location="cpu")
-        self.model.to(self.device)
         self.implemented_properties = [
             "energy",
             "forces",
