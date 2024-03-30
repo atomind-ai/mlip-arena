@@ -26,9 +26,11 @@ classifiers=[
     "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies=[
-    "torch",
+    "torch>=2.0.0",
     "ase",
-    "torch_dftd",
+    "torch_dftd>=0.4.0",
+    "huggingface_hub",
+    "torch-geometric>=2.5.2",
 ]
 
 [project.urls]
