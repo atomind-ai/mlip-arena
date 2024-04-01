@@ -4,16 +4,16 @@ from ase.calculators.calculator import all_changes
 from huggingface_hub import hf_hub_download
 from torch_geometric.data import Data
 
-from mlip_arena.models import MLIP
+from mlip_arena.models import MLIPCalculator
 
 
-class MACE_MP_Medium(MLIP):
-    def __init__(self, device: torch.device = None):
+class MACE_MP_Medium(MLIPCalculator):
+    def __init__(self, device: torch.device | None = None):
         fpath = hf_hub_download(
-            repo_id="cyrusyc/mace-universal", 
-            subfolder="pretrained", 
+            repo_id="cyrusyc/mace-universal",
+            subfolder="pretrained",
             filename="2023-12-12-mace-128-L1_epoch-199.model",
-            revision=None # TODO: Add revision
+            revision=None,  # TODO: Add revision
         )
         super().__init__(model_path=fpath, device=device)
 
@@ -25,7 +25,9 @@ class MACE_MP_Medium(MLIP):
             "stress",
         ]
 
-    def calculate(self, atoms: Atoms, properties: list[str], system_changes: dict = all_changes):
+    def calculate(
+        self, atoms: Atoms, properties: list[str], system_changes: list = all_changes
+    ):
         """Calculate energies and forces for the given Atoms object"""
         super().calculate(atoms, properties, system_changes)
 
