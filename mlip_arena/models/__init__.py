@@ -27,19 +27,42 @@ class MLIP(
         super().__init__(*args, **kwargs)
 
 
+class ModuleMLIP(MLIP):
+    def __init__(self, model: nn.Module, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.register_module("model", model)
+
+    def forward(self, x):
+        print("Forwarding...")
+        out = self.model(x)
+        print("Forwarded!")
+        return out
+
+
 class MLIPCalculator(Calculator):
+    name: str
+    device: torch.device
+    model: MLIP
+    implemented_properties: list[str] = ["energy", "forces", "stress"]
+
     def __init__(
         self,
+        # PyTorch
         model_path: str | Path,
         device: torch.device | None = None,
+        # ASE Calculator
+        restart=None,
+        atoms=None,
+        directory=".",
+        **kwargs,
     ):
-        super().__init__()
-        self.name: str = self.__class__.__name__
-        self.device = device or torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
-        )
-        self.model: MLIP = MLIP.from_pretrained(model_path, map_location=self.device)
-        self.implemented_properties = ["energy", "forces", "stress"]
+        super().__init__(restart=restart, atoms=atoms, directory=directory, **kwargs)
+        # self.name: str = self.__class__.__name__
+        # self.device = device or torch.device(
+        #     "cuda" if torch.cuda.is_available() else "cpu"
+        # )
+        # self.model: MLIP = MLIP.from_pretrained(model_path, map_location=self.device)
+        # self.implemented_properties = ["energy", "forces", "stress"]
 
     def calculate(
         self, atoms: Atoms, properties: list[str], system_changes: list = all_changes

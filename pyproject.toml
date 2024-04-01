@@ -31,6 +31,7 @@ dependencies=[
     "torch_dftd>=0.4.0",
     "huggingface_hub",
     "torch-geometric>=2.5.2",
+    "safetensors"
 ]
 
 [project.urls]
