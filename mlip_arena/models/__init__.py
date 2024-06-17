@@ -12,11 +12,6 @@ from torch_geometric.data import Data
 with open(os.path.join(os.path.dirname(__file__), "registry.yaml")) as f:
     REGISTRY = yaml.load(f, Loader=yaml.FullLoader)
 
-# class MLIPEnum(enum.Enum):
-#     for model, metadata in REGISTRY.items():
-#         model_class = getattr(importlib.import_module(model["module"]), model)
-#         self.setattr(model, model_class)
-
 
 class MLIP(
     nn.Module,
@@ -30,7 +25,7 @@ class MLIP(
 class ModuleMLIP(MLIP):
     def __init__(self, model: nn.Module, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.register_module("model", model)
+        self.add_module("model", model)
 
     def forward(self, x):
         print("Forwarding...")
@@ -41,15 +36,12 @@ class ModuleMLIP(MLIP):
 
 class MLIPCalculator(Calculator):
     name: str
-    device: torch.device
-    model: MLIP
+    # device: torch.device
+    # model: MLIP
     implemented_properties: list[str] = ["energy", "forces", "stress"]
 
     def __init__(
         self,
-        # PyTorch
-        model_path: str | Path,
-        device: torch.device | None = None,
         # ASE Calculator
         restart=None,
         atoms=None,
