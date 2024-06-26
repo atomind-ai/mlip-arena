@@ -57,7 +57,7 @@ class MLIPCalculator(Calculator):
         # self.implemented_properties = ["energy", "forces", "stress"]
 
     def calculate(
-        self, atoms: Atoms, properties: list[str], system_changes: list = all_changes
+        self, atoms: Atoms, properties: list[str], system_changes: list = all_changes,
     ):
         """Calculate energies and forces for the given Atoms object"""
         super().calculate(atoms, properties, system_changes)
