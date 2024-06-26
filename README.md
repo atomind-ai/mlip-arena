@@ -1,3 +1,8 @@
+---
+sdk: streamlit
+sdk_version: 1.25.0 # The latest supported version
+---
+
 # mlip-arena
 
 MLIP Arena is an open-source platform for benchmarking machine learning interatomic potentials (MLIPs). The platform provides a unified interface for users to evaluate the performance of their models on a variety of tasks, including single-point density functional theory calculations and molecular dynamics simulations. The platform is designed to be extensible, allowing users to contribute new models, benchmarks, and training data to the platform.

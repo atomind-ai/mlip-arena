@@ -39,18 +39,42 @@ Homepage = "https://github.com/atomind-ai/mlip-arena"
 Issues = "https://github.com/atomind-ai/mlip-arena/issues"
 
 [tool.ruff]
-# Enable the pycodestyle (`E`) and Pyflakes (`F`) rules by default.
-# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
-# McCabe complexity (`C901`) by default.
-select = [
-    "I",      # isort
-    "ICN",    # flake8-import-conventions
-    "ISC",    # flake8-implicit-str-concat
-    "PD",     # pandas-vet
-    "SIM",    # flake8-simplify
-    "SLOT",   # flake8-slots
-    "TCH",    # flake8-type-checking
-    "TID",    # flake8-tidy-imports
-    "UP",     # pyupgrade
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
 ]
+
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+[tool.ruff.lint]
+select = ["ALL"]
 ignore = []
+fixable = ["ALL"]
+pydocstyle.convention = "google"

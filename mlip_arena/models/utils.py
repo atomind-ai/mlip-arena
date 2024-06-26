@@ -6,22 +6,19 @@ from typing import Any
 
 import torch
 from ase.calculators.calculator import Calculator
-from ase.calculators.mixing import SumCalculator
-from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 
 from mlip_arena.models import REGISTRY
 
 MLIPMap = {
     model: getattr(
-        importlib.import_module(f"{__package__}.{metadata['module']}"), model
+        importlib.import_module(f"{__package__}.{metadata['module']}"), model,
     )
     for model, metadata in REGISTRY.items()
 }
 
 
 class EXTMLIPEnum(Enum):
-    """
-    Enumeration class for EXTMLIP models.
+    """Enumeration class for EXTMLIP models.
 
     Attributes:
         M3GNet (str): M3GNet model.
@@ -57,7 +54,7 @@ def get_freer_device() -> torch.device:
     free_gpu_index = mem_free.index(max(mem_free))
 
     print(
-        f"Selected GPU {free_gpu_index} with {mem_free[free_gpu_index] / 1024**2:.2f} MB free memory from {device_count} GPUs"
+        f"Selected GPU {free_gpu_index} with {mem_free[free_gpu_index] / 1024**2:.2f} MB free memory from {device_count} GPUs",
     )
 
     return torch.device(f"cuda:{free_gpu_index}")
@@ -65,7 +62,6 @@ def get_freer_device() -> torch.device:
 
 def external_ase_calculator(name: EXTMLIPEnum, **kwargs: Any) -> Calculator:
     """Construct an ASE calculator from an external third-party MLIP packages"""
-
     calculator = None
     device = get_freer_device()
 
