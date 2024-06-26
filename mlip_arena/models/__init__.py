@@ -9,9 +9,8 @@ from huggingface_hub import PyTorchModelHubMixin
 from torch import nn
 from torch_geometric.data import Data
 
-with open(os.path.join(os.path.dirname(__file__), "registry.yaml")) as f:
-    REGISTRY = yaml.load(f, Loader=yaml.FullLoader)
-
+with open(Path(__file__).parent / "registry.yaml") as f:
+    REGISTRY = yaml.safe_load(f)
 
 class MLIP(
     nn.Module,
