@@ -1,1 +1,5 @@
 streamlit
+plotly
+numpy
+scipy
+ase
