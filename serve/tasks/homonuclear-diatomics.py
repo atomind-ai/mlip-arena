@@ -18,7 +18,7 @@ st.markdown("# Homonuclear diatomics")
 # button to toggle plots
 container = st.container(border=True)
 energy_plot = container.checkbox("Show energy curves", value=True)
-force_plot = container.checkbox("Show force curves", value=False)
+force_plot = container.checkbox("Show force curves", value=True)
 
 ncols = 2
 
@@ -43,10 +43,9 @@ for i, symbol in enumerate(chemical_symbols[1:]):
     if rows.empty:
         continue
 
-    # fig = go.Figure()
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    ylo = float("inf")
+    elo, flo = float("inf"), float("inf")
 
     for j, method in enumerate(rows["method"].unique()):
         row = rows[rows["method"] == method].iloc[0]
@@ -71,7 +70,7 @@ for i, symbol in enumerate(chemical_symbols[1:]):
             cs = CubicSpline(rs, es)
             ys = cs(xs)
 
-            ylo = min(ylo, ys.min()*1.2, -1)
+            elo = min(elo, ys.min()*1.2, -1)
 
             fig.add_trace(
                 go.Scatter(
@@ -89,6 +88,8 @@ for i, symbol in enumerate(chemical_symbols[1:]):
         if force_plot:
             cs = CubicSpline(rs, fs)
             ys = cs(xs)
+
+            flo = min(flo, ys.min()*1.2)
 
             fig.add_trace(
                 go.Scatter(
@@ -118,10 +119,30 @@ for i, symbol in enumerate(chemical_symbols[1:]):
 
     # Set y-axes titles
     if energy_plot:
-        fig.update_yaxes(title_text="Energy [eV]", secondary_y=False)
+
+        fig.update_layout(
+            yaxis=dict(
+                title=dict(text="Energy [eV]"),
+                side="left",
+                range=[elo, 2*(abs(elo))],
+            )
+        )
+
+        # fig.update_yaxes(title_text="Energy [eV]", secondary_y=False)
 
     if force_plot:
-        fig.update_yaxes(title_text="Force [eV/Å]", secondary_y=True)
+
+        fig.update_layout(
+            yaxis2=dict(
+                title=dict(text="Force [eV/Å]"),
+                side="right",
+                range=[flo, 2*(abs(flo))],
+                overlaying="y",
+                tickmode="sync",
+            ),
+        )
+
+        # fig.update_yaxes(title_text="Force [eV/Å]", secondary_y=True)
 
     # cols[i % ncols].title(f"{row['name']}")
     cols[i % ncols].plotly_chart(fig, use_container_width=True, height=250)
