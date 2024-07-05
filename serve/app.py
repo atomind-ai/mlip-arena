@@ -25,25 +25,27 @@ st.set_page_config(
 # logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 
 dashboard = st.Page(
-    "serve/reports/dashboard.py", title="Dashboard", icon=":material/dashboard:", default=True
+    "reports/dashboard.py", title="Dashboard", icon=":material/dashboard:"
 )
-bugs = st.Page("serve/reports/bugs.py", title="Bug reports", icon=":material/bug_report:")
+bugs = st.Page("reports/bugs.py", title="Bug reports", icon=":material/bug_report:")
 alerts = st.Page(
-    "serve/reports/alerts.py", title="System alerts", icon=":material/notification_important:"
+    "reports/alerts.py", title="System alerts", icon=":material/notification_important:"
 )
 
-search = st.Page("serve/tools/search.py", title="Search", icon=":material/search:")
-history = st.Page("serve/tools/history.py", title="History", icon=":material/history:")
+search = st.Page("tools/search.py", title="Search", icon=":material/search:")
+history = st.Page("tools/history.py", title="History", icon=":material/history:")
+ptable = st.Page("tools/ptable.py", title="Periodic table", icon=":material/gradient:")
 
-diatomics = st.Page("serve/tasks/homonuclear-diatomics.py", title="Homonuclear diatomics", icon="")
+diatomics = st.Page("tasks/homonuclear-diatomics.py", title="Homonuclear diatomics", icon="", default=True)
 
 # if st.session_state.logged_in:
 pg = st.navigation(
     {
         # "Account": [logout_page],
-        "Reports": [dashboard, bugs, alerts],
-        "Tools": [search, history],
+        # "Reports": [dashboard, bugs, alerts],
+        # "Tools": [search, history, ptable],
         "Tasks": [diatomics],
+        "Tools": [ptable],
     }
 )
 # else:

@@ -1,73 +1,127 @@
 from pathlib import Path
 
 import numpy as np
-import numpy.linalg as LA
-import plotly.express as px
+import pandas as pd
+import plotly.colors as pcolors
+import plotly.graph_objects as go
 import streamlit as st
 from ase.data import chemical_symbols
-from ase.io import read
+from plotly.subplots import make_subplots
 from scipy.interpolate import CubicSpline
+
+color_sequence = pcolors.qualitative.Plotly
+
+
 
 st.markdown("# Homonuclear diatomics")
 
+# button to toggle plots
+container = st.container(border=True)
+energy_plot = container.checkbox("Show energy curves", value=True)
+force_plot = container.checkbox("Show force curves", value=False)
+
+ncols = 2
+
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
+mlips = ["MACE-MP", "CHGNet"]
+
+dfs = [pd.read_json(DATA_DIR / mlip.lower() /  "homonuclear-diatomics.json") for mlip in mlips]
+df = pd.concat(dfs, ignore_index=True)
 
 
-for i, symbol in enumerate(chemical_symbols[1:10]):
 
-    if i % 3 == 0:
-        cols = st.columns(3)
+df.drop_duplicates(inplace=True, subset=["name", "method"])
 
-    fpath = DATA_DIR / "gpaw" / f"{symbol+symbol}_AFM" / "traj.extxyz"
+for i, symbol in enumerate(chemical_symbols[1:]):
 
-    if not fpath.exists():
+    if i % ncols == 0:
+        cols = st.columns(ncols)
+
+
+    rows = df[df["name"] == symbol + symbol]
+
+    if rows.empty:
         continue
 
-    trj = read(fpath, index=":")
+    # fig = go.Figure()
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    rs, es, s2s = [], [], []
+    ylo = float("inf")
 
-    for atoms in trj:
-        rs.append(LA.norm(atoms.positions[1] - atoms.positions[0]))
-        es.append(atoms.get_potential_energy())
-        s2s.append(np.power(atoms.get_magnetic_moments(), 2).mean())
+    for j, method in enumerate(rows["method"].unique()):
+        row = rows[rows["method"] == method].iloc[0]
 
-    rs = np.array(rs)
-    ind = np.argsort(rs)
-    es = np.array(es)
-    s2s = np.array(s2s)
+        rs = np.array(row["R"])
+        es = np.array(row["E"])
+        fs = np.array(row["F"])
 
-    rs = rs[ind]
-    es = es[ind]
-    s2s = s2s[ind]
+        rs = np.array(rs)
+        ind = np.argsort(rs)
+        es = np.array(es)
+        fs = np.array(fs)
 
-    es = es - es[-1]
+        rs = rs[ind]
+        es = es[ind]
+        es = es - es[-1]
+        fs = fs[ind]
 
-    xs = np.linspace(rs.min()*0.99, rs.max()*1.01, int(5e2))
+        xs = np.linspace(rs.min()*0.99, rs.max()*1.01, int(5e2))
 
-    cs = CubicSpline(rs, es)
-    ys = cs(xs)
+        if energy_plot:
+            cs = CubicSpline(rs, es)
+            ys = cs(xs)
 
-    cs = CubicSpline(rs, s2s)
-    s2s = cs(xs)
+            ylo = min(ylo, ys.min()*1.2, -1)
 
-    ylo = min(ys.min()*1.5, -1)
+            fig.add_trace(
+                go.Scatter(
+                    x=xs, y=ys,
+                    mode="lines",
+                    line=dict(
+                        color=color_sequence[j % len(color_sequence)],
+                        width=2,
+                    ),
+                    name=method,
+                ),
+                secondary_y=False,
+            )
 
-    fig = px.scatter(
-        x=xs, y=ys,
-        render_mode="webgl",
-        color=s2s,
-        range_color=[0, s2s.max()],
-        width=500,
-        range_y=[ylo, 1.2*(abs(ylo))],
-        # title=f"{atoms.get_chemical_formula()}",
-        labels={"x": "Bond length (Å)", "y": "Energy", "color": "Magnetic moment"},
+        if force_plot:
+            cs = CubicSpline(rs, fs)
+            ys = cs(xs)
+
+            fig.add_trace(
+                go.Scatter(
+                    x=xs, y=ys,
+                    mode="lines",
+                    line=dict(
+                        color=color_sequence[j % len(color_sequence)],
+                        width=1,
+                        dash="dot",
+                    ),
+                    name=method,
+                    showlegend=False if energy_plot else True,
+                ),
+                secondary_y=True,
+            )
+
+
+    fig.update_layout(
+        showlegend=True,
+        title_text=f"{symbol}-{symbol}",
+        title_x=0.5,
+        # yaxis_range=[ylo, 2*(abs(ylo))],
     )
 
-    cols[i % 3].title(f"{symbol+symbol}")
-    cols[i % 3].plotly_chart(fig, use_container_width=False)
+    # Set x-axis title
+    fig.update_xaxes(title_text="Bond length (Å)")
 
-# st.latex(r"\frac{d^2E}{dr^2} = \frac{d^2E}{dr^2}")
+    # Set y-axes titles
+    if energy_plot:
+        fig.update_yaxes(title_text="Energy [eV]", secondary_y=False)
 
-# st.components.v1.html(fig.to_html(include_mathjax='cdn'),height=500)
+    if force_plot:
+        fig.update_yaxes(title_text="Force [eV/Å]", secondary_y=True)
 
+    # cols[i % ncols].title(f"{row['name']}")
+    cols[i % ncols].plotly_chart(fig, use_container_width=True, height=250)
