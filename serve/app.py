@@ -30,10 +30,10 @@ st.set_page_config(
 leaderboard = st.Page(
     "models/leaderboard.py", title="Leaderboard", icon=":material/trophy:"
 )
-bugs = st.Page("models/bugs.py", title="Bug reports", icon=":material/bug_report:")
-alerts = st.Page(
-    "models/alerts.py", title="System alerts", icon=":material/notification_important:"
-)
+# bugs = st.Page("models/bugs.py", title="Bug reports", icon=":material/bug_report:")
+# alerts = st.Page(
+#     "models/alerts.py", title="System alerts", icon=":material/notification_important:"
+# )
 
 search = st.Page("tools/search.py", title="Search", icon=":material/search:")
 history = st.Page("tools/history.py", title="History", icon=":material/history:")
