@@ -3,3 +3,4 @@ plotly
 numpy
 scipy
 ase
+torch
