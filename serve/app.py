@@ -47,7 +47,7 @@ pg = st.navigation(
         # "Account": [logout_page],
         # "Reports": [dashboard, bugs, alerts],
         # "Tools": [search, history, ptable],
-        "Models": [leaderboard],
+        "": [leaderboard],
         "Tasks": [diatomics],
         "Tools": [ptable],
     }

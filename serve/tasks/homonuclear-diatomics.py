@@ -13,13 +13,13 @@ st.markdown("# Homonuclear diatomics")
 
 st.markdown("### Methods")
 container = st.container(border=True)
-methods = container.multiselect("MLIPs", ["MACE-MP", "Equiformer", "CHGNet", "MACE-OFF", "eSCN"], ["MACE-MP", "Equiformer", "CHGNet", "eSCN"])
+methods = container.multiselect("MLIPs", ["MACE-MP", "Equiformer", "CHGNet", "MACE-OFF", "eSCN", "ALIGNN"], ["MACE-MP", "Equiformer", "CHGNet", "eSCN", "ALIGNN"])
 methods += container.multiselect("DFT Methods", ["GPAW"], [])
 
 st.markdown("### Settings")
 vis = st.container(border=True)
 energy_plot = vis.checkbox("Show energy curves", value=True)
-force_plot = vis.checkbox("Show force curves", value=True)
+force_plot = vis.checkbox("Show force curves", value=False)
 ncols = vis.select_slider("Number of columns", options=[1, 2, 3, 4], value=3)
 
 # Get all attributes from pcolors.qualitative

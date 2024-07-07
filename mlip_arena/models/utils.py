@@ -11,7 +11,7 @@ from mlip_arena.models import REGISTRY
 
 MLIPMap = {
     model: getattr(
-        importlib.import_module(f"{__package__}.{metadata['module']}"), model,
+        importlib.import_module(f"{__package__}.{metadata['module']}"), metadata["class"],
     )
     for model, metadata in REGISTRY.items()
 }
