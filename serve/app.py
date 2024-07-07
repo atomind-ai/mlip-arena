@@ -4,8 +4,11 @@ st.set_page_config(
     layout="wide",
     page_title="MLIP Arena",
     page_icon=":shark:",
-    # initial_sidebar_state="expanded",
-    menu_items=None
+    initial_sidebar_state="expanded",
+    menu_items={
+        "About": 'https://github.com/atomind-ai/mlip-arena',
+        "Report a bug": "https://github.com/atomind-ai/mlip-arena/issues/new",
+    }
 )
 
 # if "logged_in" not in st.session_state:
@@ -24,19 +27,19 @@ st.set_page_config(
 # login_page = st.Page(login, title="Log in", icon=":material/login:")
 # logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 
-dashboard = st.Page(
-    "reports/dashboard.py", title="Dashboard", icon=":material/dashboard:"
+leaderboard = st.Page(
+    "models/leaderboard.py", title="Leaderboard", icon=":material/trophy:"
 )
-bugs = st.Page("reports/bugs.py", title="Bug reports", icon=":material/bug_report:")
+bugs = st.Page("models/bugs.py", title="Bug reports", icon=":material/bug_report:")
 alerts = st.Page(
-    "reports/alerts.py", title="System alerts", icon=":material/notification_important:"
+    "models/alerts.py", title="System alerts", icon=":material/notification_important:"
 )
 
 search = st.Page("tools/search.py", title="Search", icon=":material/search:")
 history = st.Page("tools/history.py", title="History", icon=":material/history:")
 ptable = st.Page("tools/ptable.py", title="Periodic table", icon=":material/gradient:")
 
-diatomics = st.Page("tasks/homonuclear-diatomics.py", title="Homonuclear diatomics", icon="", default=True)
+diatomics = st.Page("tasks/homonuclear-diatomics.py", title="Homonuclear diatomics", icon=":material/target:", default=True)
 
 # if st.session_state.logged_in:
 pg = st.navigation(
@@ -44,6 +47,7 @@ pg = st.navigation(
         # "Account": [logout_page],
         # "Reports": [dashboard, bugs, alerts],
         # "Tools": [search, history, ptable],
+        "Models": [leaderboard],
         "Tasks": [diatomics],
         "Tools": [ptable],
     }

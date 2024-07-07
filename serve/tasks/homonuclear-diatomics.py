@@ -9,34 +9,45 @@ from ase.data import chemical_symbols
 from plotly.subplots import make_subplots
 from scipy.interpolate import CubicSpline
 
-color_sequence = pcolors.qualitative.Plotly
-
-
-
 st.markdown("# Homonuclear diatomics")
 
-# button to toggle plots
+st.markdown("### Methods")
 container = st.container(border=True)
-energy_plot = container.checkbox("Show energy curves", value=True)
-force_plot = container.checkbox("Show force curves", value=True)
+methods = container.multiselect("MLIPs", ["MACE-MP", "Equiformer", "CHGNet", "MACE-OFF", "eSCN"], ["MACE-MP", "Equiformer", "CHGNet", "eSCN"])
+methods += container.multiselect("DFT Methods", ["GPAW"], [])
 
-ncols = 2
+st.markdown("### Settings")
+vis = st.container(border=True)
+energy_plot = vis.checkbox("Show energy curves", value=True)
+force_plot = vis.checkbox("Show force curves", value=True)
+ncols = vis.select_slider("Number of columns", options=[1, 2, 3, 4], value=3)
+
+# Get all attributes from pcolors.qualitative
+all_attributes = dir(pcolors.qualitative)
+color_palettes = {attr: getattr(pcolors.qualitative, attr) for attr in all_attributes if isinstance(getattr(pcolors.qualitative, attr), list)}
+color_palettes.pop("__all__", None)
+
+palette_names = list(color_palettes.keys())
+palette_colors = list(color_palettes.values())
+
+palette_name = vis.selectbox(
+    "Color sequence",
+    options=palette_names, index=22
+)
+
+color_sequence = color_palettes[palette_name] # type: ignore
 
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
-mlips = ["MACE-MP", "CHGNet"]
-
-dfs = [pd.read_json(DATA_DIR / mlip.lower() /  "homonuclear-diatomics.json") for mlip in mlips]
+dfs = [pd.read_json(DATA_DIR / method.lower() /  "homonuclear-diatomics.json") for method in methods]
 df = pd.concat(dfs, ignore_index=True)
-
-
-
 df.drop_duplicates(inplace=True, subset=["name", "method"])
+
+method_color_mapping = {method: color_sequence[i % len(color_sequence)] for i, method in enumerate(df["method"].unique())}
 
 for i, symbol in enumerate(chemical_symbols[1:]):
 
     if i % ncols == 0:
         cols = st.columns(ncols)
-
 
     rows = df[df["name"] == symbol + symbol]
 
@@ -61,23 +72,34 @@ for i, symbol in enumerate(chemical_symbols[1:]):
 
         rs = rs[ind]
         es = es[ind]
-        es = es - es[-1]
-        fs = fs[ind]
+        if "GPAW" not in method:
+            es = es - es[-1]
+        else:
+            pass
 
-        xs = np.linspace(rs.min()*0.99, rs.max()*1.01, int(5e2))
+        if "GPAW" not in method:
+            fs = fs[ind]
+
+        if "GPAW" in method:
+            xs = np.linspace(rs.min()*0.99, rs.max()*1.01, int(5e2))
+        else:
+            xs = rs
 
         if energy_plot:
-            cs = CubicSpline(rs, es)
-            ys = cs(xs)
+            if "GPAW" in method:
+                cs = CubicSpline(rs, es)
+                ys = cs(xs)
+            else:
+                ys = es
 
-            elo = min(elo, ys.min()*1.2, -1)
+            elo = min(elo, max(ys.min()*1.2, -15), -1)
 
             fig.add_trace(
                 go.Scatter(
                     x=xs, y=ys,
                     mode="lines",
                     line=dict(
-                        color=color_sequence[j % len(color_sequence)],
+                        color=method_color_mapping[method],
                         width=2,
                     ),
                     name=method,
@@ -85,33 +107,32 @@ for i, symbol in enumerate(chemical_symbols[1:]):
                 secondary_y=False,
             )
 
-        if force_plot:
-            cs = CubicSpline(rs, fs)
-            ys = cs(xs)
+        if force_plot and "GPAW" not in method:
+            ys = fs
 
-            flo = min(flo, ys.min()*1.2)
+            flo = min(flo, max(ys.min()*1.2, -50))
 
             fig.add_trace(
                 go.Scatter(
                     x=xs, y=ys,
                     mode="lines",
                     line=dict(
-                        color=color_sequence[j % len(color_sequence)],
+                        color=method_color_mapping[method],
                         width=1,
                         dash="dot",
                     ),
                     name=method,
-                    showlegend=False if energy_plot else True,
+                    showlegend=not energy_plot,
                 ),
                 secondary_y=True,
             )
 
+    name = f"{symbol}-{symbol}"
 
     fig.update_layout(
         showlegend=True,
-        title_text=f"{symbol}-{symbol}",
+        title_text=f"{name}",
         title_x=0.5,
-        # yaxis_range=[ylo, 2*(abs(ylo))],
     )
 
     # Set x-axis title
@@ -128,21 +149,16 @@ for i, symbol in enumerate(chemical_symbols[1:]):
             )
         )
 
-        # fig.update_yaxes(title_text="Energy [eV]", secondary_y=False)
-
     if force_plot:
 
         fig.update_layout(
             yaxis2=dict(
                 title=dict(text="Force [eV/Å]"),
                 side="right",
-                range=[flo, 2*(abs(flo))],
+                range=[flo, 1.5*abs(flo)],
                 overlaying="y",
                 tickmode="sync",
             ),
         )
 
-        # fig.update_yaxes(title_text="Force [eV/Å]", secondary_y=True)
-
-    # cols[i % ncols].title(f"{row['name']}")
     cols[i % ncols].plotly_chart(fig, use_container_width=True, height=250)

@@ -12,11 +12,11 @@ MACE_MP_Medium:
   gpu-tasks:
     - diatomics
 
-CHGNet:
-  module: chgnet
-  username: cyrusyc
-  datetime: 2024-03-25T14:30:00
-  datasets:
-    - atomind/mptrj
-  cpu-tasks:
-    - diatomics
+# CHGNet:
+#   module: chgnet
+#   username: cyrusyc
+#   datetime: 2024-03-25T14:30:00
+#   datasets:
+#     - atomind/mptrj
+#   cpu-tasks:
+#     - diatomics
