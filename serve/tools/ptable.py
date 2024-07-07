@@ -76,7 +76,8 @@ def display_element_details():
     if st.button("Back to Periodic Table"):
         st.session_state.selected_element = None
         st.session_state.selected_name = None
-        st.experimental_rerun()
+        st.rerun()
+        # st.experimental_rerun()
 
 
 st.title("Periodic Table")

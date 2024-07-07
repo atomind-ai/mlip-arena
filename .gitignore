@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 tests/
 *.out
+mlip_arena/tasks/*/*/
 
 # C extensions
 *.so
