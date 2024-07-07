@@ -1,6 +1,7 @@
-import streamlit as st
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
+import streamlit as st
 
 from mlip_arena.models import REGISTRY
 
@@ -10,7 +11,7 @@ dfs = [pd.read_json(DATA_DIR / method.lower() /  "homonuclear-diatomics.json") f
 df = pd.concat(dfs, ignore_index=True)
 
 table = pd.DataFrame(columns=[
-    "Model", 
+    "Model",
     "No. of supported elements",
     "No. of reversed forces",
     "Energy-consistent forces",
@@ -36,7 +37,7 @@ table.set_index("Model", inplace=True)
 
 
 s = table.style.background_gradient(
-    cmap="PuRd", 
+    cmap="PuRd",
     subset=["No. of supported elements"],
     vmin=0, vmax=120
 )
@@ -45,7 +46,7 @@ s = table.style.background_gradient(
 st.markdown("# MLIP Arena Leaderboard")
 
 st.dataframe(
-    s, 
+    s,
     use_container_width=True,
     column_config={
         "Code": st.column_config.LinkColumn(

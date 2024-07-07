@@ -7,7 +7,8 @@ from ase import Atoms
 from ase.calculators.calculator import Calculator, all_changes
 from huggingface_hub import PyTorchModelHubMixin
 from torch import nn
-from torch_geometric.data import Data
+
+# from torch_geometric.data import Data
 
 with open(Path(__file__).parent / "registry.yaml") as f:
     REGISTRY = yaml.safe_load(f)
