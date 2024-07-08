@@ -18,37 +18,29 @@ class MLIP(
     PyTorchModelHubMixin,
     tags=["atomistic-simulation", "MLIP"],
 ):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
-
-class ModuleMLIP(MLIP):
-    def __init__(self, model: nn.Module, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.add_module("model", model)
+    def __init__(self, model: nn.Module) -> None:
+        super().__init__()
+        self.model = model
 
     def forward(self, x):
-        print("Forwarding...")
-        out = self.model(x)
-        print("Forwarded!")
-        return out
+        return self.model(x)
 
-
-class MLIPCalculator(Calculator):
+class MLIPCalculator(MLIP, Calculator):
     name: str
-    # device: torch.device
-    # model: MLIP
     implemented_properties: list[str] = ["energy", "forces", "stress"]
 
     def __init__(
         self,
+        model,
         # ASE Calculator
         restart=None,
         atoms=None,
         directory=".",
-        **kwargs,
+        calculator_kwargs: dict = {},
     ):
-        super().__init__(restart=restart, atoms=atoms, directory=directory, **kwargs)
+        MLIP.__init__(self, model=model)  # Initialize MLIP part
+        Calculator.__init__(self, restart=restart, atoms=atoms, directory=directory, **calculator_kwargs)  # Initialize ASE Calculator part
+        # Additional initialization if needed
         # self.name: str = self.__class__.__name__
         # self.device = device or torch.device(
         #     "cuda" if torch.cuda.is_available() else "cpu"

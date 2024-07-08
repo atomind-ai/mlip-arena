@@ -1,7 +1,7 @@
 
 
 MACE-MP(M):
-  module: mace
+  module: externals
   class: MACE_MP_Medium
   username: cyrusyc # HF username
   last-update: 2024-03-25T14:30:00
@@ -16,6 +16,40 @@ MACE-MP(M):
   github: https://github.com/ACEsuit/mace
   doi: https://arxiv.org/abs/2401.00096
   date: 2023-12-29
+
+CHGNet:
+  module: externals
+  class: CHGNet
+  username: cyrusyc
+  last-update: 2024-07-08T00:00:00
+  datetime: 2024-07-08T00:00:00
+  datasets:
+    - atomind/mptrj
+  gpu-tasks:
+    - diatomics
+
+EquiformerV2(OC22):
+  module: externals
+  class: EquiformerV2
+  username: cyrusyc
+  last-update: 2024-07-08T00:00:00
+  datetime: 2024-07-08T00:00:00
+  datasets:
+    - ocp
+  gpu-tasks:
+    - diatomics
+
+eSCN(OC20):
+  module: externals
+  class: eSCN
+  username: cyrusyc
+  last-update: 2024-07-08T00:00:00
+  datetime: 2024-07-08T00:00:00
+  datasets:
+    - ocp
+  gpu-tasks:
+    - diatomics
+
 
 # CHGNet:
 #   module: chgnet

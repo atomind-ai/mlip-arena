@@ -7,10 +7,12 @@ from ase.calculators.calculator import all_changes
 from huggingface_hub import hf_hub_download
 from torch_geometric.data import Data
 
-from mlip_arena.models import MLIP, MLIPCalculator, ModuleMLIP
+from mlip_arena.models import MLIP, MLIPCalculator
+
+# TODO: WIP
 
 
-class CHGNetCalculator(MLIPCalculator):
+class CHGNet(MLIPCalculator):
     def __init__(
         self,
         device: torch.device | None = None,
@@ -19,23 +21,15 @@ class CHGNetCalculator(MLIPCalculator):
         directory=".",
         **kwargs,
     ):
-        super().__init__(restart=restart, atoms=atoms, directory=directory, **kwargs)
-
-        self.name: str = self.__class__.__name__
-
-        fpath = hf_hub_download(
-            repo_id="cyrusyc/mace-universal",
-            subfolder="pretrained",
-            filename="2023-12-12-mace-128-L1_epoch-199.model",
-            revision="main",
-        )
-
         self.device = device or torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         )
 
-        self.model = torch.load(fpath, map_location=self.device)
+        super().__init__(
+            model=model, restart=restart, atoms=atoms, directory=directory, **kwargs
+        )
 
+        self.name: str = self.__class__.__name__
         self.implemented_properties = ["energy", "forces", "stress"]
 
     def calculate(
