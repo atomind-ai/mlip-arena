@@ -136,7 +136,7 @@ for i, symbol in enumerate(chemical_symbols[1:]):
     )
 
     # Set x-axis title
-    fig.update_xaxes(title_text="Bond length (Å)")
+    fig.update_xaxes(title_text="Bond length [Å]")
 
     # Set y-axes titles
     if energy_plot:
