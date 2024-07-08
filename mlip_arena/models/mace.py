@@ -1,13 +1,10 @@
-from typing import Optional, Tuple
-
-import numpy as np
 import torch
 from ase import Atoms
 from ase.calculators.calculator import all_changes
 from huggingface_hub import hf_hub_download
 from torch_geometric.data import Data
 
-from mlip_arena.models import MLIP, MLIPCalculator, ModuleMLIP
+from mlip_arena.models import MLIPCalculator
 
 
 class MACE_MP_Medium(MLIPCalculator):
@@ -19,9 +16,9 @@ class MACE_MP_Medium(MLIPCalculator):
         directory=".",
         **kwargs,
     ):
-        super().__init__(restart=restart, atoms=atoms, directory=directory, **kwargs)
-
-        self.name: str = self.__class__.__name__
+        self.device = device or torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+        )
 
         fpath = hf_hub_download(
             repo_id="cyrusyc/mace-universal",
@@ -30,22 +27,14 @@ class MACE_MP_Medium(MLIPCalculator):
             revision="main",
         )
 
-        self.device = device or torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
+        model = torch.load(fpath, map_location=self.device)
+
+        super().__init__(
+            model=model, restart=restart, atoms=atoms, directory=directory, **kwargs
         )
 
-        self.model = torch.load(fpath, map_location=self.device)
-
+        self.name: str = self.__class__.__name__
         self.implemented_properties = ["energy", "forces", "stress"]
-
-        # repo_id = f"atomind/{self.__class__.__name__}".lower().replace("_", "-")
-
-        # model = ModuleMLIP(model=model)
-        # model.save_pretrained(
-        #     self.__class__.__name__.lower().replace("_", "-"),
-        #     repo_id=repo_id,
-        #     push_to_hub=True,
-        # )
 
     def calculate(
         self, atoms: Atoms, properties: list[str], system_changes: list = all_changes
