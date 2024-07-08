@@ -46,6 +46,7 @@ Issues = "https://github.com/atomind-ai/mlip-arena/issues"
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
+extend-include = ["*.ipynb"]
 exclude = [
     ".bzr",
     ".direnv",

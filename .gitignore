@@ -1,5 +1,7 @@
 tests/
 *.out
+*.ipynb
+*.extxyz
 mlip_arena/tasks/*/*/*/
 
 # Byte-compiled / optimized / DLL files
