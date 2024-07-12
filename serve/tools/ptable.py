@@ -1,93 +1,78 @@
+
+
+# NOTE: https://stackoverflow.com/questions/77062368/streamlit-bokeh-event-callback-to-get-clicked-values
+# Taptool: https://docs.bokeh.org/en/2.4.2/docs/reference/models/tools.html#taptool
+
 import streamlit as st
-from ase.data import chemical_symbols
-from pymatgen.core import Element
+from bokeh.plotting import figure
+from bokeh.plotting import figure, show
+from bokeh.sampledata.periodic_table import elements
+from bokeh.transform import dodge, factor_cmap
 
-elements = [Element.from_Z(z) for z in range(1, 119)]
+periods = ["I", "II", "III", "IV", "V", "VI", "VII"]
+groups = [str(x) for x in range(1, 19)]
 
-# Define the number of rows and columns in the periodic table
-rows = 9  # There are 7 rows in the conventional periodic table
-columns = 18
+df = elements.copy()
+df["atomic mass"] = df["atomic mass"].astype(str)
+df["group"] = df["group"].astype(str)
+df["period"] = [periods[x-1] for x in df.period]
+df = df[df.group != "-"]
+df = df[df.symbol != "Lr"]
+df = df[df.symbol != "Lu"]
 
-# Define a function to display the periodic table
-def display_periodic_table():
-    # elements = [
-    #     (element, element) for element in chemical_symbols[1:]
-    # ]
+cmap = {
+    "alkali metal"         : "#a6cee3",
+    "alkaline earth metal" : "#1f78b4",
+    "metal"                : "#d93b43",
+    "halogen"              : "#999d9a",
+    "metalloid"            : "#e08d49",
+    "noble gas"            : "#eaeaea",
+    "nonmetal"             : "#f1d4Af",
+    "transition metal"     : "#599d7A",
+}
 
-    # cols = st.columns(18, gap='small', vertical_alignment='bottom')  # Create 18 columns for the periodic table layout
+TOOLTIPS = [
+    ("Name", "@name"),
+    ("Atomic number", "@{atomic number}"),
+    ("Atomic mass", "@{atomic mass}"),
+    ("Type", "@metal"),
+    ("CPK color", "$color[hex, swatch]:CPK"),
+    ("Electronic configuration", "@{electronic configuration}"),
+]
 
-    row = 0
-    for element in elements:
-        symbol = element.symbol
-        atomic_number = element.Z
-        group = element.group
+p = figure(title="Periodic Table (omitting LA and AC Series)", width=1000, height=450,
+           x_range=groups, y_range=list(reversed(periods)),
+           tools="hover", toolbar_location=None, tooltips=TOOLTIPS)
 
-        if element.row > row:
-            cols = st.columns(columns, gap='small', vertical_alignment='bottom')
-        row = element.row
+r = p.rect("group", "period", 0.95, 0.95, source=df, fill_alpha=0.6, legend_field="metal",
+           color=factor_cmap('metal', palette=list(cmap.values()), factors=list(cmap.keys())))
 
-        if element.block == 'f':
-            continue
+text_props = dict(source=df, text_align="left", text_baseline="middle")
 
-        with cols[group - 1]:
-            if st.button(symbol, use_container_width=True):
-                st.session_state.selected_element = symbol
-                st.session_state.selected_name = symbol
-                st.rerun()
-                # st.experimental_rerun()
-    
-    for element in elements:
-        symbol = element.symbol
-        atomic_number = element.Z
-        group = element.group
+x = dodge("group", -0.4, range=p.x_range)
 
-        if element.row > row:
-            cols = st.columns(columns, gap='small', vertical_alignment='bottom')
-        row = element.row
+p.text(x=x, y="period", text="symbol", text_font_style="bold", **text_props)
 
-        if element.block == 'f':
-            noble = Element.from_row_and_group(row-1, 18)
-            row += 2
-            group += atomic_number - noble.Z - 2
-        else:
-            continue
+p.text(x=x, y=dodge("period", 0.3, range=p.y_range), text="atomic number",
+       text_font_size="11px", **text_props)
 
-        with cols[group - 1]:
-            if st.button(symbol, use_container_width=True):
-                st.session_state.selected_element = symbol
-                st.session_state.selected_name = symbol
-                st.rerun()
-                # st.experimental_rerun()
-    
-    
-    # for idx, (symbol, name) in enumerate(elements):
-    #     with cols[idx % 18]:  # Place each element in the correct column
-    #         if st.button(symbol, use_container_width=True):
-    #             st.session_state.selected_element = symbol
-    #             st.session_state.selected_name = name
-    #             st.experimental_rerun()
+p.text(x=x, y=dodge("period", -0.35, range=p.y_range), text="name",
+       text_font_size="7px", **text_props)
 
-# Define a function to display the details of an element
-def display_element_details():
-    symbol = st.session_state.selected_element
-    name = st.session_state.selected_name
-    st.write(f"### {name} ({symbol})")
-    st.write(f"Details about {name} ({symbol}) will be displayed here.")
-    if st.button("Back to Periodic Table"):
-        st.session_state.selected_element = None
-        st.session_state.selected_name = None
-        st.rerun()
-        # st.experimental_rerun()
+p.text(x=x, y=dodge("period", -0.2, range=p.y_range), text="atomic mass",
+       text_font_size="7px", **text_props)
 
+p.text(x=["3", "3"], y=["VI", "VII"], text=["LA", "AC"], text_align="center", text_baseline="middle")
 
-st.title("Periodic Table")
+p.outline_line_color = None
+p.grid.grid_line_color = None
+p.axis.axis_line_color = None
+p.axis.major_tick_line_color = None
+p.axis.major_label_standoff = 0
+p.legend.orientation = "horizontal"
+p.legend.location ="top_center"
+p.hover.renderers = [r] # only hover element boxes
 
-# st.balloons()
-if 'selected_element' not in st.session_state:
-    st.session_state.selected_element = None
+st.bokeh_chart(p, use_container_width=True)
 
-if st.session_state.selected_element:
-    display_element_details()
-else:
-    display_periodic_table()
-
+# show(p)

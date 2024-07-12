@@ -119,7 +119,7 @@ def _get_ensemble_defaults(
         ase_md_kwargs.pop("externalstress", None)
     elif ensemble == "npt":
         ase_md_kwargs["temperature_K"] = t_schedule[0]
-        ase_md_kwargs["externalstress"] = p_schedule[0] * 1e3 * units.bar
+        ase_md_kwargs["externalstress"] = p_schedule[0] # * 1e3 * units.bar
 
     if isinstance(dynamics, str) and dynamics.lower() == "langevin":
         ase_md_kwargs["friction"] = ase_md_kwargs.get(

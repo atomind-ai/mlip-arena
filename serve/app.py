@@ -40,6 +40,8 @@ history = st.Page("tools/history.py", title="History", icon=":material/history:"
 ptable = st.Page("tools/ptable.py", title="Periodic table", icon=":material/gradient:")
 
 diatomics = st.Page("tasks/homonuclear-diatomics.py", title="Homonuclear diatomics", icon=":material/target:", default=True)
+stability = st.Page("tasks/stability.py", title="Stability", icon=":material/target:")
+
 
 # if st.session_state.logged_in:
 pg = st.navigation(
@@ -48,7 +50,7 @@ pg = st.navigation(
         # "Reports": [dashboard, bugs, alerts],
         # "Tools": [search, history, ptable],
         "": [leaderboard],
-        "Tasks": [diatomics],
+        "Tasks": [diatomics, stability],
         "Tools": [ptable],
     }
 )

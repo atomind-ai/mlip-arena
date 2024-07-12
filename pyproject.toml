@@ -26,12 +26,13 @@ classifiers=[
     "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies=[
-    "torch",
     "ase",
+    "torch",
     "torch_dftd>=0.4.0",
     "huggingface_hub",
     "torch-geometric",
-    "safetensors"
+    "safetensors",
+    "pymatgen"
 ]
 
 [project.optional-dependencies]
@@ -39,6 +40,11 @@ m3gnet = ["matgl", "dgl", "torch<=2.2.1"]
 mace = ["mace-torch"]
 chgnet = ["chgnet"]
 fairchem = ["fairchem"]
+app = [
+    "streamlit",
+    "plotly",
+    "bokeh==2.4.3",
+]
 
 [project.urls]
 Homepage = "https://github.com/atomind-ai/mlip-arena"

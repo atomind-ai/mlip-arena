@@ -3,6 +3,7 @@
 MACE-MP(M):
   module: externals
   class: MACE_MP_Medium
+  family: mace
   username: cyrusyc # HF username
   last-update: 2024-03-25T14:30:00
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
@@ -20,6 +21,7 @@ MACE-MP(M):
 CHGNet:
   module: externals
   class: CHGNet
+  family: chgnet
   username: cyrusyc
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
@@ -31,6 +33,7 @@ CHGNet:
 EquiformerV2(OC22):
   module: externals
   class: EquiformerV2
+  family: equiformer
   username: cyrusyc
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
@@ -42,6 +45,7 @@ EquiformerV2(OC22):
 eSCN(OC20):
   module: externals
   class: eSCN
+  family: escn
   username: cyrusyc
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
