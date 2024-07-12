@@ -9,7 +9,7 @@ from ase.data import chemical_symbols
 from plotly.subplots import make_subplots
 from scipy.interpolate import CubicSpline
 
-from mlip_arena.models.utils import MLIPMap
+# from mlip_arena.models.utils import MLIPMap
 
 st.markdown("# Homonuclear diatomics")
 

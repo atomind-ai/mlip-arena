@@ -10,7 +10,7 @@ from ase.io import read, write
 from plotly.subplots import make_subplots
 from scipy.interpolate import CubicSpline
 
-from mlip_arena.models.utils import MLIPMap
+# from mlip_arena.models.utils import MLIPMap
 
 st.markdown("# Stability")
 
