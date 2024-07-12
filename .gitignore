@@ -2,7 +2,9 @@ tests/
 *.out
 *.ipynb
 *.extxyz
+*.traj
 mlip_arena/tasks/*/*/*/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

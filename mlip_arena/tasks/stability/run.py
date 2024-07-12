@@ -277,6 +277,7 @@ def md(
 
         def _callback(dyn: MolecularDynamics = md_runner) -> None:
             step = last_step + dyn.nsteps
+            dyn.atoms.info["restart"] = last_step
             dyn.atoms.info["datetime"] = datetime.now()
             dyn.atoms.info["step"] = step
             if ensemble == "nve":
