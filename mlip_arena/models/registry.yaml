@@ -3,7 +3,7 @@
 MACE-MP(M):
   module: externals
   class: MACE_MP_Medium
-  family: mace
+  family: mace-mp
   username: cyrusyc # HF username
   last-update: 2024-03-25T14:30:00
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime

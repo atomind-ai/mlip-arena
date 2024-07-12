@@ -13,6 +13,7 @@ from torch import nn
 with open(Path(__file__).parent / "registry.yaml") as f:
     REGISTRY = yaml.safe_load(f)
 
+
 class MLIP(
     nn.Module,
     PyTorchModelHubMixin,
@@ -24,6 +25,7 @@ class MLIP(
 
     def forward(self, x):
         return self.model(x)
+
 
 class MLIPCalculator(MLIP, Calculator):
     name: str
@@ -39,7 +41,9 @@ class MLIPCalculator(MLIP, Calculator):
         calculator_kwargs: dict = {},
     ):
         MLIP.__init__(self, model=model)  # Initialize MLIP part
-        Calculator.__init__(self, restart=restart, atoms=atoms, directory=directory, **calculator_kwargs)  # Initialize ASE Calculator part
+        Calculator.__init__(
+            self, restart=restart, atoms=atoms, directory=directory, **calculator_kwargs
+        )  # Initialize ASE Calculator part
         # Additional initialization if needed
         # self.name: str = self.__class__.__name__
         # self.device = device or torch.device(
@@ -49,7 +53,10 @@ class MLIPCalculator(MLIP, Calculator):
         # self.implemented_properties = ["energy", "forces", "stress"]
 
     def calculate(
-        self, atoms: Atoms, properties: list[str], system_changes: list = all_changes,
+        self,
+        atoms: Atoms,
+        properties: list[str],
+        system_changes: list = all_changes,
     ):
         """Calculate energies and forces for the given Atoms object"""
         super().calculate(atoms, properties, system_changes)

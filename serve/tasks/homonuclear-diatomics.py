@@ -40,6 +40,8 @@ palette_name = vis.selectbox(
 color_sequence = color_palettes[palette_name] # type: ignore
 
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
+if not methods:
+    st.stop()
 dfs = [pd.read_json(DATA_DIR / method.lower() /  "homonuclear-diatomics.json") for method in methods]
 df = pd.concat(dfs, ignore_index=True)
 df.drop_duplicates(inplace=True, subset=["name", "method"])
