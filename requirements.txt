@@ -6,3 +6,4 @@ ase==3.23.0
 torch==2.2.1
 pymatgen==2024.4.13
 bokeh==2.4.3
+statsmodels
