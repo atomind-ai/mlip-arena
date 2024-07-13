@@ -198,6 +198,7 @@ def md(
         time_step = 0.5 if has_h_isotope else 2.0
 
     n_steps = int(total_time / time_step)
+    target_steps = n_steps
 
     t_schedule, p_schedule = _get_ensemble_schedule(
         ensemble=ensemble,
@@ -280,6 +281,7 @@ def md(
             dyn.atoms.info["restart"] = last_step
             dyn.atoms.info["datetime"] = datetime.now()
             dyn.atoms.info["step"] = step
+            dyn.atoms.info["target_steps"] = target_steps
             if ensemble == "nve":
                 return
             dyn.set_temperature(temperature_K=t_schedule[step])

@@ -11,7 +11,14 @@ from scipy.interpolate import CubicSpline
 
 # from mlip_arena.models.utils import MLIPMap
 
-st.markdown("# Homonuclear diatomics")
+st.markdown(
+"""
+# Homonuclear diatomics
+
+Homonuclear diatomics are molecules composed of two atoms of the same element.
+The potential energy curves of homonuclear diatomics are the most fundamental interactions between atoms in quantum chemistry.
+"""
+)
 
 st.markdown("### Methods")
 container = st.container(border=True)
@@ -22,7 +29,7 @@ st.markdown("### Settings")
 vis = st.container(border=True)
 energy_plot = vis.checkbox("Show energy curves", value=True)
 force_plot = vis.checkbox("Show force curves", value=False)
-ncols = vis.select_slider("Number of columns", options=[1, 2, 3, 4], value=3)
+ncols = vis.select_slider("Number of columns", options=[1, 2, 3, 4], value=2)
 
 # Get all attributes from pcolors.qualitative
 all_attributes = dir(pcolors.qualitative)
@@ -140,7 +147,7 @@ for i, symbol in enumerate(chemical_symbols[1:]):
     )
 
     # Set x-axis title
-    fig.update_xaxes(title_text="Bond length [Å]")
+    fig.update_xaxes(title_text="Distance [Å]")
 
     # Set y-axes titles
     if energy_plot:
@@ -165,4 +172,4 @@ for i, symbol in enumerate(chemical_symbols[1:]):
             ),
         )
 
-    cols[i % ncols].plotly_chart(fig, use_container_width=True, height=250)
+    cols[i % ncols].plotly_chart(fig, use_container_width=True)
