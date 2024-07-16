@@ -9,11 +9,11 @@ from ase.data import chemical_symbols
 from plotly.subplots import make_subplots
 from scipy.interpolate import CubicSpline
 
-# from mlip_arena.models.utils import MLIPMap
+from mlip_arena.models.utils import REGISTRY
 
 st.markdown(
 """
-# Homonuclear diatomics
+# Homonuclear Diatomics
 
 Homonuclear diatomics are molecules composed of two atoms of the same element.
 The potential energy curves of homonuclear diatomics are the most fundamental interactions between atoms in quantum chemistry.
@@ -22,8 +22,9 @@ The potential energy curves of homonuclear diatomics are the most fundamental in
 
 st.markdown("### Methods")
 container = st.container(border=True)
-methods = container.multiselect("MLIPs", ["MACE-MP", "Equiformer", "CHGNet", "MACE-OFF", "eSCN", "ALIGNN"], ["MACE-MP", "Equiformer", "CHGNet", "eSCN", "ALIGNN"])
-methods += container.multiselect("DFT Methods", ["GPAW"], [])
+valid_models = [model for model, metadata in REGISTRY.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
+methods = container.multiselect("MLIPs", valid_models, ["MACE-MP(M)", "EquiformerV2(OC22)", "CHGNet", "eSCN(OC20)", "ALIGNN"])
+dft_methods = container.multiselect("DFT Methods", ["GPAW"], [])
 
 st.markdown("### Settings")
 vis = st.container(border=True)
@@ -49,7 +50,12 @@ color_sequence = color_palettes[palette_name] # type: ignore
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
 if not methods:
     st.stop()
-dfs = [pd.read_json(DATA_DIR / method.lower() /  "homonuclear-diatomics.json") for method in methods]
+dfs = [pd.read_json(DATA_DIR / REGISTRY[method]["family"] /  "homonuclear-diatomics.json") for method in methods]
+
+dfs.extend([pd.read_json(DATA_DIR / method.lower() /  "homonuclear-diatomics.json") for method in dft_methods])
+
+
+
 df = pd.concat(dfs, ignore_index=True)
 df.drop_duplicates(inplace=True, subset=["name", "method"])
 
@@ -111,7 +117,7 @@ for i, symbol in enumerate(chemical_symbols[1:]):
                     mode="lines",
                     line=dict(
                         color=method_color_mapping[method],
-                        width=2,
+                        width=3,
                     ),
                     name=method,
                 ),
@@ -129,8 +135,8 @@ for i, symbol in enumerate(chemical_symbols[1:]):
                     mode="lines",
                     line=dict(
                         color=method_color_mapping[method],
-                        width=1,
-                        dash="dot",
+                        width=2,
+                        dash="dashdot",
                     ),
                     name=method,
                     showlegend=not energy_plot,

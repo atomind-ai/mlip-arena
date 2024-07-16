@@ -244,8 +244,8 @@ def md(
 
         if restart and traj_file.exists():
             traj = read(traj_file, index=":")
-            last_step = len(traj)
-            n_steps -= len(traj)
+            last_step = traj[-1].info.get("step", len(traj) * traj_interval)
+            n_steps -= last_step
             last_atoms = traj[-1]
             traj = Trajectory(traj_file, "a", atoms)
             atoms.set_positions(last_atoms.get_positions())
