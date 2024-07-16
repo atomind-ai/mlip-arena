@@ -1,4 +1,5 @@
-import os
+from __future__ import annotations
+
 from pathlib import Path
 
 import torch
@@ -10,7 +11,7 @@ from torch import nn
 
 # from torch_geometric.data import Data
 
-with open(Path(__file__).parent / "registry.yaml") as f:
+with open(Path(__file__).parent / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
 
 

@@ -3,31 +3,38 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from mlip_arena.models import REGISTRY
+from mlip_arena.models.utils import MLIPEnum, REGISTRY
 
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
 methods = ["MACE-MP", "Equiformer", "CHGNet", "MACE-OFF", "eSCN", "ALIGNN"]
 dfs = [pd.read_json(DATA_DIR / method.lower() /  "homonuclear-diatomics.json") for method in methods]
 df = pd.concat(dfs, ignore_index=True)
 
+
 table = pd.DataFrame(columns=[
     "Model",
-    "No. of supported elements",
-    "No. of reversed forces",
-    "Energy-consistent forces",
+    "Supported elements",
+    # "No. of reversed forces",
+    # "Energy-consistent forces",
+    "Prediction",
+    "NVT",
+    "NPT",
     "Last updated",
     "Code",
     "Paper"
     ])
 
-for method in df["method"].unique():
-    rows = df[df["method"] == method]
-    metadata = REGISTRY.get(method, None)
+for model in MLIPEnum:
+    rows = df[df["method"] == model.name]
+    metadata = REGISTRY.get(model.name, {})
     new_row = {
-        "Model": method,
-        "No. of supported elements": len(rows["name"].unique()),
-        "No. of reversed forces": None,  # Replace with actual logic if available
-        "Energy-consistent forces": None,  # Replace with actual logic if available
+        "Model": model.name,
+        "Supported elements": len(rows["name"].unique()),
+        # "No. of reversed forces": None,  # Replace with actual logic if available
+        # "Energy-consistent forces": None,  # Replace with actual logic if available
+        "Prediction": metadata.get("prediction", None),
+        "NVT": "✅" if metadata.get("nvt", False) else "❌",
+        "NPT": "✅" if metadata.get("npt", False) else "❌",
         "Code": metadata.get("github", None) if metadata else None,
         "Paper": metadata.get("doi", None) if metadata else None,
     }
@@ -38,12 +45,16 @@ table.set_index("Model", inplace=True)
 
 s = table.style.background_gradient(
     cmap="PuRd",
-    subset=["No. of supported elements"],
+    subset=["Supported elements"],
     vmin=0, vmax=120
 )
 
+st.markdown(
+"""
+<h1 style='text-align: center;'>MLIP Arena Leaderboard</h1>
+""", unsafe_allow_html=True)
 
-st.markdown("# MLIP Arena Leaderboard")
+# st.markdown("# MLIP Arena Leaderboard")
 
 st.dataframe(
     s,

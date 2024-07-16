@@ -6,22 +6,30 @@ import plotly.colors as pcolors
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+from scipy.optimize import curve_fit
 
 from mlip_arena.models import REGISTRY
 
 DATA_DIR = Path("mlip_arena/tasks/stability")
 
 
-st.markdown(
-    """
-# Stability
+st.markdown("""
+# High Pressure Stability
 
-"""
-)
+Stable and accurate molecular dynamics (MD) simulations are important for understanding the properties of matters.
+However, many MLIPs have unphysical potential energy surface (PES) at the short-range interatomic distances or 
+under many-body effect. These are often manifested as softened repulsion and hole in the PES and can lead to incorrect 
+and sampling of the phase space.
+
+Here, we analyze the stability of the MD simulations under high pressure conditions by gradually increasing the pressure 
+from 0 to 100 GPa until the system crashes or completes 100 ps steps.
+""")
 
 st.markdown("### Methods")
 container = st.container(border=True)
-models = container.multiselect("MLIPs", REGISTRY.keys(), ["MACE-MP(M)", "CHGNet"])
+valid_models = [model for model, metadata in REGISTRY.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
+
+models = container.multiselect("MLIPs", valid_models, ["MACE-MP(M)", "CHGNet"])
 
 st.markdown("### Settings")
 vis = st.container(border=True)
@@ -58,23 +66,6 @@ method_color_mapping = {
     for i, method in enumerate(df["method"].unique())
 }
 
-
-fig = px.scatter(
-    df,
-    x="natoms",
-    y="steps_per_second",
-    color="method",
-    size="total_steps",
-    hover_data=["material_id", "formula"],
-    color_discrete_map=method_color_mapping,
-    trendline="ols",
-    trendline_options=dict(log_x=True),
-    log_x=True,
-    title="Inference Speed",
-    labels={"steps_per_second": "Steps per second", "natoms": "Number of atoms"},
-)
-st.plotly_chart(fig)
-
 ###
 
 fig = go.Figure()
@@ -83,23 +74,29 @@ fig = go.Figure()
 # bins = np.histogram_bin_edges(df['total_steps'], bins=10)
 
 max_steps = df["total_steps"].max()
+max_target_steps = df["target_steps"].max()
 
-bins = np.append(np.arange(0, max_steps - 1, max_steps // 10), max_steps)
+bins = np.append(np.arange(0, max_steps + 1, max_steps // 10), max_target_steps)
 bin_labels = [f"{bins[i]}-{bins[i+1]}" for i in range(len(bins)-1)]
 
 num_bins = len(bin_labels)
-colormap = px.colors.sequential.Redor
+colormap = px.colors.sequential.Darkmint_r
 indices = np.linspace(0, len(colormap) - 1, num_bins, dtype=int)
 bin_colors = [colormap[i] for i in indices]
+# bin_colors[-1] = px.colors.sequential.Greens[-1]
 
 # Initialize a dictionary to hold the counts for each method and bin range
-counts_per_method = {method: [0] * len(bin_labels) for method in df['method'].unique()}
+# counts_per_method = {method: [0] * len(bin_labels) for method in df["method"].unique()}
+counts_per_method = {method: [0] * len(bin_labels) for method in df["method"].unique()}
+
 
 # Populate the dictionary with counts
-for method, group in df.groupby('method'):
-    counts, _ = np.histogram(group['total_steps'], bins=bins)
+for method, group in df.groupby("method"):
+    counts, _ = np.histogram(group["total_steps"], bins=bins)
     counts_per_method[method] = counts
 
+
+count_or_percetange = st.toggle("show counts", False)
 # Create a figure
 fig = go.Figure()
 
@@ -108,23 +105,23 @@ for i, bin_label in enumerate(bin_labels):
     for method, counts in counts_per_method.items():
         fig.add_trace(go.Bar(
             # name=method,  # This will be the legend entry
-            x=[counts[i]],  # Count for this bin
+            x=[counts[i]/counts.sum()*100] if not count_or_percetange else [counts[i]],
             y=[method],  # Method as the y-axis category
             # name=bin_label,
-            orientation='h',  # Horizontal bars
+            orientation="h",  # Horizontal bars
             marker=dict(
                 color=bin_colors[i],
-                line=dict(color='rgb(248, 248, 249)', width=1)
+                line=dict(color="rgb(248, 248, 249)", width=1)
             ),
-            text=bin_label,
+            text=f"{bin_label}: {counts[i]/counts.sum()*100:.0f}%",
             width=0.5
         ))
 
 # Update the layout to stack the bars
 fig.update_layout(
-    barmode='stack',  # Stack the bars
-    title="Total MD Steps",
-    xaxis_title="Count",
+    barmode="stack",  # Stack the bars
+    title="Total MD steps (before crash or completion)",
+    xaxis_title="Percentage (%)" if not count_or_percetange else "Count",
     yaxis_title="Method",
     showlegend=False
 )
@@ -154,5 +151,55 @@ fig.update_layout(
 #     xaxis_title="Count",
 #     yaxis_title="Total Steps Range"
 # )
+
+st.plotly_chart(fig)
+
+
+###
+
+# st.markdown("""
+# ## Runtime Analysis
+
+# """)
+
+fig = px.scatter(
+    df,
+    x="natoms",
+    y="steps_per_second",
+    color="method",
+    size="total_steps",
+    hover_data=["material_id", "formula"],
+    color_discrete_map=method_color_mapping,
+    # trendline="ols",
+    # trendline_options=dict(log_x=True),
+    log_x=True,
+    # log_y=True,
+    # range_y=[1, 1e2],
+    range_x=[df["natoms"].min()*0.9, df["natoms"].max()*1.1],
+    # range_x=[1e3, 1e2],
+    title="Inference speed (on single A100 GPU)",
+    labels={"steps_per_second": "Steps per second", "natoms": "Number of atoms"},
+)
+
+
+def func(x, a, n):
+    return a * x ** (-n)
+
+x = np.linspace(df["natoms"].min(), df["natoms"].max(), 100)
+
+for method, data in df.groupby("method"):
+    data.dropna(subset=["steps_per_second"], inplace=True)
+    popt, pcov = curve_fit(func, data["natoms"], data["steps_per_second"])
+
+    fig.add_trace(go.Scatter(
+        x=x,
+        y=func(x, *popt),
+        mode="lines",
+        # name='Fit',
+        line=dict(color=method_color_mapping[method], width=3),
+        showlegend=False,
+        name=f"{popt[0]:.2f}N^{-popt[1]:.2f}",
+        hovertext=f"{popt[0]:.2f}N^{-popt[1]:.2f}",
+    ))
 
 st.plotly_chart(fig)

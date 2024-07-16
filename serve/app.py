@@ -1,15 +1,6 @@
 import streamlit as st
 
-st.set_page_config(
-    layout="wide",
-    page_title="MLIP Arena",
-    page_icon=":shark:",
-    initial_sidebar_state="expanded",
-    menu_items={
-        "About": 'https://github.com/atomind-ai/mlip-arena',
-        "Report a bug": "https://github.com/atomind-ai/mlip-arena/issues/new",
-    }
-)
+
 
 # if "logged_in" not in st.session_state:
 #     st.session_state.logged_in = False
@@ -39,8 +30,8 @@ search = st.Page("tools/search.py", title="Search", icon=":material/search:")
 history = st.Page("tools/history.py", title="History", icon=":material/history:")
 ptable = st.Page("tools/ptable.py", title="Periodic table", icon=":material/gradient:")
 
-diatomics = st.Page("tasks/homonuclear-diatomics.py", title="Homonuclear diatomics", icon=":material/target:", default=True)
-stability = st.Page("tasks/stability.py", title="Stability", icon=":material/target:")
+diatomics = st.Page("tasks/homonuclear-diatomics.py", title="Homonuclear Diatomics", icon=":material/target:", default=True)
+stability = st.Page("tasks/stability.py", title="High Pressure Stability", icon=":material/target:")
 
 
 # if st.session_state.logged_in:
@@ -56,5 +47,28 @@ pg = st.navigation(
 )
 # else:
 #     pg = st.navigation([login_page])
+
+if pg in [stability]:
+    st.set_page_config(
+        layout="centered",
+        page_title="MLIP Arena",
+        page_icon=":shark:",
+        initial_sidebar_state="expanded",
+        menu_items={
+            "About": 'https://github.com/atomind-ai/mlip-arena',
+            "Report a bug": "https://github.com/atomind-ai/mlip-arena/issues/new",
+        }
+    )
+else:
+    st.set_page_config(
+        layout="wide",
+        page_title="MLIP Arena",
+        page_icon=":shark:",
+        initial_sidebar_state="expanded",
+        menu_items={
+            "About": 'https://github.com/atomind-ai/mlip-arena',
+            "Report a bug": "https://github.com/atomind-ai/mlip-arena/issues/new",
+        }
+    )
 
 pg.run()

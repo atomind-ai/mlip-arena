@@ -1,22 +1,24 @@
-
-
 MACE-MP(M):
   module: externals
   class: MACE_MP_Medium
   family: mace-mp
-  username: cyrusyc # HF username
+  username: cyrusyc
   last-update: 2024-03-25T14:30:00
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
-  datasets: # list of training datasets
+  datasets:
     - atomind/mptrj # TODO: fake HF dataset repo
   cpu-tasks:
     - alexandria
     - qmof
   gpu-tasks:
-    - diatomics
+    - homonuclear-diatomics
+    - stability
   github: https://github.com/ACEsuit/mace
   doi: https://arxiv.org/abs/2401.00096
   date: 2023-12-29
+  prediction: EFS
+  nvt: true
+  npt: true
 
 CHGNet:
   module: externals
@@ -28,7 +30,11 @@ CHGNet:
   datasets:
     - atomind/mptrj
   gpu-tasks:
-    - diatomics
+    - homonuclear-diatomics
+    - stability
+  prediction: EFSM
+  nvt: true
+  npt: true
 
 EquiformerV2(OC22):
   module: externals
@@ -40,7 +46,12 @@ EquiformerV2(OC22):
   datasets:
     - ocp
   gpu-tasks:
-    - diatomics
+    - homonuclear-diatomics
+  github: https://github.com/FAIR-Chem/fairchem
+  doi: https://arxiv.org/abs/2306.12059
+  prediction: EF
+  nvt: true
+  npt: false
 
 eSCN(OC20):
   module: externals
@@ -52,14 +63,45 @@ eSCN(OC20):
   datasets:
     - ocp
   gpu-tasks:
-    - diatomics
+    - homonuclear-diatomics
+  github: https://github.com/FAIR-Chem/fairchem
+  doi: https://arxiv.org/abs/2302.03655
+  prediction: EF
+  nvt: true
+  npt: false
 
+MACE-OFF(M):
+  module: externals
+  class: MACE_OFF_Medium
+  family: mace-off
+  username: cyrusyc
+  last-update: 2024-03-25T14:30:00
+  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  datasets:
+    - atomind/mptrj # TODO: fake HF dataset repo
+  cpu-tasks:
+    - alexandria
+    - qmof
+  gpu-tasks:
+    - homonuclear-diatomics
+  github: https://github.com/ACEsuit/mace
+  doi: https://arxiv.org/abs/2312.15211
+  date: 2023-12-29
+  prediction: EFS
+  nvt: true
+  npt: true
 
-# CHGNet:
-#   module: chgnet
-#   username: cyrusyc
-#   datetime: 2024-03-25T14:30:00
-#   datasets:
-#     - atomind/mptrj
-#   cpu-tasks:
-#     - diatomics
+ALIGNN:
+  module: externals
+  class: ALIGNN
+  family: alignn
+  username: cyrusyc
+  last-update: 2024-07-08T00:00:00
+  datetime: 2024-07-08T00:00:00
+  datasets:
+    - atomind/mptrj
+  gpu-tasks:
+    - homonuclear-diatomics
+  prediction: EFS
+  nvt: true
+  npt: true
