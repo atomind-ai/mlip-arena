@@ -1,7 +1,7 @@
 streamlit
 plotly
-numpy==1.26.4
-scipy==1.14.0
+numpy
+scipy
 ase==3.23.0
 torch==2.2.1
 pymatgen==2024.4.13
