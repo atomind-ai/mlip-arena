@@ -51,9 +51,10 @@ s = table.style.background_gradient(
 
 st.markdown(
 """
-<img src="https://raw.githubusercontent.com/atomind-ai/mlip-arena/main/mlip_arena/serve/assets/atomind.jpg" alt="MLIP Arena" style="width: 30%;"/>
-<h1 style='text-align: center;'>MLIP Arena Leaderboard</h1>
+<h1 style='text-align: center;'>⚔️ MLIP Arena Leaderboard ⚔️</h1>
 """, unsafe_allow_html=True)
+
+# st.image("")
 
 # st.markdown("# MLIP Arena Leaderboard")
 
