@@ -3,7 +3,8 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from mlip_arena.models.utils import MLIPEnum, REGISTRY
+# from mlip_arena.models.utils import MLIPEnum, REGISTRY
+from mlip_arena.models import REGISTRY
 
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
 methods = ["MACE-MP", "Equiformer", "CHGNet", "MACE-OFF", "eSCN", "ALIGNN"]
@@ -19,16 +20,16 @@ table = pd.DataFrame(columns=[
     "Prediction",
     "NVT",
     "NPT",
-    "Last updated",
     "Code",
-    "Paper"
+    "Paper",
+    "Last updated",
     ])
 
-for model in MLIPEnum:
-    rows = df[df["method"] == model.name]
-    metadata = REGISTRY.get(model.name, {})
+for model in REGISTRY:
+    rows = df[df["method"] == model]
+    metadata = REGISTRY.get(model, {})
     new_row = {
-        "Model": model.name,
+        "Model": model,
         "Supported elements": len(rows["name"].unique()),
         # "No. of reversed forces": None,  # Replace with actual logic if available
         # "Energy-consistent forces": None,  # Replace with actual logic if available
