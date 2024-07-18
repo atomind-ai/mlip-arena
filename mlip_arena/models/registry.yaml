@@ -13,6 +13,7 @@ MACE-MP(M):
   gpu-tasks:
     - homonuclear-diatomics
     - stability
+    - combustion
   github: https://github.com/ACEsuit/mace
   doi: https://arxiv.org/abs/2401.00096
   date: 2023-12-29
@@ -32,6 +33,7 @@ CHGNet:
   gpu-tasks:
     - homonuclear-diatomics
     - stability
+    - combustion
   prediction: EFSM
   nvt: true
   npt: true
@@ -47,6 +49,7 @@ EquiformerV2(OC22):
     - ocp
   gpu-tasks:
     - homonuclear-diatomics
+    - combustion
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2306.12059
   prediction: EF
@@ -64,6 +67,7 @@ eSCN(OC20):
     - ocp
   gpu-tasks:
     - homonuclear-diatomics
+    - combustion
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2302.03655
   prediction: EF

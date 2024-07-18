@@ -30,25 +30,25 @@ search = st.Page("tools/search.py", title="Search", icon=":material/search:")
 history = st.Page("tools/history.py", title="History", icon=":material/history:")
 ptable = st.Page("tools/ptable.py", title="Periodic table", icon=":material/gradient:")
 
-diatomics = st.Page("tasks/homonuclear-diatomics.py", title="Homonuclear Diatomics", icon=":material/target:", default=True)
-stability = st.Page("tasks/stability.py", title="High Pressure Stability", icon=":material/target:")
+diatomics = st.Page("tasks/homonuclear-diatomics.py", title="Homonuclear diatomics", icon=":material/target:", default=True)
+stability = st.Page("tasks/stability.py", title="High pressure stability", icon=":material/target:")
+combustion = st.Page("tasks/combustion.py", title="Combustion", icon=":material/target:")
 
 
 # if st.session_state.logged_in:
 pg = st.navigation(
     {
         # "Account": [logout_page],
-        # "Reports": [dashboard, bugs, alerts],
-        # "Tools": [search, history, ptable],
         "": [leaderboard],
-        "Tasks": [diatomics, stability],
+        "Fundamentals": [diatomics],
+        "Molecular Dynamics": [stability, combustion],
         "Tools": [ptable],
     }
 )
 # else:
 #     pg = st.navigation([login_page])
 
-if pg in [stability]:
+if pg in [stability, combustion]:
     st.set_page_config(
         layout="centered",
         page_title="MLIP Arena",
