@@ -5,7 +5,7 @@ scipy
 ase==3.23.0
 torch==2.2.1
 pymatgen==2024.4.13
-bokeh==2.4.3
+bokeh
 statsmodels==0.14.2
 # py3Dmol==2.0.0.post2
 # stmol==0.0.9

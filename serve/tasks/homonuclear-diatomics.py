@@ -23,7 +23,7 @@ The potential energy curves of homonuclear diatomics are the most fundamental in
 st.markdown("### Methods")
 container = st.container(border=True)
 valid_models = [model for model, metadata in REGISTRY.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
-methods = container.multiselect("MLIPs", valid_models, ["MACE-MP(M)", "EquiformerV2(OC22)", "CHGNet", "eSCN(OC20)", "ALIGNN"])
+methods = container.multiselect("MLIPs", valid_models, ["EquiformerV2(OC22)", "eSCN(OC20)", "CHGNet", "M3GNet",  "MACE-MP(M)"])
 dft_methods = container.multiselect("DFT Methods", ["GPAW"], [])
 
 st.markdown("### Settings")
@@ -60,6 +60,9 @@ df = pd.concat(dfs, ignore_index=True)
 df.drop_duplicates(inplace=True, subset=["name", "method"])
 
 method_color_mapping = {method: color_sequence[i % len(color_sequence)] for i, method in enumerate(df["method"].unique())}
+
+# img_dir = Path('./images')
+# img_dir.mkdir(exist_ok=True)
 
 for i, symbol in enumerate(chemical_symbols[1:]):
 
@@ -162,7 +165,7 @@ for i, symbol in enumerate(chemical_symbols[1:]):
             yaxis=dict(
                 title=dict(text="Energy [eV]"),
                 side="left",
-                range=[elo, 2*(abs(elo))],
+                range=[elo, 1.5*(abs(elo))],
             )
         )
 
@@ -172,10 +175,11 @@ for i, symbol in enumerate(chemical_symbols[1:]):
             yaxis2=dict(
                 title=dict(text="Force [eV/Å]"),
                 side="right",
-                range=[flo, 1.5*abs(flo)],
+                range=[flo, 1.0*abs(flo)],
                 overlaying="y",
                 tickmode="sync",
             ),
         )
 
     cols[i % ncols].plotly_chart(fig, use_container_width=True)
+    # fig.write_image(format='svg', file=img_dir / f"{name}.svg")
