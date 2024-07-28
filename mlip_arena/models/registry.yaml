@@ -71,6 +71,24 @@ EquiformerV2(OC22):
   nvt: true
   npt: false
 
+EquiformerV2(OC20):
+  module: externals
+  class: EquiformerV2OC20
+  family: equiformer
+  username: cyrusyc
+  last-update: 2024-07-08T00:00:00
+  datetime: 2024-07-08T00:00:00
+  datasets:
+    - ocp
+  gpu-tasks:
+    - homonuclear-diatomics
+    - combustion
+  github: https://github.com/FAIR-Chem/fairchem
+  doi: https://arxiv.org/abs/2306.12059
+  prediction: EF
+  nvt: true
+  npt: false
+
 eSCN(OC20):
   module: externals
   class: eSCN

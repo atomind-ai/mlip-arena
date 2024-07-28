@@ -173,6 +173,22 @@ class EquiformerV2(OCPCalculator):
             force=atoms.get_forces(),
         )
 
+class EquiformerV2OC20(OCPCalculator):
+    def __init__(
+        self,
+        model_name="EquiformerV2-31M-S2EF-OC20-All+MD",
+        local_cache="/tmp/ocp/",
+        cpu=False,
+        seed=0,
+        **kwargs,
+    ) -> None:
+        super().__init__(
+            model_name=model_name,
+            local_cache=local_cache,
+            cpu=cpu,
+            seed=0,
+            **kwargs,
+        )
 
 class eSCN(OCPCalculator):
     def __init__(
