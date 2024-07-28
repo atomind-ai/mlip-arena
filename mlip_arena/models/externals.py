@@ -2,6 +2,8 @@ import os
 import urllib
 from typing import Literal
 
+import matgl
+import requests
 import torch
 from alignn.ff.ff import AlignnAtomwiseCalculator, get_figshare_model_ff
 from ase import Atoms
@@ -9,6 +11,8 @@ from chgnet.model.dynamics import CHGNetCalculator
 from chgnet.model.model import CHGNet
 from fairchem.core import OCPCalculator
 from mace.calculators import MACECalculator
+from matgl.ext.ase import PESCalculator
+from sevenn.sevennet_calculator import SevenNetCalculator
 
 
 # Avoid circular import
@@ -74,6 +78,7 @@ class MACE_MP_Medium(MACECalculator):
             model_paths=model, device=device, default_dtype=default_dtype, **kwargs
         )
 
+
 class MACE_OFF_Medium(MACECalculator):
     def __init__(self, device=None, default_dtype="float32", **kwargs):
         checkpoint_url = "https://github.com/ACEsuit/mace-off/raw/main/mace_off23/MACE-OFF23_medium.model?raw=true"
@@ -131,6 +136,17 @@ class CHGNet(CHGNetCalculator):
 
         # for ase.io.write compatibility
         self.results.pop("crystal_fea", None)
+
+
+class M3GNet(PESCalculator):
+    def __init__(
+        self,
+        state_attr: torch.Tensor | None = None,
+        stress_weight: float = 1.0,
+        **kwargs,
+    ) -> None:
+        potential = matgl.load_model("M3GNet-MP-2021.2.8-PES")
+        super().__init__(potential, state_attr, stress_weight, **kwargs)
 
 
 class EquiformerV2(OCPCalculator):
@@ -191,3 +207,19 @@ class ALIGNN(AlignnAtomwiseCalculator):
 
     def calculate(self, atoms, properties=None, system_changes=None):
         super().calculate(atoms, properties, system_changes)
+
+
+class SevenNet(SevenNetCalculator):
+    def __init__(self, device=None, **kwargs):
+        url = (
+            "https://github.com/MDIL-SNU/SevenNet/raw/main/pretrained_potentials"
+            "/SevenNet_0__11July2024/checkpoint_sevennet_0.pth"
+        )
+        ckpt_cache = "/tmp/sevennet_checkpoint.pth.tar"
+        response = requests.get(url, timeout=20)
+        with open(ckpt_cache, mode="wb") as file:
+            file.write(response.content)
+
+        device = device or get_freer_device()
+
+        super().__init__(ckpt_cache, device=device, **kwargs)
