@@ -50,14 +50,17 @@ s = table.style.background_gradient(
     vmin=0, vmax=120
 )
 
+st.warning("MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care.", icon="⚠️")
+st.info("Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.", icon="🤗")
+
 st.markdown(
 """
 <h1 style='text-align: center;'>⚔️ MLIP Arena Leaderboard ⚔️</h1>
+
+MLIP Arena is a platform for benchmarking foundation machine learning interatomic potentials (MLIPs).
 """, unsafe_allow_html=True)
 
-# st.image("")
 
-# st.markdown("# MLIP Arena Leaderboard")
 
 st.dataframe(
     s,
