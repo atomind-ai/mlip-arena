@@ -57,10 +57,12 @@ st.markdown(
 """
 <h1 style='text-align: center;'>⚔️ MLIP Arena Leaderboard ⚔️</h1>
 
-MLIP Arena is a platform for benchmarking foundation machine learning interatomic potentials (MLIPs).
+MLIP Arena is a platform for benchmarking foundation machine learning interatomic potentials (MLIPs), mainly for disclosing the learned physics and chemistry of the models and their performance on molecular dynamics (MD) simulations.
+
+The benchmarks are NOT designed to compare model architectures, but to evaluate the readiness and reliability of the open-source, open-weight models to reproduce the qualitatively or quantitatively correct physics.
 """, unsafe_allow_html=True)
 
-
+st.header("Summary", divider=True)
 
 st.dataframe(
     s,
