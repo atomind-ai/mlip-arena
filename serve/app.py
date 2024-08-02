@@ -1,7 +1,5 @@
 import streamlit as st
 
-
-
 # if "logged_in" not in st.session_state:
 #     st.session_state.logged_in = False
 
@@ -19,7 +17,7 @@ import streamlit as st
 # logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 
 leaderboard = st.Page(
-    "models/leaderboard.py", title="Leaderboard", icon=":material/trophy:"
+    "leaderboard.py", title="Leaderboard", icon=":material/trophy:"
 )
 # bugs = st.Page("models/bugs.py", title="Bug reports", icon=":material/bug_report:")
 # alerts = st.Page(
@@ -55,7 +53,7 @@ if pg in [stability, combustion]:
         page_icon=":shark:",
         initial_sidebar_state="expanded",
         menu_items={
-            "About": 'https://github.com/atomind-ai/mlip-arena',
+            "About": "https://github.com/atomind-ai/mlip-arena",
             "Report a bug": "https://github.com/atomind-ai/mlip-arena/issues/new",
         }
     )
@@ -66,9 +64,11 @@ else:
         page_icon=":shark:",
         initial_sidebar_state="expanded",
         menu_items={
-            "About": 'https://github.com/atomind-ai/mlip-arena',
+            "About": "https://github.com/atomind-ai/mlip-arena",
             "Report a bug": "https://github.com/atomind-ai/mlip-arena/issues/new",
         }
     )
+
+st.toast("MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care. Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.", icon="🍞")
 
 pg.run()
