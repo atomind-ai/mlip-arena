@@ -7,8 +7,9 @@ import streamlit as st
 from mlip_arena.models import REGISTRY
 
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
-methods = ["MACE-MP", "Equiformer", "CHGNet", "MACE-OFF", "eSCN", "ALIGNN"]
-dfs = [pd.read_json(DATA_DIR / method.lower() /  "homonuclear-diatomics.json") for method in methods]
+# methods = ["MACE-MP", "Equiformer", "CHGNet", "MACE-OFF", "eSCN", "ALIGNN"]
+
+dfs = [pd.read_json(DATA_DIR / REGISTRY[model].get("family") /  "homonuclear-diatomics.json") for model in REGISTRY]
 df = pd.concat(dfs, ignore_index=True)
 
 
@@ -58,8 +59,7 @@ st.markdown(
 <h1 style='text-align: center;'>⚔️ MLIP Arena Leaderboard ⚔️</h1>
 
 MLIP Arena is a platform for benchmarking foundation machine learning interatomic potentials (MLIPs), mainly for disclosing the learned physics and chemistry of the models and their performance on molecular dynamics (MD) simulations.
-
-The benchmarks are NOT designed to compare model architectures, but to evaluate the readiness and reliability of the open-source, open-weight models to reproduce the qualitatively or quantitatively correct physics.
+The benchmarks are designed to evaluate the readiness and reliability of open-source, open-weight models to reproduce the qualitatively or quantitatively correct physics.
 """, unsafe_allow_html=True)
 
 st.header("Summary", divider=True)
