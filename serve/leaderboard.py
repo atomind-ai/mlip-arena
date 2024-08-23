@@ -3,11 +3,9 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-# from mlip_arena.models.utils import MLIPEnum, REGISTRY
 from mlip_arena.models import REGISTRY
 
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
-# methods = ["MACE-MP", "Equiformer", "CHGNet", "MACE-OFF", "eSCN", "ALIGNN"]
 
 dfs = [pd.read_json(DATA_DIR / REGISTRY[model].get("family") /  "homonuclear-diatomics.json") for model in REGISTRY]
 df = pd.concat(dfs, ignore_index=True)
@@ -15,7 +13,7 @@ df = pd.concat(dfs, ignore_index=True)
 
 table = pd.DataFrame(columns=[
     "Model",
-    "Supported elements",
+    "Element Coverage",
     # "No. of reversed forces",
     # "Energy-consistent forces",
     "Prediction",
@@ -31,7 +29,7 @@ for model in REGISTRY:
     metadata = REGISTRY.get(model, {})
     new_row = {
         "Model": model,
-        "Supported elements": len(rows["name"].unique()),
+        "Element Coverage": len(rows["name"].unique()),
         # "No. of reversed forces": None,  # Replace with actual logic if available
         # "Energy-consistent forces": None,  # Replace with actual logic if available
         "Prediction": metadata.get("prediction", None),
@@ -47,7 +45,7 @@ table.set_index("Model", inplace=True)
 
 s = table.style.background_gradient(
     cmap="PuRd",
-    subset=["Supported elements"],
+    subset=["Element Coverage"],
     vmin=0, vmax=120
 )
 
@@ -62,23 +60,21 @@ MLIP Arena is a platform for benchmarking foundation machine learning interatomi
 The benchmarks are designed to evaluate the readiness and reliability of open-source, open-weight models to reproduce the qualitatively or quantitatively correct physics.
 """, unsafe_allow_html=True)
 
-st.header("Summary", divider=True)
+# st.header("Summary", divider=True)
 
 st.dataframe(
     s,
     use_container_width=True,
     column_config={
         "Code": st.column_config.LinkColumn(
-            # "GitHub",
-            # help="The top trending Streamlit apps",
             # validate="^https://[a-z]+\.streamlit\.app$",
-            max_chars=100,
-            display_text="GitHub",
+            width="medium",
+            display_text="Link",
         ),
         "Paper": st.column_config.LinkColumn(
             # validate="^https://[a-z]+\.streamlit\.app$",
-            max_chars=100,
-            display_text="arXiv",
+            width="medium",
+            display_text="Link",
         ),
     },
 )

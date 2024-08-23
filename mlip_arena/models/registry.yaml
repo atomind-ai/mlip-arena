@@ -34,6 +34,8 @@ CHGNet:
     - homonuclear-diatomics
     - stability
     - combustion
+  github: https://github.com/CederGroupHub/chgnet
+  doi: https://doi.org/10.1038/s42256-023-00716-3
   prediction: EFSM
   nvt: true
   npt: true
@@ -49,6 +51,8 @@ M3GNet:
     - atomind/mptrj
   gpu-tasks:
     - homonuclear-diatomics
+  github: https://github.com/materialsvirtuallab/matgl
+  doi: https://doi.org/10.1038/s43588-022-00349-3
   prediction: EFS
   nvt: true
   npt: true
@@ -142,6 +146,8 @@ ALIGNN:
   prediction: EFS
   nvt: true
   npt: true
+  github: https://github.com/usnistgov/alignn
+  doi: https://doi.org/10.1038/s41524-021-00650-1
 
 SevenNet:
   module: externals
