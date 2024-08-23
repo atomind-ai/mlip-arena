@@ -5,7 +5,7 @@ from typing import Literal
 import matgl
 import requests
 import torch
-from alignn.ff.ff import AlignnAtomwiseCalculator, get_figshare_model_ff
+from alignn.ff.ff import AlignnAtomwiseCalculator, get_figshare_model_ff, default_path
 from ase import Atoms
 from chgnet.model.dynamics import CHGNetCalculator
 from chgnet.model.model import CHGNet
@@ -219,7 +219,7 @@ class ALIGNN(AlignnAtomwiseCalculator):
     def __init__(self, dir_path: str = "/tmp/alignn/", device=None, **kwargs) -> None:
         model_path = get_figshare_model_ff(dir_path=dir_path)
         device = device or get_freer_device()
-        super().__init__(model_path=model_path, device=device, **kwargs)
+        super().__init__(path=dir_path, device=device, **kwargs)
 
     def calculate(self, atoms, properties=None, system_changes=None):
         super().calculate(atoms, properties, system_changes)
@@ -227,15 +227,15 @@ class ALIGNN(AlignnAtomwiseCalculator):
 
 class SevenNet(SevenNetCalculator):
     def __init__(self, device=None, **kwargs):
-        url = (
-            "https://github.com/MDIL-SNU/SevenNet/raw/main/pretrained_potentials"
-            "/SevenNet_0__11July2024/checkpoint_sevennet_0.pth"
-        )
-        ckpt_cache = "/tmp/sevennet_checkpoint.pth.tar"
-        response = requests.get(url, timeout=20)
-        with open(ckpt_cache, mode="wb") as file:
-            file.write(response.content)
+        # url = (
+        #     "https://github.com/MDIL-SNU/SevenNet/raw/main/pretrained_potentials"
+        #     "/SevenNet_0__11July2024/checkpoint_sevennet_0.pth"
+        # )
+        # ckpt_cache = "/tmp/sevennet_checkpoint.pth.tar"
+        # response = requests.get(url)
+        # with open(ckpt_cache, mode="wb") as file:
+        #     file.write(response.content)
 
         device = device or get_freer_device()
 
-        super().__init__(ckpt_cache, device=device, **kwargs)
+        super().__init__("7net-0", device=device, **kwargs)
