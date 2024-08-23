@@ -4,7 +4,7 @@ MLIP Arena is an open-source platform for benchmarking machine learning interato
 
 ## Contribute
 
-MLIP Arena is now in pre-alpha. If you're interested in joining the effort, please reach out to Yuan at [cyruscy@berkeley.edu](mailto:cyrusyc@berkeley.edu). 
+MLIP Arena is now in pre-alpha. If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). 
 
 ### Add new MLIP models
 
