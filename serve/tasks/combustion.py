@@ -21,7 +21,7 @@ st.markdown("### Methods")
 container = st.container(border=True)
 valid_models = [model for model, metadata in REGISTRY.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 
-models = container.multiselect("MLIPs", valid_models, ["MACE-MP(M)", "CHGNet", "EquiformerV2(OC22)"])
+models = container.multiselect("MLIPs", valid_models, ["MACE-MP(M)", "CHGNet", "EquiformerV2(OC22)", "SevenNet"])
 
 st.markdown("### Settings")
 vis = st.container(border=True)

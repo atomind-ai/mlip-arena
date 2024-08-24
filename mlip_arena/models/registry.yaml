@@ -36,6 +36,7 @@ CHGNet:
     - combustion
   github: https://github.com/CederGroupHub/chgnet
   doi: https://doi.org/10.1038/s42256-023-00716-3
+  date: 2023-02-28
   prediction: EFSM
   nvt: true
   npt: true
@@ -54,6 +55,7 @@ M3GNet:
     - combustion
   github: https://github.com/materialsvirtuallab/matgl
   doi: https://doi.org/10.1038/s43588-022-00349-3
+  date: 2022-02-05
   prediction: EFS
   nvt: true
   npt: true
@@ -72,6 +74,7 @@ EquiformerV2(OC22):
     - combustion
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2306.12059
+  date: 2023-06-21
   prediction: EF
   nvt: true
   npt: false
@@ -90,6 +93,7 @@ EquiformerV2(OC20):
     - combustion
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2306.12059
+  date: 2023-06-21
   prediction: EF
   nvt: true
   npt: false
@@ -108,6 +112,7 @@ eSCN(OC20):
     - combustion
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2302.03655
+  date: 2023-02-07
   prediction: EF
   nvt: true
   npt: false
@@ -128,7 +133,7 @@ MACE-OFF(M):
     - homonuclear-diatomics
   github: https://github.com/ACEsuit/mace
   doi: https://arxiv.org/abs/2312.15211
-  date: 2023-12-29
+  date: 2023-12-23
   prediction: EFS
   nvt: true
   npt: true
@@ -150,6 +155,7 @@ ALIGNN:
   npt: true
   github: https://github.com/usnistgov/alignn
   doi: https://doi.org/10.1038/s41524-021-00650-1
+  date: 2021-11-15
 
 SevenNet:
   module: externals
@@ -168,7 +174,7 @@ SevenNet:
     - combustion
   github: https://github.com/MDIL-SNU/SevenNet
   doi: https://doi.org/10.1021/acs.jctc.4c00190
-  date: 
+  date: 2024-02-06
   prediction: EFS
   nvt: true
   npt: true
