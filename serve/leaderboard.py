@@ -21,7 +21,7 @@ table = pd.DataFrame(columns=[
     "NPT",
     "Code",
     "Paper",
-    "Last updated",
+    "First Release",
     ])
 
 for model in REGISTRY:
@@ -37,6 +37,7 @@ for model in REGISTRY:
         "NPT": "✅" if metadata.get("npt", False) else "❌",
         "Code": metadata.get("github", None) if metadata else None,
         "Paper": metadata.get("doi", None) if metadata else None,
+        "First Release": metadata.get("date", None),
     }
     table = pd.concat([table, pd.DataFrame([new_row])], ignore_index=True)
 

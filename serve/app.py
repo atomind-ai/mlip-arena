@@ -40,7 +40,7 @@ pg = st.navigation(
         "": [leaderboard],
         "Fundamentals": [diatomics],
         "Molecular Dynamics": [stability, combustion],
-        "Tools": [ptable],
+        # "Tools": [ptable],
     }
 )
 # else:
