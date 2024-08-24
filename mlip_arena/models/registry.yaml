@@ -51,6 +51,7 @@ M3GNet:
     - atomind/mptrj
   gpu-tasks:
     - homonuclear-diatomics
+    - combustion
   github: https://github.com/materialsvirtuallab/matgl
   doi: https://doi.org/10.1038/s43588-022-00349-3
   prediction: EFS
@@ -143,6 +144,7 @@ ALIGNN:
     - atomind/mptrj
   gpu-tasks:
     - homonuclear-diatomics
+    - combustion
   prediction: EFS
   nvt: true
   npt: true
@@ -163,6 +165,7 @@ SevenNet:
     - qmof
   gpu-tasks:
     - homonuclear-diatomics
+    - combustion
   github: https://github.com/MDIL-SNU/SevenNet
   doi: https://doi.org/10.1021/acs.jctc.4c00190
   date: 
