@@ -1,12 +1,9 @@
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import plotly.colors as pcolors
-import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from scipy.optimize import curve_fit
 
 from mlip_arena.models import REGISTRY
 
@@ -21,7 +18,7 @@ st.markdown("### Methods")
 container = st.container(border=True)
 valid_models = [model for model, metadata in REGISTRY.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 
-models = container.multiselect("MLIPs", valid_models, ["MACE-MP(M)", "CHGNet", "EquiformerV2(OC22)", "SevenNet"])
+models = container.multiselect("MLIPs", valid_models, ["MACE-MP(M)", "CHGNet", "M3GNet", "EquiformerV2(OC22)", "SevenNet"])
 
 st.markdown("### Settings")
 vis = st.container(border=True)
@@ -69,7 +66,7 @@ for method in df["method"].unique():
         go.Scatter(
             x=row["timesteps"],
             y=row["nproducts"],
-            mode='lines',
+            mode="lines",
             name=method,
             line=dict(color=method_color_mapping[method]),
             showlegend=True,
@@ -84,7 +81,7 @@ fig.update_layout(
 
 st.plotly_chart(fig)
 
-# tempearture 
+# tempearture
 
 fig = go.Figure()
 
@@ -94,7 +91,7 @@ for method in df["method"].unique():
         go.Scatter(
             x=row["timesteps"],
             y=row["temperatures"],
-            mode='markers',
+            mode="markers",
             name=method,
             line=dict(color=method_color_mapping[method]),
             showlegend=True,
@@ -106,7 +103,7 @@ fig.add_trace(
     go.Line(
         x=[0, target_steps/3, target_steps/3*2, target_steps],
         y=[300, 3000, 3000, 300],
-        mode='lines',
+        mode="lines",
         name="Target",
         line=dict(
             dash="dash",
@@ -127,6 +124,27 @@ fig.update_layout(
         tickmode="sync"
     )
     # template="plotly_dark",
+)
+
+st.plotly_chart(fig)
+
+# MD runtime speed
+
+fig = go.Figure()
+
+fig.add_trace(
+    go.Bar(
+        x=df["method"],
+        y=df["steps_per_second"],
+        marker_color="blue",
+        opacity=0.75,
+    )
+)
+
+fig.update_layout(
+    title="MD runtime speed (on single A100 GPU)",
+    xaxis_title="Method",
+    yaxis_title="Steps per second",
 )
 
 st.plotly_chart(fig)
