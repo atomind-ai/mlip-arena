@@ -132,19 +132,22 @@ st.plotly_chart(fig)
 
 fig = go.Figure()
 
+df = df.sort_values("steps_per_second", ascending=True)
+
 fig.add_trace(
     go.Bar(
-        x=df["method"],
-        y=df["steps_per_second"],
-        marker_color="blue",
+        x=df["steps_per_second"],
+        y=df["method"],
         opacity=0.75,
+        orientation="h",
+        marker=dict(color=[method_color_mapping[method] for method in df["method"]]),
     )
 )
 
 fig.update_layout(
     title="MD runtime speed (on single A100 GPU)",
-    xaxis_title="Method",
-    yaxis_title="Steps per second",
+    xaxis_title="Steps per second",
+    yaxis_title="Method",
 )
 
 st.plotly_chart(fig)
