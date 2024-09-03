@@ -74,7 +74,7 @@ for method in df["method"].unique():
     )
 
 fig.update_layout(
-    title="Hydrogen Combusiton (2H2 + O2 -> 2H2O, 64 units)",
+    title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
     xaxis_title="Timesteps",
     yaxis_title="Number of water molecules",
 )
@@ -113,7 +113,7 @@ fig.add_trace(
 )
 
 fig.update_layout(
-    title="Hydrogen Combusiton (2H2 + O2 -> 2H2O, 64 units)",
+    title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
     xaxis_title="Timesteps",
     yaxis_title="Temperatures",
     yaxis2=dict(
