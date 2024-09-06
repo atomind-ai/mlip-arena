@@ -1,4 +1,8 @@
-# mlip-arena
+<div align="center">
+    <h1>MLIP Arena</h1>
+    <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>
+</div>
+
 
 > [!CAUTION]
 > MLIP Arena is currently in pre-alpha. The results are not stable. Please intepret them with care. 
