@@ -5,6 +5,9 @@ on:
     branches:
       - main  # Trigger on push to main branch
 
+permissions:
+  contents: write  # Ensure write access to push tags
+
 jobs:
   release:
     name: Create GitHub Release
