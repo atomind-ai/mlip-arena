@@ -4,7 +4,7 @@ build-backend="flit_core.buildapi"
 
 [project]
 name="mlip_arena"
-version="0.0.1-pre-alpha"
+version="0.0.1a0"
 authors=[
     {name="Yuan Chiang", email="cyrusyc@lbl.gov"},
 ]
