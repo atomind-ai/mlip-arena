@@ -80,12 +80,20 @@ jobs:
       with:
         python-version: '3.x'
 
-    # Step 3: Install Flit (for publishing)
+    # Step 3: Install Flit
     - name: Install Flit
       run: pip install flit
 
-    # Step 4: Publish to PyPI
-    - name: Publish to PyPI
-      run: flit publish
-      env:
-        FLIT_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+    # Step 4: Create .pypirc file
+    - name: Create .pypirc file
+      run: |
+        mkdir -p ~/.config/pypi
+        echo "[pypi]" > ~/.config/pypi/.pypirc
+        echo "username = __token__" >> ~/.config/pypi/.pypirc
+        echo "password = ${{ secrets.PYPI_API_TOKEN }}" >> ~/.config/pypi/.pypirc
+
+    # Step 5: Build and publish package
+    - name: Build and Publish Package
+      run: |
+        flit build
+        flit publish
