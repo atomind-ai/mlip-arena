@@ -35,12 +35,12 @@ jobs:
         VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-    # Step 5: Check if tag already exists
-    - name: Check if tag exists
+    # Step 5: Check if tag exists on remote
+    - name: Check if tag exists on remote
       id: check_tag
       run: |
-        if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
-          echo "Tag v${{ env.VERSION }} already exists."
+        if git ls-remote --tags origin | grep "refs/tags/v${{ env.VERSION }}"; then
+          echo "Tag v${{ env.VERSION }} already exists on remote."
           exit 0
         fi
 
