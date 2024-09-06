@@ -63,3 +63,29 @@ jobs:
         tag_name: "v${{ env.VERSION }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: release  # This job runs after the release job
+
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2: Set up Python
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    # Step 3: Install Flit (for publishing)
+    - name: Install Flit
+      run: pip install flit
+
+    # Step 4: Publish to PyPI
+    - name: Publish to PyPI
+      run: flit publish
+      env:
+        FLIT_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
