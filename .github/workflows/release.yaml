@@ -87,10 +87,9 @@ jobs:
     # Step 4: Create .pypirc file
     - name: Create .pypirc file
       run: |
-        mkdir -p ~/.config/pypi
-        echo "[pypi]" > ~/.config/pypi/.pypirc
-        echo "username = __token__" >> ~/.config/pypi/.pypirc
-        echo "password = ${{ secrets.PYPI_API_TOKEN }}" >> ~/.config/pypi/.pypirc
+        echo "[pypi]" > ~/.pypirc
+        echo "username = __token__" >> ~/.pypirc
+        echo "password = ${{ secrets.PYPI_API_TOKEN }}" >> ~/.pypirc
 
     # Step 5: Build and publish package
     - name: Build and Publish Package
