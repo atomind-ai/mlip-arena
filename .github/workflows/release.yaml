@@ -41,11 +41,14 @@ jobs:
       run: |
         if git ls-remote --tags origin | grep "refs/tags/v${{ env.VERSION }}"; then
           echo "Tag v${{ env.VERSION }} already exists on remote."
-          exit 0
+          echo "tag_exists=true" >> $GITHUB_ENV
+        else
+          echo "tag_exists=false" >> $GITHUB_ENV
         fi
 
     # Step 6: Create and push a new tag (if it doesn't exist)
     - name: Create Git tag
+      if: env.tag_exists == 'false'
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -54,6 +57,7 @@ jobs:
 
     # Step 7: Create GitHub release (if tag didn't exist)
     - name: Create GitHub Release
+      if: env.tag_exists == 'false'
       uses: softprops/action-gh-release@v1
       with:
         tag_name: "v${{ env.VERSION }}"
