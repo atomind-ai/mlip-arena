@@ -80,19 +80,51 @@ jobs:
       with:
         python-version: '3.x'
 
-    # Step 3: Install Flit
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: pip install toml
+
+    # Step 4: Extract current version from pyproject.toml
+    - name: Extract current version
+      id: get_version
+      run: |
+        VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    # Step 5: Get the latest Git tag
+    - name: Get latest tag
+      id: get_latest_tag
+      run: |
+        LATEST_TAG=$(git describe --tags --abbrev=0)
+        echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+
+    # Step 6: Compare current version with the latest tag
+    - name: Check if version is bumped
+      id: check_version
+      run: |
+        if [ "v${{ env.VERSION }}" = "${{ env.LATEST_TAG }}" ]; then
+          echo "Version not bumped. Exiting."
+          echo "version_bumped=false" >> $GITHUB_ENV
+        else
+          echo "Version bumped. Proceeding."
+          echo "version_bumped=true" >> $GITHUB_ENV
+
+    # Step 7: Install Flit (only if version bumped)
     - name: Install Flit
+      if: env.version_bumped == 'true'
       run: pip install flit
 
-    # Step 4: Create .pypirc file
+    # Step 8: Create .pypirc file (only if version bumped)
     - name: Create .pypirc file
+      if: env.version_bumped == 'true'
       run: |
         echo "[pypi]" > ~/.pypirc
         echo "username = __token__" >> ~/.pypirc
         echo "password = ${{ secrets.PYPI_API_TOKEN }}" >> ~/.pypirc
 
-    # Step 5: Build and publish package
+    # Step 9: Build and publish package (only if version bumped)
     - name: Build and Publish Package
+      if: env.version_bumped == 'true'
       run: |
         flit build
         flit publish
