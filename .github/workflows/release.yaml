@@ -82,7 +82,7 @@ jobs:
 
     # Step 3: Install dependencies
     - name: Install dependencies
-      run: pip install toml
+      run: pip install toml requests
 
     # Step 4: Extract current version from pyproject.toml
     - name: Extract current version
