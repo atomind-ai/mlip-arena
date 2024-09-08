@@ -15,11 +15,7 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-
-      # Check out the branch you want to push (e.g., space)
-      # - name: Checkout space branch
-      #   run: git checkout space
-
+          
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
