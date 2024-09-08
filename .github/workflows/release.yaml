@@ -102,7 +102,7 @@ jobs:
     - name: Check if version is bumped
       id: check_version
       run: |
-        if [ "v${{ env.VERSION }}" = "${{ env.LATEST_TAG }}" ]; then
+        if [ "v${{ env.VERSION }}" = "${{ env.LATEST_PYPI_VERSION }}" ]; then
           echo "Version not bumped. Exiting."
           echo "version_bumped=false" >> $GITHUB_ENV
         else
