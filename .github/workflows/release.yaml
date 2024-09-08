@@ -95,7 +95,7 @@ jobs:
     - name: Get latest version from PyPI
       id: get_pypi_version
       run: |
-        LATEST_PYPI_VERSION=$(python -c "import request, toml; PACKAGE_NAME = toml.load('pyproject.toml')['project']['name'])";  response = requests.get(f'https://pypi.org/pypi/{PACKAGE_NAME}/json'); print(response.json()['info']['version'])")
+        LATEST_PYPI_VERSION=$(python -c "import request, toml; PACKAGE_NAME = toml.load('pyproject.toml')['project']['name']);  response = requests.get(f'https://pypi.org/pypi/{PACKAGE_NAME}/json'); print(response.json()['info']['version'])")
         echo "LATEST_PYPI_VERSION=$LATEST_PYPI_VERSION" >> $GITHUB_ENV
 
     # Step 6: Compare current version with the latest tag
