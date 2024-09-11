@@ -30,6 +30,7 @@ dependencies=[
     "torch",
     "torch_dftd>=0.4.0",
     "huggingface_hub",
+    "datasets",
     "torch-geometric",
     "safetensors",
     "pymatgen"

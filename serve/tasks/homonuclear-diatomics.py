@@ -30,7 +30,7 @@ valid_models = [
 mlip_methods = container.multiselect(
     "MLIPs",
     valid_models,
-    ["EquiformerV2(OC22)", "CHGNet", "M3GNet", "SevenNet", "MACE-MP(M)"],
+    ["EquiformerV2(OC22)", "CHGNet", "M3GNet", "SevenNet", "MACE-MP(M)", "ORB"],
 )
 dft_methods = container.multiselect("DFT Methods", ["GPAW"], [])
 
@@ -171,6 +171,16 @@ for i, symbol in enumerate(chemical_symbols[1:]):
 
     fig.update_layout(
         showlegend=True,
+        legend=dict(
+            orientation="v",
+            x=0.95,
+            xanchor="right",
+            y=1,
+            yanchor="top",
+            bgcolor="rgba(0, 0, 0, 0)"
+            # entrywidth=0.3,
+            # entrywidthmode='fraction',
+        ),
         title_text=f"{name}",
         title_x=0.5,
     )
