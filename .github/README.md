@@ -26,14 +26,16 @@ If you have pretrained MLIP models that you would like to contribute to the MLIP
 2. Follow the template to code the I/O interface for your model [here](../mlip_arena/models/README.md). 
 3. Update model [registry](../mlip_arena/models/registry.yaml) with metadata
 
-> [!NOTE] CPU benchmarking will be performed automatically. Due to the limited amount GPU compute, if you would like to be considered for GPU benchmarking, please create a pull request to demonstrate the offline performance of your model (published paper or preprint). We will review and select the models to be benchmarked on GPU.
+> [!NOTE] 
+> CPU benchmarking will be performed automatically. Due to the limited amount GPU compute, if you would like to be considered for GPU benchmarking, please create a pull request to demonstrate the offline performance of your model (published paper or preprint). We will review and select the models to be benchmarked on GPU.
 
 #### External ASE Calculator (easy)
 
 1. Implement new ASE Calculator class in [mlip_arena/models/external.py](../mlip_arena/models/externals.py). 
 2. Name your class with awesome model name and add the same name to [registry](../mlip_arena/models/registry.yaml) with metadata.
 
-> [!CAUTION] Remove unneccessary outputs under `results` class attributes to avoid error for MD simulations. Please refer to other class definition for example.
+> [!CAUTION] 
+> Remove unneccessary outputs under `results` class attributes to avoid error for MD simulations. Please refer to other class definition for example.
 
 ### Add new benchmark tasks
 
