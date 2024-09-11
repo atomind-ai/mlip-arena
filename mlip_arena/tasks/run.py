@@ -240,14 +240,29 @@ def md(
         traj_file.parent.mkdir(parents=True, exist_ok=True)
 
         if restart and traj_file.exists():
-            traj = read(traj_file, index=":")
-            last_atoms = traj[-1]
-            assert isinstance(last_atoms, Atoms)
-            last_step = last_atoms.info.get("step", len(traj) * traj_interval)
-            n_steps -= last_step
-            traj = Trajectory(traj_file, "a", atoms)
-            atoms.set_positions(last_atoms.get_positions())
-            atoms.set_momenta(last_atoms.get_momenta())
+            try:
+                traj = read(traj_file, index=":")
+                last_atoms = traj[-1]
+                assert isinstance(last_atoms, Atoms)
+                last_step = last_atoms.info.get("step", len(traj) * traj_interval)
+                n_steps -= last_step
+                traj = Trajectory(traj_file, "a", atoms)
+                atoms.set_positions(last_atoms.get_positions())
+                atoms.set_momenta(last_atoms.get_momenta())
+            except Exception:
+                traj = Trajectory(traj_file, "w", atoms)
+
+                if not np.isnan(t_schedule).any():
+                    MaxwellBoltzmannDistribution(
+                        atoms=atoms,
+                        temperature_K=t_schedule[last_step],
+                        rng=np.random.default_rng(seed=mb_velocity_seed),
+                    )
+
+                if zero_linear_momentum:
+                    Stationary(atoms)
+                if zero_angular_momentum:
+                    ZeroRotation(atoms)
         else:
             traj = Trajectory(traj_file, "w", atoms)
 

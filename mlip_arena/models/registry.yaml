@@ -178,3 +178,25 @@ SevenNet:
   prediction: EFS
   nvt: true
   npt: true
+
+ORB:
+  module: externals
+  class: ORB
+  family: orb
+  username: cyrusyc
+  last-update: 2024-03-25T14:30:00
+  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  datasets:
+    - atomind/mptrj # TODO: fake HF dataset repo
+    - atomind/alexandria
+  cpu-tasks:
+    - alexandria
+    - qmof
+  gpu-tasks:
+    - homonuclear-diatomics
+  github: https://github.com/orbital-materials/orb-models
+  doi: 
+  date: 2024-09-03
+  prediction: EFS
+  nvt: true
+  npt: true
