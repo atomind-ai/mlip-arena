@@ -1,19 +1,32 @@
+from __future__ import annotations
+
+import importlib
 import os
 import urllib
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
-import matgl
 import torch
-from alignn.ff.ff import AlignnAtomwiseCalculator, get_figshare_model_ff
-from ase import Atoms
-from chgnet.model.dynamics import CHGNetCalculator
-from chgnet.model.model import CHGNet as CHGNetModel
-from fairchem.core import OCPCalculator
-from mace.calculators import MACECalculator
-from matgl.ext.ase import PESCalculator
-from orb_models.forcefield import pretrained
-from orb_models.forcefield.calculator import ORBCalculator
-from sevenn.sevennet_calculator import SevenNetCalculator
+
+if TYPE_CHECKING:
+    from ase import Atoms
+
+
+# Decorator to check if a module is available
+def requires_module(module_name):
+
+    try:
+        importlib.import_module(module_name)
+        has_module = True
+    except ImportError:
+        print(f"Module '{module_name}' not available.")
+        has_module = False
+
+    if has_module:
+        def decorator(cls):
+            return cls
+        return decorator
+    else:
+        return None
 
 
 # Avoid circular import
@@ -51,7 +64,8 @@ def get_freer_device() -> torch.device:
     return device
 
 
-class MACE_MP_Medium(MACECalculator):
+@requires_module("mace")
+class MACE_MP_Medium(mace.calculators.MACECalculator):
     def __init__(self, device=None, default_dtype="float32", **kwargs):
         checkpoint_url = "http://tinyurl.com/5yyxdm76"
         cache_dir = os.path.expanduser("~/.cache/mace")
@@ -80,7 +94,8 @@ class MACE_MP_Medium(MACECalculator):
         )
 
 
-class MACE_OFF_Medium(MACECalculator):
+@requires_module("mace")
+class MACE_OFF_Medium(mace.calculators.MACECalculator):
     def __init__(self, device=None, default_dtype="float32", **kwargs):
         checkpoint_url = "https://github.com/ACEsuit/mace-off/raw/main/mace_off23/MACE-OFF23_medium.model?raw=true"
         cache_dir = os.path.expanduser("~/.cache/mace")
@@ -109,7 +124,10 @@ class MACE_OFF_Medium(MACECalculator):
         )
 
 
-class CHGNet(CHGNetCalculator):
+@requires_module("chgnet")
+class CHGNet(chgnet.model.dynamics.CHGNetCalculator):
+    from chgnet.model.model import CHGNet as CHGNetModel
+
     def __init__(
         self,
         model: CHGNetModel | None = None,
@@ -139,18 +157,22 @@ class CHGNet(CHGNetCalculator):
         self.results.pop("crystal_fea", None)
 
 
-class M3GNet(PESCalculator):
+@requires_module("matgl")
+class M3GNet(matgl.ext.ase.PESCalculator):
     def __init__(
         self,
         state_attr: torch.Tensor | None = None,
         stress_weight: float = 1.0,
         **kwargs,
     ) -> None:
+        import matgl
+
         potential = matgl.load_model("M3GNet-MP-2021.2.8-PES")
         super().__init__(potential, state_attr, stress_weight, **kwargs)
 
 
-class EquiformerV2(OCPCalculator):
+@requires_module("fairchem")
+class EquiformerV2(fairchem.core.OCPCalculator):
     def __init__(
         self,
         model_name="EquiformerV2-lE4-lF100-S2EFS-OC22",
@@ -167,15 +189,9 @@ class EquiformerV2(OCPCalculator):
             **kwargs,
         )
 
-    def calculate(self, atoms: Atoms, properties, system_changes) -> None:
-        super().calculate(atoms, properties, system_changes)
 
-        self.results.update(
-            force=atoms.get_forces(),
-        )
-
-
-class EquiformerV2OC20(OCPCalculator):
+@requires_module("fairchem")
+class EquiformerV2OC20(fairchem.core.OCPCalculator):
     def __init__(
         self,
         model_name="EquiformerV2-31M-S2EF-OC20-All+MD",
@@ -193,7 +209,8 @@ class EquiformerV2OC20(OCPCalculator):
         )
 
 
-class eSCN(OCPCalculator):
+@requires_module("fairchem")
+class eSCN(fairchem.core.OCPCalculator):
     def __init__(
         self,
         model_name="eSCN-L6-M3-Lay20-S2EF-OC20-All+MD",
@@ -218,21 +235,28 @@ class eSCN(OCPCalculator):
         )
 
 
-class ALIGNN(AlignnAtomwiseCalculator):
+@requires_module("alignn")
+class ALIGNN(alignn.ff.ff.AlignnAtomwiseCalculator):
     def __init__(self, dir_path: str = "/tmp/alignn/", device=None, **kwargs) -> None:
+        from alignn.ff.ff import get_figshare_model_ff
+
         _ = get_figshare_model_ff(dir_path=dir_path)
         device = device or get_freer_device()
         super().__init__(path=dir_path, device=device, **kwargs)
 
 
-class SevenNet(SevenNetCalculator):
+@requires_module("sevenn")
+class SevenNet(sevenn.sevennet_calculator.SevenNetCalculator):
     def __init__(self, device=None, **kwargs):
         device = device or get_freer_device()
         super().__init__("7net-0", device=device, **kwargs)
 
 
-class ORB(ORBCalculator):
+@requires_module("orb_models")
+class ORB(orb_models.forcefield.calculator.ORBCalculator):
     def __init__(self, device=None, **kwargs):
+        from orb_models.forcefield import pretrained
+
         device = device or get_freer_device()
         orbff = pretrained.orb_v1(device=device)
         super().__init__(orbff, device=device, **kwargs)
