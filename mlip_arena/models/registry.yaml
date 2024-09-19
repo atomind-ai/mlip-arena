@@ -27,7 +27,7 @@ CHGNet:
   module: externals
   class: CHGNet
   family: chgnet
-  package: chgnet==0.3.5
+  package: chgnet==0.3.8
   checkpoint:
   username: cyrusyc
   last-update: 2024-07-08T00:00:00
@@ -62,6 +62,54 @@ M3GNet:
   github: https://github.com/materialsvirtuallab/matgl
   doi: https://doi.org/10.1038/s43588-022-00349-3
   date: 2022-02-05
+  prediction: EFS
+  nvt: true
+  npt: true
+
+ORB:
+  module: externals
+  class: ORB
+  family: orb
+  package: orb-models==0.3.1
+  checkpoint: orbff-v1-20240827.ckpt
+  username: cyrusyc
+  last-update: 2024-03-25T14:30:00
+  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  datasets:
+    - atomind/mptrj # TODO: fake HF dataset repo
+    - atomind/alexandria
+  cpu-tasks:
+    - alexandria
+    - qmof
+  gpu-tasks:
+    - homonuclear-diatomics
+  github: https://github.com/orbital-materials/orb-models
+  doi: 
+  date: 2024-09-03
+  prediction: EFS
+  nvt: true
+  npt: true
+
+SevenNet:
+  module: externals
+  class: SevenNet
+  family: sevennet
+  package: sevenn==0.9.4
+  checkpoint: 7net-0
+  username: cyrusyc
+  last-update: 2024-03-25T14:30:00
+  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  datasets:
+    - atomind/mptrj # TODO: fake HF dataset repo
+  cpu-tasks:
+    - alexandria
+    - qmof
+  gpu-tasks:
+    - homonuclear-diatomics
+    - combustion
+  github: https://github.com/MDIL-SNU/SevenNet
+  doi: https://doi.org/10.1021/acs.jctc.4c00190
+  date: 2024-07-11
   prediction: EFS
   nvt: true
   npt: true
@@ -170,51 +218,3 @@ ALIGNN:
   github: https://github.com/usnistgov/alignn
   doi: https://doi.org/10.1038/s41524-021-00650-1
   date: 2021-11-15
-
-SevenNet:
-  module: externals
-  class: SevenNet
-  family: sevennet
-  package: sevenn==0.9.4
-  checkpoint: 7net-0
-  username: cyrusyc
-  last-update: 2024-03-25T14:30:00
-  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
-  datasets:
-    - atomind/mptrj # TODO: fake HF dataset repo
-  cpu-tasks:
-    - alexandria
-    - qmof
-  gpu-tasks:
-    - homonuclear-diatomics
-    - combustion
-  github: https://github.com/MDIL-SNU/SevenNet
-  doi: https://doi.org/10.1021/acs.jctc.4c00190
-  date: 2024-07-11
-  prediction: EFS
-  nvt: true
-  npt: true
-
-ORB:
-  module: externals
-  class: ORB
-  family: orb
-  package: orb-models==0.3.1
-  checkpoint: orb_v1
-  username: cyrusyc
-  last-update: 2024-03-25T14:30:00
-  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
-  datasets:
-    - atomind/mptrj # TODO: fake HF dataset repo
-    - atomind/alexandria
-  cpu-tasks:
-    - alexandria
-    - qmof
-  gpu-tasks:
-    - homonuclear-diatomics
-  github: https://github.com/orbital-materials/orb-models
-  doi: 
-  date: 2024-09-03
-  prediction: EFS
-  nvt: true
-  npt: true
