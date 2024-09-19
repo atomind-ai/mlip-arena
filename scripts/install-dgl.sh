@@ -1,2 +1,6 @@
 # DGL (M3GNet, ALIGNN)
-pip install dgl -U -f https://data.dgl.ai/wheels/torch-2.3/cu121/repo.html
+
+TORCH=2.2
+CUDA=cu121
+
+pip install dgl -U -f https://data.dgl.ai/wheels/torch-${TORCH}/${CUDA}/repo.html

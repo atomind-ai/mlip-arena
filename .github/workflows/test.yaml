@@ -22,7 +22,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install dgl -U -f https://data.dgl.ai/wheels/torch-2.3/cu121/repo.html
+        bash scripts/intall-pyg.sh
+        bash scrrpts/install-dgl.sh
         pip install .[test]
         pip install mace-torch
 

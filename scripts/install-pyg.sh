@@ -1,7 +1,5 @@
-
-
 # PyTorch Geometric (OCP)
-TORCH=2.3.1
+TORCH=2.2.0
 CUDA=cu121
 
 pip install --verbose --no-cache torch-scatter -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html
