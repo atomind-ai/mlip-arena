@@ -37,15 +37,36 @@ dependencies=[
 ]
 
 [project.optional-dependencies]
-m3gnet = ["matgl", "dgl", "torch<=2.2.1"]
-mace = ["mace-torch"]
-chgnet = ["chgnet"]
-fairchem = ["fairchem"]
+run = [
+    "torch==2.2.0",
+    "e3nn==0.5.1",
+    "matgl==1.1.2",
+    "dgl==2.4.0+cu121",
+    "mace-torch==0.3.4",
+    "chgnet==0.3.8",
+    "fairchem-core==0.1.0",
+    "sevenn==0.9.3.post1",
+    "orb-models==0.3.1",
+    "alignn==2024.5.27"
+]
 app = [
     "streamlit",
     "plotly",
     "bokeh==2.4.3",
     "statsmodels"
+]
+test = [
+    "torch==2.2.0",
+    "e3nn==0.5.1",
+    "matgl==1.1.2",
+    "dgl==2.4.0+cu121",
+    "mace-torch==0.3.4",
+    "chgnet==0.3.8",
+    "fairchem-core==0.1.0",
+    "sevenn==0.9.3.post1",
+    "orb-models==0.3.1",
+    "alignn==2024.5.27",
+    "pytest"
 ]
 
 [project.urls]

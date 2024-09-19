@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import os
-import urllib
+from pathlib import Path
 from typing import Literal
 
 import matgl
+import requests
 import torch
 from alignn.ff.ff import AlignnAtomwiseCalculator, get_figshare_model_ff
 from ase import Atoms
@@ -52,26 +55,28 @@ def get_freer_device() -> torch.device:
 
 
 class MACE_MP_Medium(MACECalculator):
-    def __init__(self, device=None, default_dtype="float32", **kwargs):
-        checkpoint_url = "http://tinyurl.com/5yyxdm76"
-        cache_dir = os.path.expanduser("~/.cache/mace")
+    def __init__(
+        self,
+        checkpoint="http://tinyurl.com/5yyxdm76",
+        device: str | None = None,
+        default_dtype="float32",
+        **kwargs,
+    ):
+        cache_dir = Path.home() / ".cache" / "mace"
         checkpoint_url_name = "".join(
-            c for c in os.path.basename(checkpoint_url) if c.isalnum() or c in "_"
+            c for c in os.path.basename(checkpoint) if c.isalnum() or c in "_"
         )
         cached_model_path = f"{cache_dir}/{checkpoint_url_name}"
         if not os.path.isfile(cached_model_path):
+            import urllib
+
             os.makedirs(cache_dir, exist_ok=True)
-            # download and save to disk
-            print(f"Downloading MACE model from {checkpoint_url!r}")
-            _, http_msg = urllib.request.urlretrieve(checkpoint_url, cached_model_path)
+            _, http_msg = urllib.request.urlretrieve(checkpoint, cached_model_path)
             if "Content-Type: text/html" in http_msg:
                 raise RuntimeError(
-                    f"Model download failed, please check the URL {checkpoint_url}"
+                    f"Model download failed, please check the URL {checkpoint}"
                 )
-            print(f"Cached MACE model to {cached_model_path}")
         model = cached_model_path
-        msg = f"Using Materials Project MACE for MACECalculator with {model}"
-        print(msg)
 
         device = device or str(get_freer_device())
 
@@ -80,27 +85,30 @@ class MACE_MP_Medium(MACECalculator):
         )
 
 
+# TODO: could share the same class with MACE_MP_Medium
 class MACE_OFF_Medium(MACECalculator):
-    def __init__(self, device=None, default_dtype="float32", **kwargs):
-        checkpoint_url = "https://github.com/ACEsuit/mace-off/raw/main/mace_off23/MACE-OFF23_medium.model?raw=true"
-        cache_dir = os.path.expanduser("~/.cache/mace")
+    def __init__(
+        self,
+        checkpoint="https://github.com/ACEsuit/mace-off/raw/main/mace_off23/MACE-OFF23_medium.model?raw=true",
+        device: str | None = None,
+        default_dtype="float32",
+        **kwargs,
+    ):
+        cache_dir = Path.home() / ".cache" / "mace"
         checkpoint_url_name = "".join(
-            c for c in os.path.basename(checkpoint_url) if c.isalnum() or c in "_"
+            c for c in os.path.basename(checkpoint) if c.isalnum() or c in "_"
         )
         cached_model_path = f"{cache_dir}/{checkpoint_url_name}"
         if not os.path.isfile(cached_model_path):
+            import urllib
+
             os.makedirs(cache_dir, exist_ok=True)
-            # download and save to disk
-            print(f"Downloading MACE model from {checkpoint_url!r}")
-            _, http_msg = urllib.request.urlretrieve(checkpoint_url, cached_model_path)
+            _, http_msg = urllib.request.urlretrieve(checkpoint, cached_model_path)
             if "Content-Type: text/html" in http_msg:
                 raise RuntimeError(
-                    f"Model download failed, please check the URL {checkpoint_url}"
+                    f"Model download failed, please check the URL {checkpoint}"
                 )
-            print(f"Cached MACE model to {cached_model_path}")
         model = cached_model_path
-        msg = f"Using Materials Project MACE for MACECalculator with {model}"
-        print(msg)
 
         device = device or str(get_freer_device())
 
@@ -112,15 +120,15 @@ class MACE_OFF_Medium(MACECalculator):
 class CHGNet(CHGNetCalculator):
     def __init__(
         self,
-        model: CHGNetModel | None = None,
-        use_device: str | None = None,
+        checkpoint: CHGNetModel | None = None,  # TODO: specifiy version
+        device: str | None = None,
         stress_weight: float | None = 1 / 160.21766208,
         on_isolated_atoms: Literal["ignore", "warn", "error"] = "warn",
         **kwargs,
     ) -> None:
-        use_device = use_device or str(get_freer_device())
+        use_device = device or str(get_freer_device())
         super().__init__(
-            model=model,
+            model=checkpoint,
             use_device=use_device,
             stress_weight=stress_weight,
             on_isolated_atoms=on_isolated_atoms,
@@ -142,28 +150,31 @@ class CHGNet(CHGNetCalculator):
 class M3GNet(PESCalculator):
     def __init__(
         self,
+        checkpoint="M3GNet-MP-2021.2.8-PES",
+        # TODO: cannot assign device
         state_attr: torch.Tensor | None = None,
         stress_weight: float = 1.0,
         **kwargs,
     ) -> None:
-        potential = matgl.load_model("M3GNet-MP-2021.2.8-PES")
+        potential = matgl.load_model(checkpoint)
         super().__init__(potential, state_attr, stress_weight, **kwargs)
 
 
 class EquiformerV2(OCPCalculator):
     def __init__(
         self,
-        model_name="EquiformerV2-lE4-lF100-S2EFS-OC22",
+        checkpoint="EquiformerV2-lE4-lF100-S2EFS-OC22",  # TODO: import from registry
+        # TODO: cannot assign device
         local_cache="/tmp/ocp/",
         cpu=False,
         seed=0,
         **kwargs,
     ) -> None:
         super().__init__(
-            model_name=model_name,
+            model_name=checkpoint,
             local_cache=local_cache,
             cpu=cpu,
-            seed=0,
+            seed=seed,
             **kwargs,
         )
 
@@ -178,17 +189,18 @@ class EquiformerV2(OCPCalculator):
 class EquiformerV2OC20(OCPCalculator):
     def __init__(
         self,
-        model_name="EquiformerV2-31M-S2EF-OC20-All+MD",
+        checkpoint="EquiformerV2-31M-S2EF-OC20-All+MD",  # TODO: import from registry
+        # TODO: cannot assign device
         local_cache="/tmp/ocp/",
         cpu=False,
         seed=0,
         **kwargs,
     ) -> None:
         super().__init__(
-            model_name=model_name,
+            model_name=checkpoint,
             local_cache=local_cache,
             cpu=cpu,
-            seed=0,
+            seed=seed,
             **kwargs,
         )
 
@@ -196,17 +208,18 @@ class EquiformerV2OC20(OCPCalculator):
 class eSCN(OCPCalculator):
     def __init__(
         self,
-        model_name="eSCN-L6-M3-Lay20-S2EF-OC20-All+MD",
+        checkpoint="eSCN-L6-M3-Lay20-S2EF-OC20-All+MD",  # TODO: import from registry
+        # TODO: cannot assign device
         local_cache="/tmp/ocp/",
         cpu=False,
         seed=0,
         **kwargs,
     ) -> None:
         super().__init__(
-            model_name=model_name,
+            model_name=checkpoint,
             local_cache=local_cache,
             cpu=cpu,
-            seed=0,
+            seed=seed,
             **kwargs,
         )
 
@@ -219,20 +232,50 @@ class eSCN(OCPCalculator):
 
 
 class ALIGNN(AlignnAtomwiseCalculator):
-    def __init__(self, dir_path: str = "/tmp/alignn/", device=None, **kwargs) -> None:
+    def __init__(self, device=None, dir_path: str = "/tmp/alignn/", **kwargs) -> None:
+        # TODO: cannot control version
         _ = get_figshare_model_ff(dir_path=dir_path)
         device = device or get_freer_device()
         super().__init__(path=dir_path, device=device, **kwargs)
 
 
 class SevenNet(SevenNetCalculator):
-    def __init__(self, device=None, **kwargs):
+    def __init__(
+        self,
+        checkpoint="7net-0",  # TODO: import from registry
+        device=None,
+        **kwargs,
+    ):
         device = device or get_freer_device()
-        super().__init__("7net-0", device=device, **kwargs)
+        super().__init__(checkpoint, device=device, **kwargs)
 
 
 class ORB(ORBCalculator):
-    def __init__(self, device=None, **kwargs):
+    def __init__(
+        self,
+        checkpoint="orbff-v1-20240827.ckpt",
+        device=None,
+        **kwargs,
+    ):
         device = device or get_freer_device()
-        orbff = pretrained.orb_v1(device=device)
+
+        cache_dir = Path.home() / ".cache" / "orb"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        ckpt_path = cache_dir / "orbff-v1-20240827.ckpt"
+
+        url = f"https://storage.googleapis.com/orbitalmaterials-public-models/forcefields/{checkpoint}"
+
+        if not ckpt_path.exists():
+            print(f"Downloading ORB model from {url} to {ckpt_path}...")
+            try:
+                response = requests.get(url, stream=True, timeout=120)
+                response.raise_for_status()
+                with open(ckpt_path, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                print("Download completed.")
+            except requests.exceptions.RequestException as e:
+                raise RuntimeError("Failed to download ORB model.") from e
+
+        orbff = pretrained.orb_v1(weights_path=ckpt_path, device=device)
         super().__init__(orbff, device=device, **kwargs)
