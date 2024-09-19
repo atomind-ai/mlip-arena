@@ -59,7 +59,7 @@ test = [
     "torch==2.2.0",
     "e3nn==0.5.1",
     "matgl==1.1.2",
-    "dgl==2.4.0+cu121",
+    "dgl==2.4.0",
     "mace-torch==0.3.4",
     "chgnet==0.3.8",
     "fairchem-core==0.1.0",
