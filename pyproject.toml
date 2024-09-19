@@ -60,13 +60,15 @@ test = [
     "e3nn==0.5.1",
     "matgl==1.1.2",
     "dgl==2.4.0",
-    "mace-torch==0.3.4",
     "chgnet==0.3.8",
     "fairchem-core==1.1.0",
     "sevenn==0.9.3.post1",
     "orb-models==0.3.1",
     "alignn==2024.5.27",
     "pytest"
+]
+mace = [
+    "mace-torch==0.3.4",
 ]
 
 [project.urls]
