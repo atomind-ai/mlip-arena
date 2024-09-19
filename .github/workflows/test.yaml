@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        bash scripts/intall-pyg.sh
+        bash scripts/install-pyg.sh
         bash scrrpts/install-dgl.sh
         pip install .[test]
         pip install mace-torch
