@@ -7,7 +7,7 @@ from typing import Literal
 import matgl
 import requests
 import torch
-from alignn.ff.ff import AlignnAtomwiseCalculator, get_figshare_model_ff
+from alignn.ff.ff import AlignnAtomwiseCalculator, get_figshare_model_ff, default_path
 from ase import Atoms
 from chgnet.model.dynamics import CHGNetCalculator
 from chgnet.model.model import CHGNet as CHGNetModel
@@ -232,11 +232,13 @@ class eSCN(OCPCalculator):
 
 
 class ALIGNN(AlignnAtomwiseCalculator):
-    def __init__(self, device=None, dir_path: str = "/tmp/alignn/", **kwargs) -> None:
+    def __init__(self, device=None, **kwargs) -> None:
         # TODO: cannot control version
-        _ = get_figshare_model_ff(dir_path=dir_path)
+        # _ = get_figshare_model_ff(dir_path=dir_path)
+        model_path = default_path()
+
         device = device or get_freer_device()
-        super().__init__(path=dir_path, device=device, **kwargs)
+        super().__init__(path=model_path, device=device, **kwargs)
 
 
 class SevenNet(SevenNetCalculator):
