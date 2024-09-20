@@ -3,11 +3,12 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from mlip_arena.models import REGISTRY
+from mlip_arena.models import REGISTRY as MODELS
+from mlip_arena.tasks import REGISTRY as TASKS
 
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
 
-dfs = [pd.read_json(DATA_DIR / REGISTRY[model].get("family") /  "homonuclear-diatomics.json") for model in REGISTRY]
+dfs = [pd.read_json(DATA_DIR / MODELS[model].get("family") /  "homonuclear-diatomics.json") for model in MODELS]
 df = pd.concat(dfs, ignore_index=True)
 
 
@@ -22,11 +23,11 @@ table = pd.DataFrame(columns=[
     "Code",
     "Paper",
     "First Release",
-    ])
+])
 
-for model in REGISTRY:
+for model in MODELS:
     rows = df[df["method"] == model]
-    metadata = REGISTRY.get(model, {})
+    metadata = MODELS.get(model, {})
     new_row = {
         "Model": model,
         "Element Coverage": len(rows["name"].unique()),
@@ -61,7 +62,7 @@ MLIP Arena is a platform for benchmarking foundation machine learning interatomi
 The benchmarks are designed to evaluate the readiness and reliability of open-source, open-weight models to reproduce the qualitatively or quantitatively correct physics.
 """, unsafe_allow_html=True)
 
-# st.header("Summary", divider=True)
+
 
 st.dataframe(
     s,
@@ -79,3 +80,8 @@ st.dataframe(
         ),
     },
 )
+
+
+for task in TASKS:
+    st.header(task, divider=True)
+    # st.write("Results for the task are not available yet.")

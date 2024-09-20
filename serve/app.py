@@ -1,4 +1,8 @@
+from collections import defaultdict
+
 import streamlit as st
+
+from mlip_arena.tasks import REGISTRY as TASKS
 
 # if "logged_in" not in st.session_state:
 #     st.session_state.logged_in = False
@@ -17,36 +21,33 @@ import streamlit as st
 # logout_page = st.Page(logout, title="Log out", icon=":material/logout:")
 
 leaderboard = st.Page(
-    "leaderboard.py", title="Leaderboard", icon=":material/trophy:"
+    "leaderboard.py", title="Leaderboard", icon=":material/trophy:", default=True
 )
-# bugs = st.Page("models/bugs.py", title="Bug reports", icon=":material/bug_report:")
-# alerts = st.Page(
-#     "models/alerts.py", title="System alerts", icon=":material/notification_important:"
-# )
 
 search = st.Page("tools/search.py", title="Search", icon=":material/search:")
 history = st.Page("tools/history.py", title="History", icon=":material/history:")
 ptable = st.Page("tools/ptable.py", title="Periodic table", icon=":material/gradient:")
 
-diatomics = st.Page("tasks/homonuclear-diatomics.py", title="Homonuclear diatomics", icon=":material/target:", default=True)
-stability = st.Page("tasks/stability.py", title="High pressure stability", icon=":material/target:")
-combustion = st.Page("tasks/combustion.py", title="Combustion", icon=":material/target:")
+
+nav = defaultdict(list)
+nav[""].append(leaderboard)
+
+wide_pages, centered_pages = [], []
+
+for task in TASKS:
+    page = st.Page(
+        f"tasks/{TASKS[task]['task-page']}.py", title=task, icon=":material/target:"
+    )
+    nav[TASKS[task]["category"]].append(page)
+    if TASKS[task]["task-layout"] == "wide":
+        wide_pages.append(page)
+    else:
+        centered_pages.append(page)
 
 
-# if st.session_state.logged_in:
-pg = st.navigation(
-    {
-        # "Account": [logout_page],
-        "": [leaderboard],
-        "Fundamentals": [diatomics],
-        "Molecular Dynamics": [stability, combustion],
-        # "Tools": [ptable],
-    }
-)
-# else:
-#     pg = st.navigation([login_page])
+pg = st.navigation(nav)
 
-if pg in [stability, combustion]:
+if pg in centered_pages:
     st.set_page_config(
         layout="centered",
         page_title="MLIP Arena",
@@ -55,7 +56,7 @@ if pg in [stability, combustion]:
         menu_items={
             "About": "https://github.com/atomind-ai/mlip-arena",
             "Report a bug": "https://github.com/atomind-ai/mlip-arena/issues/new",
-        }
+        },
     )
 else:
     st.set_page_config(
@@ -66,9 +67,12 @@ else:
         menu_items={
             "About": "https://github.com/atomind-ai/mlip-arena",
             "Report a bug": "https://github.com/atomind-ai/mlip-arena/issues/new",
-        }
+        },
     )
 
-st.toast("MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care. Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.", icon="🍞")
+st.toast(
+    "MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care. Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
+    icon="🍞",
+)
 
 pg.run()
