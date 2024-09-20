@@ -6,9 +6,9 @@ from huggingface_hub import HfApi, HfFileSystem, hf_hub_download
 from mlip_arena.models import MLIP
 from mlip_arena.models import REGISTRY as MODEL_REGISTRY
 
-from .run import md as MD
+# from .run import md as MD
 
-__all__ = ["MD"]
+# __all__ = ["MD"]
 
 with open(Path(__file__).parent / "registry.yaml") as f:
     REGISTRY = yaml.safe_load(f)
