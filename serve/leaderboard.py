@@ -89,7 +89,7 @@ for task in TASKS:
     st.header(task, divider=True)
 
     if TASKS[task]['rank-page'] is None:
-        st.write("Rank for this task are not available yet")
+        st.write("Rank for this task is not available yet")
         continue
 
     task_module = importlib.import_module(f"ranks.{TASKS[task]['rank-page']}")
