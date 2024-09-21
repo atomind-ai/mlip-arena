@@ -6,6 +6,8 @@ import streamlit as st
 from mlip_arena.models import REGISTRY as MODELS
 from mlip_arena.tasks import REGISTRY as TASKS
 
+import importlib
+
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
 
 dfs = [pd.read_json(DATA_DIR / MODELS[model].get("family") /  "homonuclear-diatomics.json") for model in MODELS]
@@ -83,5 +85,19 @@ st.dataframe(
 
 
 for task in TASKS:
+
     st.header(task, divider=True)
-    # st.write("Results for the task are not available yet.")
+
+    if TASKS[task]['rank-page'] is None:
+        st.write("Rank for this task are not available yet")
+        continue
+
+    task_module = importlib.import_module(f"ranks.{TASKS[task]['rank-page']}")
+
+    # task_module = importlib.import_module(f".ranks", TASKS[task]["task-page"])
+
+    #  Call the function from the imported module
+    if hasattr(task_module, 'get_rank_page'):
+        task_module.get_rank_page()
+    else:
+        st.write("Results for the task are not available yet.")

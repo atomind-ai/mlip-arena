@@ -83,6 +83,7 @@ ORB:
     - qmof
   gpu-tasks:
     - homonuclear-diatomics
+    - combustion
   github: https://github.com/orbital-materials/orb-models
   doi: 
   date: 2024-09-03
@@ -211,7 +212,7 @@ ALIGNN:
     - atomind/mptrj
   gpu-tasks:
     - homonuclear-diatomics
-    - combustion
+    # - combustion
   prediction: EFS
   nvt: true
   npt: true

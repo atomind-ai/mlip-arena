@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import plotly.colors as pcolors
 import plotly.graph_objects as go
@@ -18,7 +19,11 @@ st.markdown("### Methods")
 container = st.container(border=True)
 valid_models = [model for model, metadata in REGISTRY.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 
-models = container.multiselect("MLIPs", valid_models, ["MACE-MP(M)", "CHGNet", "M3GNet", "EquiformerV2(OC22)", "SevenNet"])
+models = container.multiselect(
+    "MLIPs", 
+    valid_models, 
+    ["MACE-MP(M)", "CHGNet", "M3GNet", "SevenNet", "ORB", "EquiformerV2(OC22)", "eSCN(OC20)"]
+)
 
 st.markdown("### Settings")
 vis = st.container(border=True)
@@ -64,7 +69,7 @@ for method in df["method"].unique():
     row = df[df["method"] == method].iloc[0]
     fig.add_trace(
         go.Scatter(
-            x=row["timesteps"],
+            x=row["timestep"],
             y=row["nproducts"],
             mode="lines",
             name=method,
@@ -75,7 +80,7 @@ for method in df["method"].unique():
 
 fig.update_layout(
     title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
-    xaxis_title="Timesteps",
+    xaxis_title="Timestep",
     yaxis_title="Number of water molecules",
 )
 
@@ -89,7 +94,7 @@ for method in df["method"].unique():
     row = df[df["method"] == method].iloc[0]
     fig.add_trace(
         go.Scatter(
-            x=row["timesteps"],
+            x=row["timestep"],
             y=row["temperatures"],
             mode="markers",
             name=method,
@@ -114,7 +119,7 @@ fig.add_trace(
 
 fig.update_layout(
     title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
-    xaxis_title="Timesteps",
+    xaxis_title="Timestep",
     yaxis_title="Temperatures",
     yaxis2=dict(
         title="Product Percentage (%)",
@@ -124,6 +129,33 @@ fig.update_layout(
         tickmode="sync"
     )
     # template="plotly_dark",
+)
+
+st.plotly_chart(fig)
+
+# Final reaction rate
+
+fig = go.Figure()
+
+# df["yield"] = np.array(df["nproducts"]) / 128 * 100
+
+df = df.sort_values("yield", ascending=True)
+
+fig.add_trace(
+    go.Bar(
+        x=df["yield"] * 100,
+        y=df["method"],
+        opacity=0.75,
+        orientation="h",
+        marker=dict(color=[method_color_mapping[method] for method in df["method"]]),
+        text=[f"{y:.2f} %" for y in df["yield"] * 100],
+    )
+)
+
+fig.update_layout(
+    title="Reaction yield (2H2 + O2 -> 2H2O, 64 units)",
+    xaxis_title="Yield (%)",
+    yaxis_title="Method",
 )
 
 st.plotly_chart(fig)
@@ -141,6 +173,7 @@ fig.add_trace(
         opacity=0.75,
         orientation="h",
         marker=dict(color=[method_color_mapping[method] for method in df["method"]]),
+        text=df["steps_per_second"].round(1)
     )
 )
 
