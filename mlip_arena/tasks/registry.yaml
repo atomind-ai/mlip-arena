@@ -8,12 +8,12 @@ High pressure stability:
   category: Molecular dynamics
   task-page: stability
   task-layout: centered
-  rank-page: stability
+  rank-page: 
 Combustion:
   category: Molecular dynamics
   task-page: combustion
   task-layout: centered
-  rank-page: combustion
+  rank-page: 
 # nacl:
 #   last-update: 2024-03-25T14:30:00 # TODO: Fake datetime
 # alexandria:
