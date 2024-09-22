@@ -86,18 +86,20 @@ st.dataframe(
 
 for task in TASKS:
 
-    st.header(task, divider=True)
-
     if TASKS[task]['rank-page'] is None:
-        st.write("Rank for this task is not available yet")
+        # st.write("Rank for this task is not available yet")
         continue
+
+    st.header(task, divider=True)
+    st.page_link(f"tasks/{TASKS[task]['task-page']}.py", label="Link to task page", icon=":material/link:")
+
 
     task_module = importlib.import_module(f"ranks.{TASKS[task]['rank-page']}")
 
     # task_module = importlib.import_module(f".ranks", TASKS[task]["task-page"])
 
     #  Call the function from the imported module
-    if hasattr(task_module, 'get_rank_page'):
-        task_module.get_rank_page()
+    if hasattr(task_module, 'render'):
+        task_module.render()
     else:
         st.write("Results for the task are not available yet.")
