@@ -1,3 +1,4 @@
+import importlib
 from pathlib import Path
 
 import pandas as pd
@@ -6,26 +7,29 @@ import streamlit as st
 from mlip_arena.models import REGISTRY as MODELS
 from mlip_arena.tasks import REGISTRY as TASKS
 
-import importlib
-
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
 
-dfs = [pd.read_json(DATA_DIR / MODELS[model].get("family") /  "homonuclear-diatomics.json") for model in MODELS]
+dfs = [
+    pd.read_json(DATA_DIR / MODELS[model].get("family") / "homonuclear-diatomics.json")
+    for model in MODELS
+]
 df = pd.concat(dfs, ignore_index=True)
 
 
-table = pd.DataFrame(columns=[
-    "Model",
-    "Element Coverage",
-    # "No. of reversed forces",
-    # "Energy-consistent forces",
-    "Prediction",
-    "NVT",
-    "NPT",
-    "Code",
-    "Paper",
-    "First Release",
-])
+table = pd.DataFrame(
+    columns=[
+        "Model",
+        "Element Coverage",
+        # "No. of reversed forces",
+        # "Energy-consistent forces",
+        "Prediction",
+        "NVT",
+        "NPT",
+        "Code",
+        "Paper",
+        "First Release",
+    ]
+)
 
 for model in MODELS:
     rows = df[df["method"] == model]
@@ -48,22 +52,27 @@ table.set_index("Model", inplace=True)
 
 
 s = table.style.background_gradient(
-    cmap="PuRd",
-    subset=["Element Coverage"],
-    vmin=0, vmax=120
+    cmap="PuRd", subset=["Element Coverage"], vmin=0, vmax=120
 )
 
-st.warning("MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care.", icon="⚠️")
-st.info("Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.", icon="🤗")
+st.warning(
+    "MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care.",
+    icon="⚠️",
+)
+st.info(
+    "Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
+    icon="🤗",
+)
 
 st.markdown(
-"""
+    """
 <h1 style='text-align: center;'>⚔️ MLIP Arena Leaderboard ⚔️</h1>
 
 MLIP Arena is a platform for benchmarking foundation machine learning interatomic potentials (MLIPs), mainly for disclosing the learned physics and chemistry of the models and their performance on molecular dynamics (MD) simulations.
 The benchmarks are designed to evaluate the readiness and reliability of open-source, open-weight models to reproduce the qualitatively or quantitatively correct physics.
-""", unsafe_allow_html=True)
-
+""",
+    unsafe_allow_html=True,
+)
 
 
 st.dataframe(
@@ -85,19 +94,20 @@ st.dataframe(
 
 
 for task in TASKS:
+    if TASKS[task]["rank-page"] is None:
+        continue
 
     st.header(task, divider=True)
-
-    if TASKS[task]['rank-page'] is None:
-        st.write("Rank for this task is not available yet")
-        continue
+    st.page_link(
+        f"tasks/{TASKS[task]['task-page']}.py",
+        label="Link to task page",
+        icon=":material/link:",
+    )
 
     task_module = importlib.import_module(f"ranks.{TASKS[task]['rank-page']}")
 
-    # task_module = importlib.import_module(f".ranks", TASKS[task]["task-page"])
-
     #  Call the function from the imported module
-    if hasattr(task_module, 'get_rank_page'):
-        task_module.get_rank_page()
+    if hasattr(task_module, "render"):
+        task_module.render()
     else:
         st.write("Results for the task are not available yet.")
