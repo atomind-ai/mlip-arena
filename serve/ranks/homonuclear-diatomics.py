@@ -1,5 +1,3 @@
-import streamlit as st
-
 from pathlib import Path
 
 import numpy as np
@@ -13,7 +11,6 @@ from scipy.interpolate import CubicSpline
 
 from mlip_arena.models import REGISTRY as MODELS
 
-
 valid_models = [
     model
     for model, metadata in MODELS.items()
@@ -22,26 +19,36 @@ valid_models = [
 
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
 
-dfs = [pd.read_json(DATA_DIR / MODELS[model].get("family") /  "homonuclear-diatomics.json") for model in valid_models]
+dfs = [
+    pd.read_json(DATA_DIR / MODELS[model].get("family") / "homonuclear-diatomics.json")
+    for model in valid_models
+]
 df = pd.concat(dfs, ignore_index=True)
 
 table = pd.DataFrame()
 
 for model in valid_models:
-        
     rows = df[df["method"] == model]
     metadata = MODELS.get(model, {})
 
     new_row = {
         "Model": model,
         "Conservation deviation [eV/Å]": rows["conservation-deviation"].mean(),
-        "Spearman's coeff. (Energy - repulsion)": rows["spearman-repulsion-energy"].mean(),
-        "Spearman's coeff. (Force - descending)": rows["spearman-descending-force"].mean(),
+        "Spearman's coeff. (Energy - repulsion)": rows[
+            "spearman-repulsion-energy"
+        ].mean(),
+        "Spearman's coeff. (Force - descending)": rows[
+            "spearman-descending-force"
+        ].mean(),
         "Tortuosity": rows["tortuosity"].mean(),
         "Energy jump [eV]": rows["energy-jump"].mean(),
         "Force flips": rows["force-flip-times"].mean(),
-        "Spearman's coeff. (Energy - attraction)": rows["spearman-attraction-energy"].mean(),
-        "Spearman's coeff. (Force - ascending)": rows["spearman-ascending-force"].mean(),
+        "Spearman's coeff. (Energy - attraction)": rows[
+            "spearman-attraction-energy"
+        ].mean(),
+        "Spearman's coeff. (Force - ascending)": rows[
+            "spearman-ascending-force"
+        ].mean(),
     }
 
     table = pd.concat([table, pd.DataFrame([new_row])], ignore_index=True)
@@ -51,10 +58,14 @@ table.set_index("Model", inplace=True)
 table.sort_values("Conservation deviation [eV/Å]", ascending=True, inplace=True)
 table["Rank"] = np.argsort(table["Conservation deviation [eV/Å]"].to_numpy())
 
-table.sort_values("Spearman's coeff. (Energy - repulsion)", ascending=True, inplace=True)
+table.sort_values(
+    "Spearman's coeff. (Energy - repulsion)", ascending=True, inplace=True
+)
 table["Rank"] += np.argsort(table["Spearman's coeff. (Energy - repulsion)"].to_numpy())
 
-table.sort_values("Spearman's coeff. (Force - descending)", ascending=True, inplace=True)
+table.sort_values(
+    "Spearman's coeff. (Force - descending)", ascending=True, inplace=True
+)
 table["Rank"] += np.argsort(table["Spearman's coeff. (Force - descending)"].to_numpy())
 
 table.sort_values("Tortuosity", ascending=True, inplace=True)
@@ -90,41 +101,34 @@ table = table.reindex(
     ]
 )
 
-s = table.style.background_gradient(
-    cmap="viridis_r",
-    subset=["Conservation deviation [eV/Å]"],
-    gmap=np.log(table["Conservation deviation [eV/Å]"].to_numpy()),
-).background_gradient(
-    cmap="Reds",
-    subset=["Spearman's coeff. (Energy - repulsion)", "Spearman's coeff. (Force - descending)"],
-    # vmin=-1, vmax=-0.5
-).background_gradient(
-    cmap="RdPu",
-    subset=["Tortuosity", "Energy jump [eV]", "Force flips"],
-).background_gradient(
-    cmap="Blues",
-    subset=["Rank", "Rank aggr."],
+s = (
+    table.style.background_gradient(
+        cmap="viridis_r",
+        subset=["Conservation deviation [eV/Å]"],
+        gmap=np.log(table["Conservation deviation [eV/Å]"].to_numpy()),
+    )
+    .background_gradient(
+        cmap="Reds",
+        subset=[
+            "Spearman's coeff. (Energy - repulsion)",
+            "Spearman's coeff. (Force - descending)",
+        ],
+        # vmin=-1, vmax=-0.5
+    )
+    .background_gradient(
+        cmap="RdPu",
+        subset=["Tortuosity", "Energy jump [eV]", "Force flips"],
+    )
+    .background_gradient(
+        cmap="Blues",
+        subset=["Rank", "Rank aggr."],
+    )
 )
-# s = table.style.highlight_min(
-#     subset=["Conservation deviation", "Spearman's corr. coeff. (Energy - repulsion)"],
-#     color="lightgreen",
-# )
-    # table.append(new_row, ignore_index=True)
-
 
 
 def render():
-
-    
     st.dataframe(
         s,
         use_container_width=True,
     )
-
-    # pass
-
-# def plot():
-#     pass
-
-# if __name__ == '__main__':
-#     pass
+    # return table
