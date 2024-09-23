@@ -60,18 +60,23 @@ DATA_DIR = Path("mlip_arena/tasks/diatomics")
 if not mlip_methods and not dft_methods:
     st.stop()
 
-dfs = [
-    pd.read_json(DATA_DIR / REGISTRY[method]["family"] / "homonuclear-diatomics.json")
-    for method in mlip_methods
-]
-dfs.extend(
-    [
-        pd.read_json(DATA_DIR / method.lower() / "homonuclear-diatomics.json")
-        for method in dft_methods
+@st.cache_data
+def get_data(mlip_methods, dft_methods):
+    dfs = [
+        pd.read_json(DATA_DIR / REGISTRY[method]["family"] / "homonuclear-diatomics.json")
+        for method in mlip_methods
     ]
-)
-df = pd.concat(dfs, ignore_index=True)
-df.drop_duplicates(inplace=True, subset=["name", "method"])
+    dfs.extend(
+        [
+            pd.read_json(DATA_DIR / method.lower() / "homonuclear-diatomics.json")
+            for method in dft_methods
+        ]
+    )
+    df = pd.concat(dfs, ignore_index=True)
+    df.drop_duplicates(inplace=True, subset=["name", "method"])
+    return df
+
+df = get_data(mlip_methods, dft_methods)
 
 method_color_mapping = {
     method: color_sequence[i % len(color_sequence)]
@@ -81,133 +86,152 @@ method_color_mapping = {
 # img_dir = Path('./images')
 # img_dir.mkdir(exist_ok=True)
 
-for i, symbol in enumerate(chemical_symbols[1:]):
+
+@st.cache_data
+def get_plots(df, energy_plot, force_plot):
+
+    figs = []
+
+    for i, symbol in enumerate(chemical_symbols[1:]):
+        
+
+        rows = df[df["name"] == symbol + symbol]
+
+        if rows.empty:
+            continue
+
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+        elo, flo = float("inf"), float("inf")
+
+        for j, method in enumerate(rows["method"].unique()):
+            if method not in mlip_methods and method not in dft_methods:
+                continue
+            row = rows[rows["method"] == method].iloc[0]
+
+            rs = np.array(row["R"])
+            es = np.array(row["E"])
+            fs = np.array(row["F"])
+
+            rs = np.array(rs)
+            ind = np.argsort(rs)
+            es = np.array(es)
+            fs = np.array(fs)
+
+            rs = rs[ind]
+            es = es[ind]
+            if "GPAW" not in method:
+                es = es - es[-1]
+            else:
+                pass
+
+            if "GPAW" not in method:
+                fs = fs[ind]
+
+            if "GPAW" in method:
+                xs = np.linspace(rs.min() * 0.99, rs.max() * 1.01, int(5e2))
+            else:
+                xs = rs
+
+            if energy_plot:
+                if "GPAW" in method:
+                    cs = CubicSpline(rs, es)
+                    ys = cs(xs)
+                else:
+                    ys = es
+
+                elo = min(elo, max(ys.min() * 1.2, -15), -1)
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=xs,
+                        y=ys,
+                        mode="lines",
+                        line=dict(
+                            color=method_color_mapping[method],
+                            width=3,
+                        ),
+                        name=method,
+                    ),
+                    secondary_y=False,
+                )
+
+            if force_plot and "GPAW" not in method:
+                ys = fs
+
+                flo = min(flo, max(ys.min() * 1.2, -50))
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=xs,
+                        y=ys,
+                        mode="lines",
+                        line=dict(
+                            color=method_color_mapping[method],
+                            width=2,
+                            dash="dashdot",
+                        ),
+                        name=method,
+                        showlegend=not energy_plot,
+                    ),
+                    secondary_y=True,
+                )
+
+        name = f"{symbol}-{symbol}"
+
+        fig.update_layout(
+            showlegend=True,
+            legend=dict(
+                orientation="v",
+                x=0.95,
+                xanchor="right",
+                y=1,
+                yanchor="top",
+                bgcolor="rgba(0, 0, 0, 0)"
+                # entrywidth=0.3,
+                # entrywidthmode='fraction',
+            ),
+            title_text=f"{name}",
+            title_x=0.5,
+        )
+
+        # Set x-axis title
+        fig.update_xaxes(title_text="Distance [Å]")
+
+        # Set y-axes titles
+        if energy_plot:
+            fig.update_layout(
+                yaxis=dict(
+                    title=dict(text="Energy [eV]"),
+                    side="left",
+                    range=[elo, 1.5 * (abs(elo))],
+                )
+            )
+
+        if force_plot:
+            fig.update_layout(
+                yaxis2=dict(
+                    title=dict(text="Force [eV/Å]"),
+                    side="right",
+                    range=[flo, 1.0 * abs(flo)],
+                    overlaying="y",
+                    tickmode="sync",
+                ),
+            )
+
+
+        # cols[i % ncols].plotly_chart(fig, use_container_width=True)
+
+        figs.append(fig)
+    
+    return figs
+    # fig.write_image(format='svg', file=img_dir / f"{name}.svg")
+
+
+figs = get_plots(df, energy_plot, force_plot)
+
+for i, fig in enumerate(figs):
     if i % ncols == 0:
         cols = st.columns(ncols)
-
-    rows = df[df["name"] == symbol + symbol]
-
-    if rows.empty:
-        continue
-
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-
-    elo, flo = float("inf"), float("inf")
-
-    for j, method in enumerate(rows["method"].unique()):
-        if method not in mlip_methods and method not in dft_methods:
-            continue
-        row = rows[rows["method"] == method].iloc[0]
-
-        rs = np.array(row["R"])
-        es = np.array(row["E"])
-        fs = np.array(row["F"])
-
-        rs = np.array(rs)
-        ind = np.argsort(rs)
-        es = np.array(es)
-        fs = np.array(fs)
-
-        rs = rs[ind]
-        es = es[ind]
-        if "GPAW" not in method:
-            es = es - es[-1]
-        else:
-            pass
-
-        if "GPAW" not in method:
-            fs = fs[ind]
-
-        if "GPAW" in method:
-            xs = np.linspace(rs.min() * 0.99, rs.max() * 1.01, int(5e2))
-        else:
-            xs = rs
-
-        if energy_plot:
-            if "GPAW" in method:
-                cs = CubicSpline(rs, es)
-                ys = cs(xs)
-            else:
-                ys = es
-
-            elo = min(elo, max(ys.min() * 1.2, -15), -1)
-
-            fig.add_trace(
-                go.Scatter(
-                    x=xs,
-                    y=ys,
-                    mode="lines",
-                    line=dict(
-                        color=method_color_mapping[method],
-                        width=3,
-                    ),
-                    name=method,
-                ),
-                secondary_y=False,
-            )
-
-        if force_plot and "GPAW" not in method:
-            ys = fs
-
-            flo = min(flo, max(ys.min() * 1.2, -50))
-
-            fig.add_trace(
-                go.Scatter(
-                    x=xs,
-                    y=ys,
-                    mode="lines",
-                    line=dict(
-                        color=method_color_mapping[method],
-                        width=2,
-                        dash="dashdot",
-                    ),
-                    name=method,
-                    showlegend=not energy_plot,
-                ),
-                secondary_y=True,
-            )
-
-    name = f"{symbol}-{symbol}"
-
-    fig.update_layout(
-        showlegend=True,
-        legend=dict(
-            orientation="v",
-            x=0.95,
-            xanchor="right",
-            y=1,
-            yanchor="top",
-            bgcolor="rgba(0, 0, 0, 0)"
-            # entrywidth=0.3,
-            # entrywidthmode='fraction',
-        ),
-        title_text=f"{name}",
-        title_x=0.5,
-    )
-
-    # Set x-axis title
-    fig.update_xaxes(title_text="Distance [Å]")
-
-    # Set y-axes titles
-    if energy_plot:
-        fig.update_layout(
-            yaxis=dict(
-                title=dict(text="Energy [eV]"),
-                side="left",
-                range=[elo, 1.5 * (abs(elo))],
-            )
-        )
-
-    if force_plot:
-        fig.update_layout(
-            yaxis2=dict(
-                title=dict(text="Force [eV/Å]"),
-                side="right",
-                range=[flo, 1.0 * abs(flo)],
-                overlaying="y",
-                tickmode="sync",
-            ),
-        )
-
     cols[i % ncols].plotly_chart(fig, use_container_width=True)
-    # fig.write_image(format='svg', file=img_dir / f"{name}.svg")
+
