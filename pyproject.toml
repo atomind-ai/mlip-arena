@@ -50,7 +50,7 @@ run = [
     "alignn==2024.5.27"
 ]
 app = [
-    "streamlit",
+    "streamlit==1.38.0",
     "plotly",
     "bokeh==2.4.3",
     "statsmodels"
