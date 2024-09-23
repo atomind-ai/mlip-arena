@@ -2,12 +2,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import plotly.colors as pcolors
-import plotly.graph_objects as go
 import streamlit as st
-from ase.data import chemical_symbols
-from plotly.subplots import make_subplots
-from scipy.interpolate import CubicSpline
 
 from mlip_arena.models import REGISTRY as MODELS
 

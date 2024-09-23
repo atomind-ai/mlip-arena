@@ -28,7 +28,7 @@ CHGNet:
   class: CHGNet
   family: chgnet
   package: chgnet==0.3.8
-  checkpoint:
+  checkpoint: v0.3.0
   username: cyrusyc
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00

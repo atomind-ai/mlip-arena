@@ -98,16 +98,18 @@ for task in TASKS:
         continue
 
     st.header(task, divider=True)
-    st.page_link(
-        f"tasks/{TASKS[task]['task-page']}.py",
-        label="Link to task page",
-        icon=":material/link:",
-    )
 
     task_module = importlib.import_module(f"ranks.{TASKS[task]['rank-page']}")
 
     #  Call the function from the imported module
     if hasattr(task_module, "render"):
         task_module.render()
+        st.page_link(
+            f"tasks/{TASKS[task]['task-page']}.py",
+            label="Task page",
+            icon=":material/link:",
+        )
+        # if st.button(f"Go to task page"):
+        #     st.switch_page(f"tasks/{TASKS[task]['task-page']}.py")
     else:
         st.write("Results for the task are not available yet.")
