@@ -257,7 +257,7 @@ if "time_range" not in st.session_state:
     st.session_state.time_range = (0, increment)
 
 
-@st.fragment(run_every=1e-3 if st.session_state.play else None)
+@st.experimental_fragment(run_every=1e-3 if st.session_state.play else None)
 def draw_com_drifts_plot():
     if st.session_state.play:
         start, end = st.session_state.time_range
