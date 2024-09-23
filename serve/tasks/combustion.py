@@ -145,14 +145,44 @@ fig.add_trace(
 fig.update_layout(
     title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
     xaxis_title="Timestep",
-    yaxis_title="Temperatures",
-    yaxis2=dict(
-        title="Product Percentage (%)",
-        overlaying="y",
-        side="right",
-        range=[0, 100],
-        tickmode="sync",
-    ),
+    yaxis_title="Temperature (K)",
+    # yaxis2=dict(
+    #     title="Product Percentage (%)",
+    #     overlaying="y",
+    #     side="right",
+    #     range=[0, 100],
+    #     tickmode="sync",
+    # ),
+    # template="plotly_dark",
+)
+
+st.plotly_chart(fig)
+
+# Energy
+
+fig = go.Figure()
+
+for method in df["method"].unique():
+    row = df[df["method"] == method].iloc[0]
+    fig.add_trace(
+        go.Scatter(
+            x=row["timestep"],
+            y=np.array(row["energies"]) - row["energies"][0],
+            mode="lines",
+            name=method,
+            line=dict(
+                color=method_color_mapping[method],
+                # width=1
+            ),
+            marker=dict(color=method_color_mapping[method], size=3),
+            showlegend=True,
+        ),
+    )
+
+fig.update_layout(
+    title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
+    xaxis_title="Timestep",
+    yaxis_title="ΔE (eV)",
     # template="plotly_dark",
 )
 
@@ -213,7 +243,7 @@ st.plotly_chart(fig)
 st.markdown("""### Center of mass drift
 
 The center of mass (COM) drift is a measure of the stability of the simulation. A well-behaved simulation should have a COM drift close to zero. The COM drift is calculated as the displacement of the COM of the system from the initial position.
-            """)
+""")
 
 
 @st.cache_data
@@ -229,7 +259,9 @@ def get_com_drifts(df):
     df_flat = df_exploded.drop(columns=["com_drifts"])
 
     df_flat["total_com_drift"] = np.sqrt(
-        df_flat["com_drift_x"] ** 2 + df_flat["com_drift_y"] ** 2 + df_flat["com_drift_z"] ** 2
+        df_flat["com_drift_x"] ** 2
+        + df_flat["com_drift_y"] ** 2
+        + df_flat["com_drift_z"] ** 2
     )
 
     return df_flat
@@ -290,7 +322,11 @@ def draw_com_drifts_plot():
         x="com_drift_x",
         y="com_drift_y",
         z="com_drift_z",
-        labels={"com_drift_x": "Δx (Å)", "com_drift_y": "Δy (Å)", "com_drift_z": "Δz (Å)"},
+        labels={
+            "com_drift_x": "Δx (Å)",
+            "com_drift_y": "Δy (Å)",
+            "com_drift_z": "Δz (Å)",
+        },
         category_orders={"method": df_exploded["method"].unique()},
         color_discrete_sequence=[
             method_color_mapping[method] for method in df_exploded["method"].unique()
@@ -313,29 +349,31 @@ def draw_com_drifts_plot():
             bgcolor="rgba(0, 0, 0, 0)",
         ),
     )
-    fig.add_traces([
-        go.Scatter3d(
-            x=[0],
-            y=[0],
-            z=[0],
-            mode="markers",
-            marker=dict(size=2, color="white"),
-            name="Origin",
-        ),
-        # add last point of each method and annotate the total drift
-        go.Scatter3d(
-            # df_filtered.groupby("method")["com_drift_x"].last(),
-            x=df_filtered.groupby("method")["com_drift_x"].last(),
-            y=df_filtered.groupby("method")["com_drift_y"].last(),
-            z=df_filtered.groupby("method")["com_drift_z"].last(),
-            mode="markers+text",
-            marker=dict(size=2, color="rgba(0, 0, 0, 128)"),
-            text=df_filtered.groupby("method")["total_com_drift"].last().round(3),
-            # size=5,
-            name="total drifts",
-            textposition="top center",
-        ),
-    ])
+    fig.add_traces(
+        [
+            go.Scatter3d(
+                x=[0],
+                y=[0],
+                z=[0],
+                mode="markers",
+                marker=dict(size=3, color="white"),
+                name="origin",
+            ),
+            # add last point of each method and annotate the total drift
+            go.Scatter3d(
+                # df_filtered.groupby("method")["com_drift_x"].last(),
+                x=df_filtered.groupby("method")["com_drift_x"].last(),
+                y=df_filtered.groupby("method")["com_drift_y"].last(),
+                z=df_filtered.groupby("method")["com_drift_z"].last(),
+                mode="markers+text",
+                marker=dict(size=3, color="white", opacity=0.5),
+                text=df_filtered.groupby("method")["total_com_drift"].last().round(3),
+                # size=5,
+                name="total drifts",
+                textposition="top center",
+            ),
+        ]
+    )
 
     st.plotly_chart(fig)
 
