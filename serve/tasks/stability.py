@@ -22,7 +22,8 @@ under many-body effect. These are often manifested as softened repulsion and hol
 and sampling of the phase space.
 
 Here, we analyze the stability of the MD simulations under high pressure conditions by gradually increasing the pressure 
-from 0 to 100 GPa until the system crashes or completes 100 ps steps.
+from 0 to 1000 GPa at 300K until the system crashes or completes 100 ps trajectory. This benchmark also explores faster the far-from-equilibrium
+dynamics of the system and the "durability" of the MLIPs under extreme conditions.
 """)
 
 st.markdown("### Methods")

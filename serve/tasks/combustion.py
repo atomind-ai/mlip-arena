@@ -180,10 +180,101 @@ for method in df["method"].unique():
     )
 
 fig.update_layout(
-    title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
+    # title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
     xaxis_title="Timestep",
-    yaxis_title="ΔE (eV)",
+    yaxis_title="Potential Energy 𝚫 (eV)",
     # template="plotly_dark",
+)
+
+st.plotly_chart(fig)
+
+# Total Energy
+
+# fig = go.Figure()
+
+# for method in df["method"].unique():
+#     row = df[df["method"] == method].iloc[0]
+#     fig.add_trace(
+#         go.Scatter(
+#             x=row["timestep"],
+#             y=np.array(row["energies"]) - row["energies"][0] + np.array(row["kinetic_energies"]),
+#             mode="lines",
+#             name=method,
+#             line=dict(
+#                 color=method_color_mapping[method],
+#                 # width=1
+#             ),
+#             marker=dict(color=method_color_mapping[method], size=3),
+#             showlegend=True,
+#         ),
+#     )
+
+# fig.update_layout(
+#     # title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
+#     xaxis_title="Timestep",
+#     yaxis_title="Total Energy 𝚫 (eV)",
+#     # template="plotly_dark",
+# )
+
+# st.plotly_chart(fig)
+
+# Reaction energy
+
+fig = go.Figure()
+
+exp_ref = -68.3078 # kcal/mol
+
+df["reaction_energy"] = df["energies"].apply(lambda x: x[-1] - x[0]) / 128 * 23.0609 # kcal/mol
+
+df["reaction_energy_abs_err"] = np.abs(df["reaction_energy"] - exp_ref)
+
+df.sort_values("reaction_energy_abs_err", inplace=True)
+
+fig.add_traces([
+    go.Bar(
+        x=df["method"],
+        y=df["reaction_energy"],
+        marker=dict(color=[method_color_mapping[method] for method in df["method"]]),
+        text=[f"{y:.2f}" for y in df["reaction_energy"]],
+    ),
+])
+
+fig.add_shape(
+    go.layout.Shape(
+        type="line",
+        x0=-0.5, x1=len(df["method"]) - 0.5,  # range covering the bars
+        y0=exp_ref, y1=exp_ref,  # y-values for the horizontal line
+        line=dict(color="Red", width=2, dash="dash"),
+        layer="below"
+    )
+)
+
+fig.add_annotation(
+    go.layout.Annotation(
+        x=0.5,
+        xref="paper",
+        xanchor="center",
+        y=exp_ref,
+        yanchor="bottom",
+        text=f"Experiment: {exp_ref} kcal/mol [1]",
+        showarrow=False,
+        font=dict(
+            color="Red",
+        ),
+    )
+)
+
+fig.update_layout(
+    # title="Reaction energy 𝚫H (kcal/mol)",
+    xaxis_title="Method <br> <span style='font-size: 10px;'>[1] Lide, D. R. (Ed.). (2004). CRC handbook of chemistry and physics (Vol. 85). CRC press.</span>",
+    yaxis_title="Reaction energy 𝚫H (kcal/mol)",
+    # annotations = [
+    #     dict(
+    #         x=0.5, xref="paper", xanchor="center",
+    #         y=-0.5, yref="paper", yanchor="bottom",
+    #         text="Caption",
+    #     )
+    # ]
 )
 
 st.plotly_chart(fig)
@@ -208,7 +299,7 @@ fig.add_trace(
 fig.update_layout(
     title="Reaction yield (2H2 + O2 -> 2H2O, 64 units)",
     xaxis_title="Yield (%)",
-    yaxis_title="Method",
+    yaxis_title="Method"
 )
 
 st.plotly_chart(fig)
@@ -277,11 +368,11 @@ def toggle_playing():
     st.session_state.play = not st.session_state.play
 
 
-st.button(
-    "Play" if not st.session_state.play else "Pause",
-    type="primary" if not st.session_state.play else "secondary",
-    on_click=toggle_playing,
-)
+# st.button(
+#     "Play" if not st.session_state.play else "Pause",
+#     type="primary" if not st.session_state.play else "secondary",
+#     on_click=toggle_playing,
+# )
 
 increment = df["target_steps"].max() // 200
 
@@ -289,7 +380,8 @@ if "time_range" not in st.session_state:
     st.session_state.time_range = (0, increment)
 
 
-@st.experimental_fragment(run_every=1e-3 if st.session_state.play else None)
+# @st.experimental_fragment(run_every=1e-3 if st.session_state.play else None)
+@st.experimental_fragment()
 def draw_com_drifts_plot():
     if st.session_state.play:
         start, end = st.session_state.time_range
@@ -323,9 +415,9 @@ def draw_com_drifts_plot():
         y="com_drift_y",
         z="com_drift_z",
         labels={
-            "com_drift_x": "Δx (Å)",
-            "com_drift_y": "Δy (Å)",
-            "com_drift_z": "Δz (Å)",
+            "com_drift_x": "𝚫x (Å)",
+            "com_drift_y": "𝚫y (Å)",
+            "com_drift_z": "𝚫z (Å)",
         },
         category_orders={"method": df_exploded["method"].unique()},
         color_discrete_sequence=[
