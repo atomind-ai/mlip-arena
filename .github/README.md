@@ -1,19 +1,26 @@
 <div align="center">
     <h1>MLIP Arena</h1>
     <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>
+    <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo-with-title.svg" style="height: 20px; background-color: white;" alt="Hugging Face"></a>
 </div>
 
 > [!CAUTION]
 > MLIP Arena is currently in pre-alpha. The results are not stable. Please intepret them with care. 
 
 > [!NOTE]
-> If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks. 
+> If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu).
 
 MLIP Arena is an open-source platform for benchmarking machine learning interatomic potentials (MLIPs). The platform provides a unified interface for users to evaluate the performance of their models on a variety of tasks, including single-point density functional theory calculations and molecular dynamics simulations. The platform is designed to be extensible, allowing users to contribute new models, benchmarks, and training data to the platform.
 
 ## Contribute
 
 MLIP Arena is now in pre-alpha. If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks. 
+
+### Development
+
+```
+streamlit run serva/app.py
+```
 
 ### Add new MLIP models
 

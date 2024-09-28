@@ -10,7 +10,7 @@ authors=[
 ]
 description=""
 readme="README.md"
-requires-python=">=3.8"
+requires-python=">=3.10"
 keywords=[
     "pytorch",
     "machine-learning-interatomic-potentials",
