@@ -30,7 +30,7 @@ st.markdown("### Methods")
 container = st.container(border=True)
 valid_models = [model for model, metadata in REGISTRY.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 
-models = container.multiselect("MLIPs", valid_models, ["MACE-MP(M)", "CHGNet"])
+models = container.multiselect("MLIPs", valid_models, ["MACE-MP(M)", "CHGNet", "ORB"])
 
 st.markdown("### Settings")
 vis = st.container(border=True)
@@ -95,6 +95,9 @@ counts_per_method = {method: [0] * len(bin_labels) for method in df["method"].un
 for method, group in df.groupby("method"):
     counts, _ = np.histogram(group["total_steps"], bins=bins)
     counts_per_method[method] = counts
+
+# Sort the dictionary by the percentage of the last bin
+counts_per_method = {k: v for k, v in sorted(counts_per_method.items(), key=lambda item: item[1][-1]/sum(item[1]))}
 
 
 count_or_percetange = st.toggle("show counts", False)
