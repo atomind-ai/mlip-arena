@@ -147,7 +147,7 @@ def md(
     temperature: float | Sequence | np.ndarray | None = 300.0,
     pressure: float | Sequence | np.ndarray | None = None,
     ase_md_kwargs: dict | None = None,
-    mb_velocity_seed: int | None = None,
+    md_velocity_seed: int | None = None,
     zero_linear_momentum: bool = True,
     zero_angular_momentum: bool = True,
     traj_file: str | Path | None = None,
@@ -256,7 +256,7 @@ def md(
                     MaxwellBoltzmannDistribution(
                         atoms=atoms,
                         temperature_K=t_schedule[last_step],
-                        rng=np.random.default_rng(seed=mb_velocity_seed),
+                        rng=np.random.default_rng(seed=md_velocity_seed),
                     )
 
                 if zero_linear_momentum:
@@ -270,7 +270,7 @@ def md(
                 MaxwellBoltzmannDistribution(
                     atoms=atoms,
                     temperature_K=t_schedule[last_step],
-                    rng=np.random.default_rng(seed=mb_velocity_seed),
+                    rng=np.random.default_rng(seed=md_velocity_seed),
                 )
 
             if zero_linear_momentum:

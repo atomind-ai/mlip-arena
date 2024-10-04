@@ -84,6 +84,7 @@ ORB:
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
+    - stability
   github: https://github.com/orbital-materials/orb-models
   doi: 
   date: 2024-09-03

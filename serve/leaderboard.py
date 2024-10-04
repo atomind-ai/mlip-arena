@@ -68,13 +68,22 @@ st.markdown(
     """
 <h1 style='text-align: center;'>⚔️ MLIP Arena Leaderboard ⚔️</h1>
 
-MLIP Arena is a platform for benchmarking foundation machine learning interatomic potentials (MLIPs), mainly for disclosing the learned physics and chemistry of the models and their performance on molecular dynamics (MD) simulations.
-The benchmarks are designed to evaluate the readiness and reliability of open-source, open-weight models to reproduce the qualitatively or quantitatively correct physics.
+> MLIP Arena is a platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional energy and force error metrics. It focuses on revealing the underlying physics and chemistry learned by these models and assessing their performance in molecular dynamics (MD) simulations. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
+
+### :red[Introduction]
+
+Foundation machine learning interatomic potentials (fMLIPs) trained on extensive databases containing millions of density functional theory (DFT) calculations have shown remarkable zero-shot predictive capabilities for complex atomic interactions. These potentials derive quantum mechanical insights with high accuracy, expressivity, and generalizability, significantly outperforming classical empirical force fields while maintaining comparable computational efficiency.
+
+However, MLIPs trained on atomic energy and force labels do not neccessarily capture the correct atomic interactions, even though they usually excel in error-based metrics for bulk systems. To drive further advancements in this field, it is crucial to establish mechanisms that ensure fair and transparent benchmarking practices that go beyond basic regression metrics.
+
+MLIP Arena aims to provide an equitable and transparent platform for benchmarking MLIPs in a collaborative, crowd-sourced environment. Its primary goal is to uncover the learned physics and chemistry of open-source, open-weight MLIPs. The benchmarks are designed to be agnostic to both the underlying architecture and the specific training targets, such as density functionals, ensuring a comprehensive and unbiased evaluation.
+
 """,
     unsafe_allow_html=True,
 )
 
 
+st.subheader(":red[Supported Models]")
 st.dataframe(
     s,
     use_container_width=True,
@@ -92,12 +101,15 @@ st.dataframe(
     },
 )
 
+# st.markdown("<h2 style='text-align: center;'>🏆 Task Ranks 🏆</h2>", unsafe_allow_html=True)
+
+st.subheader(":red[Task Ranks]")
 
 for task in TASKS:
     if TASKS[task]["rank-page"] is None:
         continue
 
-    st.header(task, divider=True)
+    st.subheader(task, divider=True)
 
     task_module = importlib.import_module(f"ranks.{TASKS[task]['rank-page']}")
 
