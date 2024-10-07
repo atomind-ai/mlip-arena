@@ -311,4 +311,8 @@ def md(
 
         traj.close()
 
-    return {"runtime": end_time - start_time, "n_steps": n_steps}
+    return {
+        "atoms": atoms,
+        "runtime": end_time - start_time,
+        "n_steps": n_steps,
+    }

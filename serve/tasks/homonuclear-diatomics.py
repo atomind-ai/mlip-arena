@@ -55,15 +55,18 @@ palette_colors = list(color_palettes.values())
 palette_name = vis.selectbox("Color sequence", options=palette_names, index=22)
 
 color_sequence = color_palettes[palette_name]  # type: ignore
-
-DATA_DIR = Path("mlip_arena/tasks/diatomics")
 if not mlip_methods and not dft_methods:
     st.stop()
 
+
 @st.cache_data
 def get_data(mlip_methods, dft_methods):
+    DATA_DIR = Path("mlip_arena/tasks/diatomics")
+
     dfs = [
-        pd.read_json(DATA_DIR / REGISTRY[method]["family"] / "homonuclear-diatomics.json")
+        pd.read_json(
+            DATA_DIR / REGISTRY[method]["family"] / "homonuclear-diatomics.json"
+        )
         for method in mlip_methods
     ]
     dfs.extend(
@@ -76,6 +79,7 @@ def get_data(mlip_methods, dft_methods):
     df.drop_duplicates(inplace=True, subset=["name", "method"])
     return df
 
+
 df = get_data(mlip_methods, dft_methods)
 
 method_color_mapping = {
@@ -83,18 +87,12 @@ method_color_mapping = {
     for i, method in enumerate(df["method"].unique())
 }
 
-# img_dir = Path('./images')
-# img_dir.mkdir(exist_ok=True)
-
 
 @st.cache_data
-def get_plots(df, energy_plot, force_plot):
-
+def get_plots(df, energy_plot: bool, force_plot: bool, method_color_mapping: dict):
     figs = []
 
     for i, symbol in enumerate(chemical_symbols[1:]):
-        
-
         rows = df[df["name"] == symbol + symbol]
 
         if rows.empty:
@@ -187,7 +185,7 @@ def get_plots(df, energy_plot, force_plot):
                 xanchor="right",
                 y=1,
                 yanchor="top",
-                bgcolor="rgba(0, 0, 0, 0)"
+                bgcolor="rgba(0, 0, 0, 0)",
                 # entrywidth=0.3,
                 # entrywidthmode='fraction',
             ),
@@ -219,19 +217,17 @@ def get_plots(df, energy_plot, force_plot):
                 ),
             )
 
-
         # cols[i % ncols].plotly_chart(fig, use_container_width=True)
 
         figs.append(fig)
-    
+
     return figs
     # fig.write_image(format='svg', file=img_dir / f"{name}.svg")
 
 
-figs = get_plots(df, energy_plot, force_plot)
+figs = get_plots(df, energy_plot, force_plot, method_color_mapping)
 
 for i, fig in enumerate(figs):
     if i % ncols == 0:
         cols = st.columns(ncols)
     cols[i % ncols].plotly_chart(fig, use_container_width=True)
-
