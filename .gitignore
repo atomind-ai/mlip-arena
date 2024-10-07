@@ -4,6 +4,7 @@
 *.traj
 mlip_arena/tasks/*/*/*/
 lab/
+manuscripts/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
