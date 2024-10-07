@@ -53,14 +53,21 @@ color_sequence = color_palettes[palette_name]
 if not models:
     st.stop()
 
-families = [REGISTRY[str(model)]["family"] for model in models]
+@st.cache_data
+def get_data(models):
 
-dfs = [
-    pd.read_json(DATA_DIR / family.lower() / "chloride-salts.json")
-    for family in families
-]
-df = pd.concat(dfs, ignore_index=True)
-df.drop_duplicates(inplace=True, subset=["material_id", "formula", "method"])
+    families = [REGISTRY[str(model)]["family"] for model in models]
+
+    dfs = [
+        pd.read_json(DATA_DIR / family.lower() / "chloride-salts.json")
+        for family in families
+    ]
+    df = pd.concat(dfs, ignore_index=True)
+    df.drop_duplicates(inplace=True, subset=["material_id", "formula", "method"])
+
+    return df
+
+df = get_data(models)
 
 method_color_mapping = {
     method: color_sequence[i % len(color_sequence)]
@@ -68,8 +75,6 @@ method_color_mapping = {
 }
 
 ###
-
-fig = go.Figure()
 
 # Determine the bin edges for the entire dataset to keep them consistent across groups
 # bins = np.histogram_bin_edges(df['total_steps'], bins=10)
@@ -101,63 +106,68 @@ counts_per_method = {k: v for k, v in sorted(counts_per_method.items(), key=lamb
 
 
 count_or_percetange = st.toggle("show counts", False)
-# Create a figure
-fig = go.Figure()
 
-# Add a bar for each bin range across all methods
-for i, bin_label in enumerate(bin_labels):
-    for method, counts in counts_per_method.items():
-        fig.add_trace(go.Bar(
-            # name=method,  # This will be the legend entry
-            x=[counts[i]/counts.sum()*100] if not count_or_percetange else [counts[i]],
-            y=[method],  # Method as the y-axis category
-            # name=bin_label,
-            orientation="h",  # Horizontal bars
-            marker=dict(
-                color=bin_colors[i],
-                line=dict(color="rgb(248, 248, 249)", width=1)
-            ),
-            text=f"{bin_label}: {counts[i]/counts.sum()*100:.0f}%",
-            width=0.5
-        ))
+@st.experimental_fragment()
+def plot_md_steps(counts_per_method, count_or_percetange):
+    # Create a figure
+    fig = go.Figure()
 
-# Update the layout to stack the bars
-fig.update_layout(
-    barmode="stack",  # Stack the bars
-    title="Total MD steps (before crash or completion)",
-    xaxis_title="Percentage (%)" if not count_or_percetange else "Count",
-    yaxis_title="Method",
-    showlegend=False
-)
+    # Add a bar for each bin range across all methods
+    for i, bin_label in enumerate(bin_labels):
+        for method, counts in counts_per_method.items():
+            fig.add_trace(go.Bar(
+                # name=method,  # This will be the legend entry
+                x=[counts[i]/counts.sum()*100] if not count_or_percetange else [counts[i]],
+                y=[method],  # Method as the y-axis category
+                # name=bin_label,
+                orientation="h",  # Horizontal bars
+                marker=dict(
+                    color=bin_colors[i],
+                    line=dict(color="rgb(248, 248, 249)", width=1)
+                ),
+                text=f"{bin_label}: {counts[i]/counts.sum()*100:.0f}%",
+                width=0.5
+            ))
 
-# bins = np.linspace(0, 0.9, 10)
+    # Update the layout to stack the bars
+    fig.update_layout(
+        barmode="stack",  # Stack the bars
+        title="Total MD steps (before crash or completion)",
+        xaxis_title="Percentage (%)" if not count_or_percetange else "Count",
+        yaxis_title="Method",
+        showlegend=False
+    )
 
-# for method, data in df.groupby("method"):
+    # bins = np.linspace(0, 0.9, 10)
 
-#     # print(method, data)
-#     counts, bins = np.histogram(data['total_steps'])
+    # for method, data in df.groupby("method"):
 
-#     bin_labels = [f"{int(bins[i])}-{int(bins[i+1])}" for i in range(len(bins)-1)]
+    #     # print(method, data)
+    #     counts, bins = np.histogram(data['total_steps'])
 
-#     # Create a horizontal bar chart
-#     fig = go.Figure(go.Bar(
-#         x=[counts[i]],  # Count for this bin
-#         y=[method],  # Method as the y-axis category
-#         # x=counts,  # Bar lengths
-#         # y=bin_labels,  # Bin labels as y-tick labels
-#         orientation='h'  # Horizontal bars
-#     ))
+    #     bin_labels = [f"{int(bins[i])}-{int(bins[i+1])}" for i in range(len(bins)-1)]
+
+    #     # Create a horizontal bar chart
+    #     fig = go.Figure(go.Bar(
+    #         x=[counts[i]],  # Count for this bin
+    #         y=[method],  # Method as the y-axis category
+    #         # x=counts,  # Bar lengths
+    #         # y=bin_labels,  # Bin labels as y-tick labels
+    #         orientation='h'  # Horizontal bars
+    #     ))
 
 
-# # Update layout for clarity
-# fig.update_layout(
-#     title="Histogram of Total Steps",
-#     xaxis_title="Count",
-#     yaxis_title="Total Steps Range"
-# )
+    # # Update layout for clarity
+    # fig.update_layout(
+    #     title="Histogram of Total Steps",
+    #     xaxis_title="Count",
+    #     yaxis_title="Total Steps Range"
+    # )
 
-st.plotly_chart(fig)
+    st.plotly_chart(fig)
 
+
+plot_md_steps(counts_per_method, count_or_percetange)
 
 ###
 
@@ -166,44 +176,49 @@ st.plotly_chart(fig)
 
 # """)
 
-fig = px.scatter(
-    df,
-    x="natoms",
-    y="steps_per_second",
-    color="method",
-    size="total_steps",
-    hover_data=["material_id", "formula"],
-    color_discrete_map=method_color_mapping,
-    # trendline="ols",
-    # trendline_options=dict(log_x=True),
-    log_x=True,
-    # log_y=True,
-    # range_y=[1, 1e2],
-    range_x=[df["natoms"].min()*0.9, df["natoms"].max()*1.1],
-    # range_x=[1e3, 1e2],
-    title="Inference speed (on single A100 GPU)",
-    labels={"steps_per_second": "Steps per second", "natoms": "Number of atoms"},
-)
-
-
 def func(x, a, n):
     return a * x ** (-n)
 
-x = np.linspace(df["natoms"].min(), df["natoms"].max(), 100)
+@st.experimental_fragment()
+def plot_speed(df, method_color_mapping):
 
-for method, data in df.groupby("method"):
-    data.dropna(subset=["steps_per_second"], inplace=True)
-    popt, pcov = curve_fit(func, data["natoms"], data["steps_per_second"])
+    fig = px.scatter(
+        df,
+        x="natoms",
+        y="steps_per_second",
+        color="method",
+        size="total_steps",
+        hover_data=["material_id", "formula"],
+        color_discrete_map=method_color_mapping,
+        # trendline="ols",
+        # trendline_options=dict(log_x=True),
+        log_x=True,
+        # log_y=True,
+        # range_y=[1, 1e2],
+        range_x=[df["natoms"].min()*0.9, df["natoms"].max()*1.1],
+        # range_x=[1e3, 1e2],
+        title="Inference speed (on single A100 GPU)",
+        labels={"steps_per_second": "Steps per second", "natoms": "Number of atoms"},
+    )
 
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=func(x, *popt),
-        mode="lines",
-        # name='Fit',
-        line=dict(color=method_color_mapping[method], width=3),
-        showlegend=False,
-        name=f"{popt[0]:.2f}N^{-popt[1]:.2f}",
-        hovertext=f"{popt[0]:.2f}N^{-popt[1]:.2f}",
-    ))
+    x = np.linspace(df["natoms"].min(), df["natoms"].max(), 100)
 
-st.plotly_chart(fig)
+    for method, data in df.groupby("method"):
+        data.dropna(subset=["steps_per_second"], inplace=True)
+        popt, pcov = curve_fit(func, data["natoms"], data["steps_per_second"])
+
+        fig.add_trace(go.Scatter(
+            x=x,
+            y=func(x, *popt),
+            mode="lines",
+            # name='Fit',
+            line=dict(color=method_color_mapping[method], width=3),
+            showlegend=False,
+            name=f"{popt[0]:.2f}N^{-popt[1]:.2f}",
+            hovertext=f"{popt[0]:.2f}N^{-popt[1]:.2f}",
+        ))
+
+    st.plotly_chart(fig)
+
+
+plot_speed(df, method_color_mapping)
