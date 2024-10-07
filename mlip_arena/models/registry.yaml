@@ -108,6 +108,7 @@ SevenNet:
     - qmof
   gpu-tasks:
     - homonuclear-diatomics
+    - stability
     - combustion
   github: https://github.com/MDIL-SNU/SevenNet
   doi: https://doi.org/10.1021/acs.jctc.4c00190
