@@ -5,7 +5,7 @@ from mlip_arena.models.utils import MLIPEnum
 
 
 @pytest.mark.parametrize("model", MLIPEnum)
-def test_calculate(model):
+def test_calculate(model: MLIPEnum):
     calc = MLIPEnum[model.name].value()
 
     atoms = Atoms(
