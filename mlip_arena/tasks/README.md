@@ -1,4 +1,3 @@
-
 ## Note on task registration
 
 1. Use `ast` to parse task classes from the uploaded script.
