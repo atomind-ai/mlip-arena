@@ -47,7 +47,8 @@ run = [
     "fairchem-core==1.1.0",
     "sevenn==0.9.3.post1",
     "orb-models==0.3.1",
-    "alignn==2024.5.27"
+    "alignn==2024.5.27",
+    "prefect>=3.0.4"
 ]
 app = [
     "streamlit==1.38.0",
@@ -65,7 +66,8 @@ test = [
     "sevenn==0.9.3.post1",
     "orb-models==0.3.1",
     "alignn==2024.5.27",
-    "pytest"
+    "pytest",
+    "prefect>=3.0.4"
 ]
 mace = [
     "mace-torch==0.3.4",
