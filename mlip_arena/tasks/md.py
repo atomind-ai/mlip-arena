@@ -1,4 +1,6 @@
 """
+Define molecular dynamics tasks.
+
 This script has been adapted from Atomate2 MLFF MD workflow written by Aaron Kaplan and Yuan Chiang
 https://github.com/materialsproject/atomate2/blob/main/src/atomate2/forcefields/md.py
 
@@ -52,9 +54,10 @@ works thereof, in binary and source code form.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Literal, Sequence, Tuple
+from typing import Literal
 
 import numpy as np
 from ase import Atoms, units
@@ -82,8 +85,6 @@ from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 from tqdm.auto import tqdm
 
 from mlip_arena.models.utils import MLIPEnum, get_freer_device
-
-# from mlip_arena.models.utils import EXTMLIPEnum, MLIPMap, external_ase_calculator
 
 _valid_dynamics: dict[str, tuple[str, ...]] = {
     "nve": ("velocityverlet",),
@@ -117,7 +118,7 @@ def _get_ensemble_schedule(
     n_steps: int = 1000,
     temperature: float | Sequence | np.ndarray | None = 300.0,
     pressure: float | Sequence | np.ndarray | None = None,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     if ensemble == "nve":
         # Disable thermostat and barostat
         temperature = np.nan

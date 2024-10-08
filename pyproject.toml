@@ -159,6 +159,7 @@ ignore = [
     "E741",  # ambigous variable naming, i.e. one letter
     "FBT003",  # boolean positional variable in function call
     "PERF203",  # `try`-`except` within a loop incurs performance overhead (no overhead in Py 3.11+)
+    "F405",  # 'module' may be undefined, or defined from star imports
 ]
 fixable = ["ALL"]
 pydocstyle.convention = "google"
