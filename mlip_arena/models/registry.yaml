@@ -221,3 +221,28 @@ ALIGNN:
   github: https://github.com/usnistgov/alignn
   doi: https://doi.org/10.1038/s41524-021-00650-1
   date: 2021-11-15
+
+DEEPMD:
+  module: externals
+  class: DEEPMD
+  family: deepmd
+  package: deepmd-kit==v3.0.0b4
+  checkpoint: dp0808c_v024mixu.pth
+  username: cyrusyc
+  last-update: 2024-10-09T00:00:00
+  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  datasets:
+    - atomind/mptrj # TODO: fake HF dataset repo
+  cpu-tasks:
+    - alexandria
+    - qmof
+  gpu-tasks:
+    - homonuclear-diatomics
+    - stability
+    - combustion
+  github: https://github.com/deepmodeling/deepmd-kit/
+  doi: https://arxiv.org/abs/2312.15492
+  date: 2024-10-09
+  prediction: EFS
+  nvt: true
+  npt: true
