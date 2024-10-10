@@ -30,5 +30,8 @@ jobs:
         pip install "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168"
 
     - name: Run tests
+      env:
+        PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
+        PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
       run: |
         pytest -v tests

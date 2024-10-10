@@ -41,7 +41,11 @@ _valid_optimizers: dict[str, Optimizer] = {
 } # type: ignore
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
+# @task(
+#     cache_key_fn=task_input_hash, 
+#     cache_expiration=timedelta(days=1),
+#     timeout_seconds=120)
+@task(timeout_seconds=120, result_storage=None)
 def run(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
