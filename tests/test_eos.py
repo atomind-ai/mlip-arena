@@ -12,7 +12,7 @@ atoms = bulk("Cu", "fcc", a=3.6)
 
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 @pytest.mark.skipif(
-    sys.version_info != (3, 11), reason="requires Python 3.11 to use prefect"
+    tuple(sys.version_info)[:2] != (3, 11), reason="requires Python 3.11 to use prefect"
 )
 def test_eos(model: MLIPEnum):
     """
