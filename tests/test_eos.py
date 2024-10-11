@@ -1,6 +1,3 @@
-
-import sys
-
 import pytest
 from ase.build import bulk
 
@@ -11,9 +8,6 @@ atoms = bulk("Cu", "fcc", a=3.6)
 
 
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
-@pytest.mark.skipif(
-    tuple(sys.version_info)[:2] != (3, 11), reason="requires Python 3.11 to use prefect"
-)
 def test_eos(model: MLIPEnum):
     """
     Test EOS prefect workflow with a simple cubic lattice.
