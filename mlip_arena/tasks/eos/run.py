@@ -47,6 +47,7 @@ def generate_task_run_name():
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
 
+# https://docs.prefect.io/3.0/develop/write-tasks#custom-retry-behavior
 # @task(task_run_name=generate_task_run_name)
 @flow(flow_run_name=generate_flow_run_name, validate_parameters=False)
 def fit(
@@ -121,8 +122,16 @@ def fit(
 
     wait(futures)
 
-    volumes = [f.result()["atoms"].get_volume() for f in futures if isinstance(f.result(), dict)]
-    energies = [f.result()["atoms"].get_potential_energy() for f in futures if isinstance(f.result(), dict)]
+    volumes = [
+        f.result()["atoms"].get_volume()
+        for f in futures
+        if isinstance(f.result(), dict)
+    ]
+    energies = [
+        f.result()["atoms"].get_potential_energy()
+        for f in futures
+        if isinstance(f.result(), dict)
+    ]
 
     volumes, energies = map(
         list,
