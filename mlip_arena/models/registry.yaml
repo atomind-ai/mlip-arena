@@ -121,7 +121,7 @@ eqV2(OMat):
   module: externals
   class: eqV2
   family: fairchem
-  package: fairchem-core==1.0.0
+  package: fairchem-core==1.1.0
   checkpoint: eqV2_86M_omat_mp_salex.pt
   username: fairchem # HF handle
   last-update: 2024-10-18T00:00:00
@@ -138,7 +138,7 @@ EquiformerV2(OC22):
   module: externals
   class: EquiformerV2
   family: fairchem
-  package: fairchem-core==1.0.0
+  package: fairchem-core==1.1.0
   checkpoint: EquiformerV2-lE4-lF100-S2EFS-OC22
   username: cyrusyc
   last-update: 2024-07-08T00:00:00
@@ -159,7 +159,7 @@ EquiformerV2(OC20):
   module: externals
   class: EquiformerV2OC20
   family: fairchem
-  package: fairchem-core==1.0.0
+  package: fairchem-core==1.1.0
   checkpoint: EquiformerV2-31M-S2EF-OC20-All+MD
   username: cyrusyc
   last-update: 2024-07-08T00:00:00
@@ -180,7 +180,7 @@ eSCN(OC20):
   module: externals
   class: eSCN
   family: fairchem
-  package: fairchem-core==1.0.0
+  package: fairchem-core==1.1.0
   checkpoint: eSCN-L6-M3-Lay20-S2EF-OC20-All+MD
   username: cyrusyc
   last-update: 2024-07-08T00:00:00
