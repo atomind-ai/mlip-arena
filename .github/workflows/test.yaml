@@ -22,12 +22,13 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install torch==2.2.0
-        bash scripts/install-pyg.sh
-        bash scripts/install-dgl.sh
-        pip install .[mace]
-        pip install .[test]
-        pip install "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168"
+        pip install -r .github/workflows/requirement.txt
+        # pip install torch==2.2.0
+        # bash scripts/install-pyg.sh
+        # bash scripts/install-dgl.sh
+        # pip install .[mace]
+        # pip install .[test]
+        # pip install "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168"
 
     - name: List dependencies
       run: pip list

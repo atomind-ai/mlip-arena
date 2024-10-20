@@ -48,7 +48,8 @@ run = [
     "sevenn==0.9.3.post1",
     "orb-models==0.3.1",
     "alignn==2024.5.27",
-    "prefect>=3.0.4"
+    "prefect>=3.0.4",
+    "prefect-dask"
 ]
 app = [
     "streamlit==1.38.0",
