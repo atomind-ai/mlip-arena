@@ -1,7 +1,7 @@
 import pytest
 from ase.build import bulk
 
-from mlip_arena.models.utils import MLIPEnum
+from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.eos.run import fit as EOS
 
 atoms = bulk("Cu", "fcc", a=3.6)
