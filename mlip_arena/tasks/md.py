@@ -84,7 +84,8 @@ from scipy.linalg import schur
 from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 from tqdm.auto import tqdm
 
-from mlip_arena.models.utils import MLIPEnum, get_freer_device
+from mlip_arena.models import MLIPEnum
+from mlip_arena.models.utils import get_freer_device
 
 _valid_dynamics: dict[str, tuple[str, ...]] = {
     "nve": ("velocityverlet",),

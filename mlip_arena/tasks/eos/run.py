@@ -18,7 +18,7 @@ from prefect.futures import wait
 from prefect.runtime import flow_run, task_run
 from pymatgen.analysis.eos import BirchMurnaghan
 
-from mlip_arena.models.utils import MLIPEnum
+from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
 
 if TYPE_CHECKING:

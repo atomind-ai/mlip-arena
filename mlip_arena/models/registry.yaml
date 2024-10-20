@@ -121,7 +121,7 @@ eqV2(OMat):
   module: externals
   class: eqV2
   family: fairchem
-  package: fairchem-core==1.2.0
+  package: fairchem-core==1.0.0
   checkpoint: eqV2_86M_omat_mp_salex.pt
   username: fairchem # HF handle
   last-update: 2024-10-18T00:00:00
