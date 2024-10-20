@@ -5,6 +5,7 @@ from pathlib import Path
 import yaml
 from ase import Atoms
 from fairchem.core import OCPCalculator
+from huggingface_hub import hf_hub_download
 
 with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
@@ -12,10 +13,9 @@ with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
 class eqV2(OCPCalculator):
     def __init__(
         self,
-        checkpoint="eqV2_86M_omat_mp_salex.pt",  # TODO: import from registry
-        # TODO: cannot assign device
-        local_cache="/tmp/ocp/",
-        cpu=False,
+        checkpoint=REGISTRY["eqV2(OMat)"]["checkpoint"],
+        cache_dir=None,
+        cpu=False, # TODO: cannot assign device
         seed=0,
         **kwargs,
     ) -> None:
@@ -38,9 +38,17 @@ class eqV2(OCPCalculator):
         **kwargs
             Any additional keyword arguments are passed to the superclass.
         """
+
+        # https://huggingface.co/fairchem/OMAT24/resolve/main/eqV2_86M_omat_mp_salex.pt
+
+        checkpoint_path = hf_hub_download(
+            "fairchem/OMAT24",
+            filename=checkpoint,
+            revision="bf92f9671cb9d5b5c77ecb4aa8b317ff10b882ce",
+            cache_dir=cache_dir
+        )
         super().__init__(
-            model_name=checkpoint,
-            local_cache=local_cache,
+            checkpoint_path=checkpoint_path,
             cpu=cpu,
             seed=seed,
             **kwargs,
@@ -49,7 +57,7 @@ class eqV2(OCPCalculator):
 class EquiformerV2(OCPCalculator):
     def __init__(
         self,
-        checkpoint="EquiformerV2-lE4-lF100-S2EFS-OC22",  # TODO: import from registry
+        checkpoint=REGISTRY["EquiformerV2(OC22)"]["checkpoint"],
         # TODO: cannot assign device
         local_cache="/tmp/ocp/",
         cpu=False,
@@ -75,7 +83,7 @@ class EquiformerV2(OCPCalculator):
 class EquiformerV2OC20(OCPCalculator):
     def __init__(
         self,
-        checkpoint="EquiformerV2-31M-S2EF-OC20-All+MD",  # TODO: import from registry
+        checkpoint=REGISTRY["EquiformerV2(OC22)"]["checkpoint"],
         # TODO: cannot assign device
         local_cache="/tmp/ocp/",
         cpu=False,
