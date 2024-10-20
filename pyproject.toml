@@ -71,8 +71,7 @@ test = [
     "prefect>=3.0.4"
 ]
 mace = [
-    "opt-einsum==3.3.0",
-    "mace-torch==0.3.4",
+    "mace-torch==0.3.6",
 ]
 
 [project.urls]
