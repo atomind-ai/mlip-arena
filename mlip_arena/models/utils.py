@@ -5,15 +5,15 @@ from enum import Enum
 
 import torch
 
-from mlip_arena.models import REGISTRY
+# from mlip_arena.models import REGISTRY
 
-MLIPMap = {
-    model: getattr(
-        importlib.import_module(f"{__package__}.{metadata['module']}"), metadata["class"],
-    )
-    for model, metadata in REGISTRY.items()
-}
-MLIPEnum = Enum("MLIPEnum", MLIPMap)
+# MLIPMap = {
+#     model: getattr(
+#         importlib.import_module(f"{__package__}.{metadata['module']}"), metadata["class"],
+#     )
+#     for model, metadata in REGISTRY.items()
+# }
+# MLIPEnum = Enum("MLIPEnum", MLIPMap)
 
 
 def get_freer_device() -> torch.device:

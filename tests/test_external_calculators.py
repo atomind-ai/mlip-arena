@@ -1,7 +1,7 @@
 import pytest
 from ase import Atoms
 
-from mlip_arena.models.utils import MLIPEnum
+from mlip_arena.models import MLIPEnum
 
 
 @pytest.mark.parametrize("model", MLIPEnum)
