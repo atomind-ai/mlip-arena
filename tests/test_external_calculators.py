@@ -5,7 +5,6 @@ from mlip_arena.models import MLIPEnum
 
 
 @pytest.mark.parametrize("model", MLIPEnum)
-@pytest.mark.xfail(reason="Some fairchem models trigger torch error during github cpu test")
 def test_calculate(model: MLIPEnum):
     calc = MLIPEnum[model.name].value()
 
