@@ -33,7 +33,7 @@ jobs:
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run:
-        huggingface-cli login --token $HF_TOKEN --add-to-git-credential
+        huggingface-cli login --token $HF_TOKEN
 
     - name: Run tests
       env:
