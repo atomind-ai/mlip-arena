@@ -31,7 +31,7 @@ jobs:
       
     - name: Login huggingface
       env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        HF_TOKEN: ${{ secrets.HF_TOKEN_READ_ONLY }}
       run:
         huggingface-cli login --token $HF_TOKEN
 
