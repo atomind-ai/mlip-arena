@@ -8,10 +8,10 @@ import sys
 
 atoms = bulk("Cu", "fcc", a=3.6)
 
-@pytest.fixture(autouse=True, scope="session")
-def prefect_test_fixture():
-    with prefect_test_harness():
-        yield
+# @pytest.fixture(autouse=True, scope="session")
+# def prefect_test_fixture():
+#     with prefect_test_harness():
+#         yield
 
 @pytest.mark.skipif(sys.version_info[:2] != (3,11), reason="avoid prefect race condition on concurrent tasks")
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
@@ -20,20 +20,22 @@ def test_eos(model: MLIPEnum):
     Test EOS prefect workflow with a simple cubic lattice.
     """
 
-    result = EOS(
-        atoms=atoms,
-        calculator_name=model.name,
-        calculator_kwargs={},
-        device=None,
-        optimizer="BFGSLineSearch",
-        optimizer_kwargs=None,
-        filter="FrechetCell",
-        filter_kwargs=None,
-        criterion=dict(
-            fmax=0.1,
-        ),
-        max_abs_strain=0.1,
-        npoints=6,
-    )
+    with prefect_test_harness():
 
-    assert isinstance(result["K"], float)
+        result = EOS(
+            atoms=atoms,
+            calculator_name=model.name,
+            calculator_kwargs={},
+            device=None,
+            optimizer="BFGSLineSearch",
+            optimizer_kwargs=None,
+            filter="FrechetCell",
+            filter_kwargs=None,
+            criterion=dict(
+                fmax=0.1,
+            ),
+            max_abs_strain=0.1,
+            npoints=6,
+        )
+
+        assert isinstance(result["K"], float)
