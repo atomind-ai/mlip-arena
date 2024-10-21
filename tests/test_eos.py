@@ -17,7 +17,7 @@ def test_eos(model: MLIPEnum):
     """
     Test EOS prefect workflow with a simple cubic lattice.
     """
-    
+
     result = EOS(
         atoms=atoms,
         calculator_name=model.name,
