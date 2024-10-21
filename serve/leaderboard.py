@@ -25,6 +25,7 @@ table = pd.DataFrame(
         "Prediction",
         "NVT",
         "NPT",
+        "Training Set",
         "Code",
         "Paper",
         "First Release",
@@ -42,6 +43,7 @@ for model in MODELS:
         "Prediction": metadata.get("prediction", None),
         "NVT": "✅" if metadata.get("nvt", False) else "❌",
         "NPT": "✅" if metadata.get("npt", False) else "❌",
+        "Training Set": metadata.get("datasets", []),
         "Code": metadata.get("github", None) if metadata else None,
         "Paper": metadata.get("doi", None) if metadata else None,
         "First Release": metadata.get("date", None),
@@ -49,7 +51,6 @@ for model in MODELS:
     table = pd.concat([table, pd.DataFrame([new_row])], ignore_index=True)
 
 table.set_index("Model", inplace=True)
-
 
 s = table.style.background_gradient(
     cmap="PuRd", subset=["Element Coverage"], vmin=0, vmax=120

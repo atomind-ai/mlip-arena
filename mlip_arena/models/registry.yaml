@@ -8,7 +8,7 @@ MACE-MP(M):
   last-update: 2024-03-25T14:30:00
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
   datasets:
-    - atomind/mptrj # TODO: fake HF dataset repo
+    - MPTrj # TODO: fake HF dataset repo
   cpu-tasks:
     - alexandria
     - qmof
@@ -33,7 +33,7 @@ CHGNet:
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
   datasets:
-    - atomind/mptrj
+    - MPTrj
   gpu-tasks:
     - homonuclear-diatomics
     - stability
@@ -55,7 +55,7 @@ M3GNet:
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
   datasets:
-    - atomind/mptrj
+    - MPF
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
@@ -76,8 +76,8 @@ ORB:
   last-update: 2024-03-25T14:30:00
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
   datasets:
-    - atomind/mptrj # TODO: fake HF dataset repo
-    - atomind/alexandria
+    - MPTrj # TODO: fake HF dataset repo
+    - Alexandria
   cpu-tasks:
     - alexandria
     - qmof
@@ -102,7 +102,7 @@ SevenNet:
   last-update: 2024-03-25T14:30:00
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
   datasets:
-    - atomind/mptrj # TODO: fake HF dataset repo
+    - MPTrj # TODO: fake HF dataset repo
   cpu-tasks:
     - alexandria
     - qmof
@@ -132,6 +132,11 @@ eqV2(OMat):
     - Alexandria
   gpu-tasks:
     - homonuclear-diatomics
+  prediction: EFS
+  nvt: true
+  npt: true
+  github: https://github.com/FAIR-Chem/fairchem
+  doi: https://arxiv.org/abs/2410.12771
 
 
 EquiformerV2(OC22):
@@ -144,7 +149,7 @@ EquiformerV2(OC22):
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
   datasets:
-    - ocp
+    - OC22
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
@@ -165,7 +170,7 @@ EquiformerV2(OC20):
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
   datasets:
-    - ocp
+    - OC20
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
@@ -186,7 +191,7 @@ eSCN(OC20):
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
   datasets:
-    - ocp
+    - OC20
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
@@ -205,7 +210,7 @@ MACE-OFF(M):
   last-update: 2024-03-25T14:30:00
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
   datasets:
-    - atomind/mptrj # TODO: fake HF dataset repo
+    - SPICE # TODO: fake HF dataset repo
   cpu-tasks:
     - alexandria
     - qmof
@@ -228,7 +233,7 @@ ALIGNN:
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
   datasets:
-    - atomind/mptrj
+    - MP22
   gpu-tasks:
     - homonuclear-diatomics
     # - combustion
