@@ -30,7 +30,7 @@ valid_models = [
 mlip_methods = container.multiselect(
     "MLIPs",
     valid_models,
-    ["EquiformerV2(OC22)", "CHGNet", "M3GNet", "SevenNet", "MACE-MP(M)", "ORB"],
+    ["EquiformerV2(OC22)", "CHGNet", "M3GNet", "SevenNet", "MACE-MP(M)", "ORB", "eqV2(OMat)"],
 )
 dft_methods = container.multiselect("DFT Methods", ["GPAW"], [])
 
@@ -139,6 +139,7 @@ def get_plots(df, energy_plot: bool, force_plot: bool, method_color_mapping: dic
                     ys = es
 
                 elo = min(elo, max(ys.min() * 1.2, -15), -1)
+                # elo = min(elo, ys.min()*1.2, -1)
 
                 fig.add_trace(
                     go.Scatter(
@@ -202,7 +203,7 @@ def get_plots(df, energy_plot: bool, force_plot: bool, method_color_mapping: dic
                 yaxis=dict(
                     title=dict(text="Energy [eV]"),
                     side="left",
-                    range=[elo, 1.5 * (abs(elo))],
+                    range=[elo, 2.0 * (abs(elo))],
                 )
             )
 

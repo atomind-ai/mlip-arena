@@ -17,7 +17,8 @@ from prefect import task
 from prefect.tasks import task_input_hash
 from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 
-from mlip_arena.models.utils import MLIPEnum, get_freer_device
+from mlip_arena.models import MLIPEnum
+from mlip_arena.models.utils import get_freer_device
 
 _valid_filters: dict[str, Filter] = {
     "Filter": Filter,
