@@ -6,6 +6,10 @@ from mlip_arena.models import MLIPEnum
 
 @pytest.mark.parametrize("model", MLIPEnum)
 def test_calculate(model: MLIPEnum):
+
+    if model.name == "ALIGNN":
+        pytest.xfail("ALIGNN has poor file download mechanism")
+
     calc = MLIPEnum[model.name].value()
 
     atoms = Atoms(

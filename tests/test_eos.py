@@ -1,10 +1,11 @@
+import sys
+
 import pytest
 from ase.build import bulk
 from prefect.testing.utilities import prefect_test_harness
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.eos.run import fit as EOS
-import sys
 
 atoms = bulk("Cu", "fcc", a=3.6)
 
