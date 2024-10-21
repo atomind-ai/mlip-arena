@@ -9,11 +9,6 @@ from mlip_arena.tasks.eos.run import fit as EOS
 
 atoms = bulk("Cu", "fcc", a=3.6)
 
-# @pytest.fixture(autouse=True, scope="session")
-# def prefect_test_fixture():
-#     with prefect_test_harness():
-#         yield
-
 @pytest.mark.skipif(sys.version_info[:2] != (3,11), reason="avoid prefect race condition on concurrent tasks")
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 def test_eos(model: MLIPEnum):
