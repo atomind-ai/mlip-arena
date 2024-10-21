@@ -17,7 +17,7 @@ from matgl.ext.ase import PESCalculator
 from orb_models.forcefield import pretrained
 from orb_models.forcefield.calculator import ORBCalculator
 from sevenn.sevennet_calculator import SevenNetCalculator
-
+from deepmd.calculator import DP as DPCalculator
 
 # Avoid circular import
 def get_freer_device() -> torch.device:
@@ -281,3 +281,38 @@ class ORB(ORBCalculator):
 
         orbff = pretrained.orb_v1(weights_path=ckpt_path, device=device)
         super().__init__(orbff, device=device, **kwargs)
+
+class DeepMD(DPCalculator):
+    def __init__(
+        self,
+        checkpoint="dp0808c_v024mixu.pth",
+        device=None,
+        **kwargs,
+    ):
+        device = device or get_freer_device()
+
+        cache_dir = Path.home() / ".cache" / "deepmd"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        model_path = cache_dir / checkpoint
+
+        url = f"https://bohrium-api.dp.tech/ds-dl/mlip-arena-tfpk-v1.zip"
+
+        if not model_path.exists():
+            import zipfile
+
+            print(f"Downloading DeepMD model from {url} to {model_path}...")
+            try:
+                response = requests.get(url, stream=True, timeout=120)
+                response.raise_for_status()
+                with open(cache_dir/"temp.zip", "wb") as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                print("Download completed.")
+                with zipfile.ZipFile(cache_dir/"temp.zip", "r") as zip_ref:
+                    zip_ref.extractall(cache_dir)
+                print("Unzip completed.")
+            except requests.exceptions.RequestException as e:
+                raise RuntimeError("Failed to download DeepMD model.") from e
+
+        
+        super().__init__(model_path, device=device, **kwargs)
