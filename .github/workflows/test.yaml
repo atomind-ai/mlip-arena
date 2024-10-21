@@ -7,8 +7,10 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      # max-parallel: 1
       matrix:
         python-version: ["3.10", "3.11"]
+        
 
     steps:
     - name: Checkout repository
@@ -26,8 +28,8 @@ jobs:
         pip install torch==2.2.0
         bash scripts/install-pyg.sh
         bash scripts/install-dgl.sh
-        pip install .[test]
         pip install .[mace]
+        pip install .[test]
         pip install "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168"
 
     - name: List dependencies
