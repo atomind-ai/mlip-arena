@@ -354,7 +354,7 @@ def run(
             dyn.set_temperature(temperature_K=t_schedule[step])
             if ensemble == "nvt":
                 return
-            dyn.set_stress(p_schedule[step] * 1e3 * units.bar)
+            dyn.set_stress(p_schedule[step])
             pbar.update()
 
         md_runner.attach(_callback, interval=1)
