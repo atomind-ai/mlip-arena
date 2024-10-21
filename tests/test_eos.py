@@ -13,7 +13,7 @@ def prefect_test_fixture():
     with prefect_test_harness():
         yield
 
-@pytest.mark.skipif(sys.version_info != (3,11), reason="avoid prefect race condition on concurrent tasks")
+@pytest.mark.skipif(sys.version_info[:2] != (3,11), reason="avoid prefect race condition on concurrent tasks")
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 def test_eos(model: MLIPEnum):
     """
