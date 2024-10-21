@@ -72,6 +72,8 @@ table["Rank"] += np.argsort(table["Energy jump [eV]"].to_numpy())
 table.sort_values("Force flips", ascending=True, inplace=True)
 table["Rank"] += np.argsort(table["Force flips"].to_numpy())
 
+table["Rank"] += 1
+
 table.sort_values("Rank", ascending=True, inplace=True)
 
 table["Rank aggr."] = table["Rank"]

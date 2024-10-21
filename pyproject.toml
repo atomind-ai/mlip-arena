@@ -44,11 +44,12 @@ run = [
     "dgl==2.4.0",
     "mace-torch==0.3.4",
     "chgnet==0.3.8",
-    "fairchem-core==1.1.0",
+    "fairchem-core==1.2.0",
     "sevenn==0.9.3.post1",
     "orb-models==0.3.1",
     "alignn==2024.5.27",
-    "prefect>=3.0.4"
+    "prefect>=3.0.4",
+    "prefect-dask"
 ]
 app = [
     "streamlit==1.38.0",
@@ -62,7 +63,7 @@ test = [
     "matgl==1.1.2",
     "dgl==2.4.0",
     "chgnet==0.3.8",
-    "fairchem-core==1.1.0",
+    "fairchem-core==1.2.0",
     "sevenn==0.9.3.post1",
     "orb-models==0.3.1",
     "alignn==2024.5.27",

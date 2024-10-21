@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib
+from enum import Enum
 from pathlib import Path
 
 import torch
@@ -14,6 +16,17 @@ from torch import nn
 with open(Path(__file__).parent / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
 
+MLIPMap = {}
+
+for model, metadata in REGISTRY.items():
+    try:
+        module = importlib.import_module(f"{__package__}.{metadata['module']}.{metadata['family']}")
+        MLIPMap[model] = getattr(module, metadata["class"])
+    except ModuleNotFoundError as e:
+        print(e)
+        continue
+
+MLIPEnum = Enum("MLIPEnum", MLIPMap)
 
 class MLIP(
     nn.Module,
