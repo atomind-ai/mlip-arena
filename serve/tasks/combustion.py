@@ -72,12 +72,6 @@ def get_data(models):
 
 df = get_data(models)
 
-# families = [MODELS[str(model)]["family"] for model in models]
-
-# dfs = [pd.read_json(DATA_DIR / family.lower() / "hydrogen.json") for family in families]
-# df = pd.concat(dfs, ignore_index=True)
-# df.drop_duplicates(inplace=True, subset=["formula", "method"])
-
 method_color_mapping = {
     method: color_sequence[i % len(color_sequence)]
     for i, method in enumerate(df["method"].unique())
