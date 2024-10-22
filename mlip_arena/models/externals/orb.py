@@ -20,7 +20,7 @@ class ORB(ORBCalculator):
 
         cache_dir = Path.home() / ".cache" / "orb"
         cache_dir.mkdir(parents=True, exist_ok=True)
-        ckpt_path = cache_dir / "orbff-v1-20240827.ckpt"
+        ckpt_path = cache_dir / checkpoint
 
         url = f"https://storage.googleapis.com/orbitalmaterials-public-models/forcefields/{checkpoint}"
 
