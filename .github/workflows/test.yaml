@@ -7,17 +7,20 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      # max-parallel: 2
       matrix:
         python-version: ["3.10", "3.11"]
+        
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'pip'
 
     - name: Install dependencies
       run: |
@@ -25,10 +28,22 @@ jobs:
         pip install torch==2.2.0
         bash scripts/install-pyg.sh
         bash scripts/install-dgl.sh
-        pip install .[test]
         pip install .[mace]
+        pip install .[test]
         pip install "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168"
 
+    - name: List dependencies
+      run: pip list
+      
+    - name: Login huggingface
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN_READ_ONLY }}
+      run:
+        huggingface-cli login --token $HF_TOKEN
+
     - name: Run tests
+      env:
+        PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
+        PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
       run: |
         pytest -v tests

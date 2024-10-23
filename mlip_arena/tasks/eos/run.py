@@ -6,7 +6,6 @@ https://github.com/materialsvirtuallab/matcalc/blob/main/matcalc/eos.py
 
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -15,24 +14,48 @@ from ase.filters import *  # type: ignore
 from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
 from prefect import flow
+from prefect.futures import wait
+from prefect.runtime import flow_run, task_run
 from pymatgen.analysis.eos import BirchMurnaghan
 
-from prefect.futures import wait
-
-from mlip_arena.models.utils import MLIPEnum
+from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
 
 if TYPE_CHECKING:
     from ase.filters import Filter
 
 
-@flow
+def generate_flow_run_name():
+    flow_name = flow_run.flow_name
+
+    parameters = flow_run.parameters
+
+    atoms = parameters["atoms"]
+    calculator_name = parameters["calculator_name"]
+
+    return f"{flow_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+
+
+def generate_task_run_name():
+    task_name = task_run.task_name
+
+    parameters = task_run.parameters
+
+    atoms = parameters["atoms"]
+    calculator_name = parameters["calculator_name"]
+
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+
+
+# https://docs.prefect.io/3.0/develop/write-tasks#custom-retry-behavior
+# @task(task_run_name=generate_task_run_name)
+@flow(flow_run_name=generate_flow_run_name, validate_parameters=False)
 def fit(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
     calculator_kwargs: dict | None,
     device: str | None = None,
-    optimizer: Optimizer | str = BFGSLineSearch, # type: ignore
+    optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = None,
     filter_kwargs: dict | None = None,
@@ -59,7 +82,7 @@ def fit(
     Returns:
         A dictionary containing the EOS data and the bulk modulus.
     """
-    result = OPT(
+    first_relax = OPT(
         atoms=atoms,
         calculator_name=calculator_name,
         calculator_kwargs=calculator_kwargs,
@@ -71,7 +94,7 @@ def fit(
         criterion=criterion,
     )
 
-    relaxed = result["atoms"]
+    relaxed = first_relax["atoms"]
 
     # p0 = relaxed.get_positions()
     c0 = relaxed.get_cell()
@@ -99,13 +122,27 @@ def fit(
 
     wait(futures)
 
-    volumes = [f.result()["atoms"].get_volume() for f in futures]
-    energies = [f.result()["atoms"].get_potential_energy() for f in futures]
+    volumes = [
+        f.result()["atoms"].get_volume()
+        for f in futures
+        if isinstance(f.result(), dict)
+    ]
+    energies = [
+        f.result()["atoms"].get_potential_energy()
+        for f in futures
+        if isinstance(f.result(), dict)
+    ]
+
+    volumes, energies = map(
+        list,
+        zip(
+            *sorted(zip(volumes, energies, strict=True), key=lambda i: i[0]),
+            strict=True,
+        ),
+    )
 
     bm = BirchMurnaghan(volumes=volumes, energies=energies)
     bm.fit()
-
-    volumes, energies = map(list, zip(*sorted(zip(volumes, energies, strict=False), key=lambda i: i[0]), strict=False))
 
     return {
         "eos": {"volumes": volumes, "energies": energies},

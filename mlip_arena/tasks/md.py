@@ -84,7 +84,8 @@ from scipy.linalg import schur
 from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 from tqdm.auto import tqdm
 
-from mlip_arena.models.utils import MLIPEnum, get_freer_device
+from mlip_arena.models import MLIPEnum
+from mlip_arena.models.utils import get_freer_device
 
 _valid_dynamics: dict[str, tuple[str, ...]] = {
     "nve": ("velocityverlet",),
@@ -195,10 +196,10 @@ def run(
     device: str | None = None,
     ensemble: Literal["nve", "nvt", "npt"] = "nvt",
     dynamics: str | MolecularDynamics = "langevin",
-    time_step: float | None = None,
-    total_time: float = 1000,
-    temperature: float | Sequence | np.ndarray | None = 300.0,
-    pressure: float | Sequence | np.ndarray | None = None,
+    time_step: float | None = None, # fs
+    total_time: float = 1000,  # fs
+    temperature: float | Sequence | np.ndarray | None = 300.0, # K
+    pressure: float | Sequence | np.ndarray | None = None, # eV/A^3
     ase_md_kwargs: dict | None = None,
     md_velocity_seed: int | None = None,
     zero_linear_momentum: bool = True,
@@ -353,7 +354,7 @@ def run(
             dyn.set_temperature(temperature_K=t_schedule[step])
             if ensemble == "nvt":
                 return
-            dyn.set_stress(p_schedule[step] * 1e3 * units.bar)
+            dyn.set_stress(p_schedule[step])
             pbar.update()
 
         md_runner.attach(_callback, interval=1)
@@ -362,6 +363,7 @@ def run(
         md_runner.run(steps=n_steps)
         end_time = datetime.now()
 
+    if traj_file is not None:
         traj.close()
 
     return {

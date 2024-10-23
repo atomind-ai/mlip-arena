@@ -25,8 +25,10 @@ table = pd.DataFrame(
         "Prediction",
         "NVT",
         "NPT",
+        "Training Set",
         "Code",
         "Paper",
+        "Checkpoint",
         "First Release",
     ]
 )
@@ -42,14 +44,15 @@ for model in MODELS:
         "Prediction": metadata.get("prediction", None),
         "NVT": "✅" if metadata.get("nvt", False) else "❌",
         "NPT": "✅" if metadata.get("npt", False) else "❌",
+        "Training Set": metadata.get("datasets", []),
         "Code": metadata.get("github", None) if metadata else None,
         "Paper": metadata.get("doi", None) if metadata else None,
+        "Checkpoint": metadata.get("checkpoint", None),
         "First Release": metadata.get("date", None),
     }
     table = pd.concat([table, pd.DataFrame([new_row])], ignore_index=True)
 
 table.set_index("Model", inplace=True)
-
 
 s = table.style.background_gradient(
     cmap="PuRd", subset=["Element Coverage"], vmin=0, vmax=120
@@ -72,11 +75,11 @@ st.markdown(
 
 ### :red[Introduction]
 
-Foundation machine learning interatomic potentials (fMLIPs) trained on extensive databases containing millions of density functional theory (DFT) calculations have shown remarkable zero-shot predictive capabilities for complex atomic interactions. These potentials derive quantum mechanical insights with high accuracy, expressivity, and generalizability, significantly outperforming classical empirical force fields while maintaining comparable computational efficiency.
+Foundation machine learning interatomic potentials (fMLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations, have demonstrated remarkable zero-shot predictive capabilities for complex atomic interactions. These potentials derive quantum mechanical insights with high accuracy, expressivity, and generalizability, significantly outperforming classical empirical force fields while maintaining comparable computational efficiency.
 
-However, MLIPs trained on atomic energy and force labels do not neccessarily capture the correct atomic interactions, even though they usually excel in error-based metrics for bulk systems. To drive further advancements in this field, it is crucial to establish mechanisms that ensure fair and transparent benchmarking practices that go beyond basic regression metrics.
+However, MLIPs trained on atomic energy and force labels do not necessarily capture the correct atomic interactions, even though they often excel in error-based metrics for bulk systems. To drive further advancements in this field, it is crucial to establish mechanisms that ensure fair and transparent benchmarking practices beyond basic regression metrics.
 
-MLIP Arena aims to provide an equitable and transparent platform for benchmarking MLIPs in a collaborative, crowd-sourced environment. Its primary goal is to uncover the learned physics and chemistry of open-source, open-weight MLIPs. The benchmarks are designed to be agnostic to both the underlying architecture and the specific training targets, such as density functionals, ensuring a comprehensive and unbiased evaluation.
+MLIP Arena aims to provide a fair and transparent platform for benchmarking MLIPs in a crowdsourced setting. Its primary goal is to uncover the learned physics and chemistry of open-source, open-weight MLIPs. The benchmarks are designed to be agnostic to both the underlying architecture and specific training targets, such as density functionals, ensuring a cross-comparable and unbiased evaluation.
 
 """,
     unsafe_allow_html=True,
