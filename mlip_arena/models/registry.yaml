@@ -50,7 +50,7 @@ M3GNet:
   class: M3GNet
   family: matgl
   package: matgl==1.1.2
-  checkpoint:
+  checkpoint: M3GNet-MP-2021.2.8-PES
   username: cyrusyc
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
@@ -135,6 +135,7 @@ eqV2(OMat):
   prediction: EFS
   nvt: true
   npt: true
+  date: 2024-10-18
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2410.12771
 
@@ -206,6 +207,8 @@ MACE-OFF(M):
   module: externals
   class: MACE_OFF_Medium
   family: mace-off
+  package: mace-torch==0.3.4
+  checkpoint: MACE-OFF23_medium.model
   username: cyrusyc
   last-update: 2024-03-25T14:30:00
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
@@ -228,7 +231,7 @@ ALIGNN:
   class: ALIGNN
   family: alignn
   package: alignn==2024.5.27
-  checkpoint:
+  checkpoint: 2024.5.27
   username: cyrusyc
   last-update: 2024-07-08T00:00:00
   datetime: 2024-07-08T00:00:00
