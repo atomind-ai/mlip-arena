@@ -19,7 +19,7 @@ st.markdown("""
 Stable and accurate molecular dynamics (MD) simulations are important for understanding the properties of matters.
 However, many MLIPs have unphysical potential energy surface (PES) at the short-range interatomic distances or under many-body effect. These are often manifested as softened repulsion and hole in the PES and can lead to incorrect and sampling of the phase space.
 
-Here, we analyze the stability of the MD simulations under high pressure conditions by gradually increasing the pressure from 0 to 1000 GPa at 300K until the system crashes or completes 100 ps trajectory. This benchmark also explores faster the far-from-equilibrium dynamics of the system and the "durability" of the MLIPs under extreme conditions.
+Here, we analyze the stability of the MD simulations under high pressure conditions by gradually increasing the pressure from 0 to 1000 GPa at 300K until the system crashes or completes 100 ps trajectory. This benchmark also explores faster the far-from-equilibrium dynamics of the system and the durability of the MLIPs under extreme conditions.
 """)
 
 st.markdown("### Methods")
@@ -80,7 +80,6 @@ method_color_mapping = {
 ###
 
 # Determine the bin edges for the entire dataset to keep them consistent across groups
-# bins = np.histogram_bin_edges(df['total_steps'], bins=10)
 
 max_steps = df["total_steps"].max()
 max_target_steps = df["target_steps"].max()
@@ -89,14 +88,11 @@ bins = np.append(np.arange(0, max_steps + 1, max_steps // 10), max_target_steps)
 bin_labels = [f"{bins[i]}-{bins[i+1]}" for i in range(len(bins) - 1)]
 
 num_bins = len(bin_labels)
-# colormap = px.colors.sequential.Darkmint_r
 colormap = px.colors.sequential.YlOrRd_r
 indices = np.linspace(0, len(colormap) - 1, num_bins, dtype=int)
 bin_colors = [colormap[i] for i in indices]
-# bin_colors[-1] = px.colors.sequential.Greens[-1]
 
 # Initialize a dictionary to hold the counts for each method and bin range
-# counts_per_method = {method: [0] * len(bin_labels) for method in df["method"].unique()}
 counts_per_method = {method: [0] * len(bin_labels) for method in df["method"].unique()}
 
 
@@ -160,7 +156,7 @@ plot_md_steps(counts_per_method, count_or_percetange)
 
 st.markdown(
     """
-> The histogram shows the distribution of the total number of MD steps before the system crashes or completes the trajectory. :red[The color of the bins indicates the number of steps in the bin]. :blue[The height of the bars indicates the percentage of each bin among all the runs].
+> The histogram shows the distribution of the total number of MD steps before the system crashes or completes the trajectory. :red[The color of the bins indicates the number of steps in the bin]. :blue[The height of the bars indicates the number or percentage of each bin among all the runs].
 """
 )
 
