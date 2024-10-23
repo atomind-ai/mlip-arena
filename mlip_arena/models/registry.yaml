@@ -253,18 +253,12 @@ DEEPMD:
   family: deepmd
   package: deepmd-kit==v3.0.0b4
   checkpoint: dp0808c_v024mixu.pth
-  username: cyrusyc
+  username: 
   last-update: 2024-10-09T00:00:00
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
   datasets:
-    - atomind/mptrj # TODO: fake HF dataset repo
-  cpu-tasks:
-    - alexandria
-    - qmof
+    - MPTrj # TODO: fake HF dataset repo
   gpu-tasks:
-    - homonuclear-diatomics
-    - stability
-    - combustion
   github: https://github.com/deepmodeling/deepmd-kit/
   doi: https://arxiv.org/abs/2312.15492
   date: 2024-10-09
