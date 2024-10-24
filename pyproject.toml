@@ -3,13 +3,13 @@ requires=["flit_core >=3.2,<4"]
 build-backend="flit_core.buildapi"
 
 [project]
-name="mlip_arena"
+name="mlip-arena"
 version="0.0.1a1"
 authors=[
     {name="Yuan Chiang", email="cyrusyc@lbl.gov"},
 ]
 description=""
-readme="README.md"
+readme="./github/README.md"
 requires-python=">=3.10"
 keywords=[
     "pytorch",
@@ -66,6 +66,7 @@ test = [
     "fairchem-core==1.2.0",
     "sevenn==0.9.3.post1",
     "orb-models==0.3.1",
+    "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168",
     "alignn==2024.5.27",
     "pytest",
     "prefect>=3.0.4",

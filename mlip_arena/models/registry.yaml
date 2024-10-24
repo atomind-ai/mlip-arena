@@ -258,7 +258,6 @@ DeepMD:
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
   datasets:
     - MPTrj # TODO: fake HF dataset repo
-  gpu-tasks:
   github: https://github.com/deepmodeling/deepmd-kit/
   doi: https://arxiv.org/abs/2312.15492
   date: 2024-10-09
