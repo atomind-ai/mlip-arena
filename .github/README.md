@@ -12,6 +12,25 @@
 
 MLIP Arena is a platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional energy and force error metrics. It focuses on revealing the underlying physics and chemistry learned by these models and assessing their performance in molecular dynamics (MD) simulations. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
 
+## Installation
+
+### From PyPI (without model running capability)
+
+```bash
+pip install mlip-arena
+```
+
+### From source
+
+```bash
+git clone https://github.com/atomind-ai/mlip-arena.git
+pip install torch==2.2.0
+bash scripts/install-pyg.sh
+bash scripts/install-dgl.sh
+pip install .[test]
+pip install .[mace]
+```
+
 ## Contribute
 
 MLIP Arena is now in pre-alpha. If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks. 
@@ -22,18 +41,25 @@ MLIP Arena is now in pre-alpha. If you're interested in joining the effort, plea
 streamlit run serve/app.py
 ```
 
-### Add new benchmark tasks
+### Add new benchmark tasks (WIP)
+
+> [!NOTE]
+> Please reuse or extend the general tasks defined as Prefect / Atomate2 workflow. 
+> The following are some tasks implemented:
+> - [Prefect structure optimization (OPT)](../mlip_arena/tasks/optimize.py)
+> - [Prefect molecular dynamics (MD)](../mlip_arena/tasks/md.py)
+> - [Prefect equation of states (EOS)](../mlip_arena/tasks/eos/run.py)
 
 1. Follow the task template to implement the task class and upload the script along with metadata to the MLIP Arena [here](../mlip_arena/tasks/README.md).
 2. Code a benchmark script to evaluate the performance of your model on the task. The script should be able to load the model and the dataset, and output the evaluation metrics.
 
-### Add new MLIP models
+### Add new MLIP models 
 
 If you have pretrained MLIP models that you would like to contribute to the MLIP Arena and show benchmark in real-time, there are two ways:
 
 #### External ASE Calculator (easy)
 
-1. Implement new ASE Calculator class in [mlip_arena/models/external.py](../mlip_arena/models/externals.py). 
+1. Implement new ASE Calculator class in [mlip_arena/models/externals](../mlip_arena/models/externals). 
 2. Name your class with awesome model name and add the same name to [registry](../mlip_arena/models/registry.yaml) with metadata.
 
 > [!CAUTION] 
