@@ -69,7 +69,7 @@ test = [
     "alignn==2024.5.27",
     "pytest",
     "prefect>=3.0.4",
-    "deepmd-kit==v3.0.0b4"
+    "deepmd-kit==v3.0.0b1"
 ]
 mace = [
     "mace-torch==0.3.4",
