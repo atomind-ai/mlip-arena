@@ -3,6 +3,7 @@ from ase import Atoms
 
 from mlip_arena.models import MLIPEnum
 
+from huggingface_hub.errors import LocalTokenNotFoundError
 
 @pytest.mark.parametrize("model", MLIPEnum)
 def test_calculate(model: MLIPEnum):
@@ -10,7 +11,12 @@ def test_calculate(model: MLIPEnum):
     if model.name == "ALIGNN":
         pytest.xfail("ALIGNN has poor file download mechanism")
 
-    calc = MLIPEnum[model.name].value()
+    try:
+        calc = MLIPEnum[model.name].value()
+
+    except LocalTokenNotFoundError:
+        # Gracefully skip the test if HF_TOKEN is not available
+        pytest.skip("Skipping test because HF_TOKEN is not available for downloading the model.")
 
     atoms = Atoms(
         "OO",
