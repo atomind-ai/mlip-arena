@@ -68,7 +68,8 @@ test = [
     "orb-models==0.3.1",
     "alignn==2024.5.27",
     "pytest",
-    "prefect>=3.0.4"
+    "prefect>=3.0.4",
+    "deepmd-kit==v3.0.0b4"
 ]
 mace = [
     "mace-torch==0.3.4",
