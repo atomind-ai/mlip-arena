@@ -8,8 +8,8 @@ version="0.0.1a1"
 authors=[
     {name="Yuan Chiang", email="cyrusyc@lbl.gov"},
 ]
-description=""
-readme="./github/README.md"
+description="Fair and transparent benchmark of machine-learned interatomic potentials (MLIPs), beyond basic error metrics"
+readme=".github/README.md"
 requires-python=">=3.10"
 keywords=[
     "pytorch",
