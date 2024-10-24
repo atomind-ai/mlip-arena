@@ -41,9 +41,9 @@ MLIP Arena is now in pre-alpha. If you're interested in joining the effort, plea
 streamlit run serve/app.py
 ```
 
-### Add new benchmark tasks
+### Add new benchmark tasks (WIP)
 
-> [!NOTE] WIP
+> [!NOTE]
 > Please reuse or extend the general tasks defined as Prefect / Atomate2 workflow. 
 > The following are some tasks implemented:
 > - [Prefect structure optimization (OPT)](../mlip_arena/tasks/optimize.py)
