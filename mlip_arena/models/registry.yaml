@@ -247,9 +247,9 @@ ALIGNN:
   doi: https://doi.org/10.1038/s41524-021-00650-1
   date: 2021-11-15
 
-DEEPMD:
+DeepMD:
   module: externals
-  class: DEEPMD
+  class: DeepMD
   family: deepmd
   package: deepmd-kit==v3.0.0b4
   checkpoint: dp0808c_v024mixu.pth

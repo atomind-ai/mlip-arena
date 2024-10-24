@@ -14,7 +14,7 @@ with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
 class DeepMD(DPCalculator):
     def __init__(
         self,
-        checkpoint="dp0808c_v024mixu.pth",
+        checkpoint=REGISTRY["DeepMD"]["checkpoint"],
         device=None,
         **kwargs,
     ):
