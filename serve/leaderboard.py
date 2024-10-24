@@ -7,21 +7,21 @@ import streamlit as st
 from mlip_arena.models import REGISTRY as MODELS
 from mlip_arena.tasks import REGISTRY as TASKS
 
+# Read the data
 DATA_DIR = Path("mlip_arena/tasks/diatomics")
 
-dfs = [
-    pd.read_json(DATA_DIR / MODELS[model].get("family") / "homonuclear-diatomics.json")
-    for model in MODELS
-]
+dfs = []
+for model in MODELS:
+    fpath = DATA_DIR / MODELS[model].get("family") / "homonuclear-diatomics.json"
+    if fpath.exists():
+        dfs.append(pd.read_json(fpath))
 df = pd.concat(dfs, ignore_index=True)
 
-
+# Create a table
 table = pd.DataFrame(
     columns=[
         "Model",
         "Element Coverage",
-        # "No. of reversed forces",
-        # "Energy-consistent forces",
         "Prediction",
         "NVT",
         "NPT",
@@ -39,8 +39,6 @@ for model in MODELS:
     new_row = {
         "Model": model,
         "Element Coverage": len(rows["name"].unique()),
-        # "No. of reversed forces": None,  # Replace with actual logic if available
-        # "Energy-consistent forces": None,  # Replace with actual logic if available
         "Prediction": metadata.get("prediction", None),
         "NVT": "✅" if metadata.get("nvt", False) else "❌",
         "NPT": "✅" if metadata.get("npt", False) else "❌",
@@ -122,8 +120,10 @@ for task in TASKS:
         # if st.button(f"Go to task page"):
         #     st.switch_page(f"tasks/{TASKS[task]['task-page']}.py")
     else:
-        st.write("Rank metrics are not available yet but the task has been implemented. Please see the following task page for more information.")
-    
+        st.write(
+            "Rank metrics are not available yet but the task has been implemented. Please see the following task page for more information."
+        )
+
     st.page_link(
         f"tasks/{TASKS[task]['task-page']}.py",
         label="Task page",
