@@ -3,6 +3,7 @@ from ase import Atoms
 
 from mlip_arena.models import MLIPEnum
 
+from requests import HTTPError
 from huggingface_hub.errors import LocalTokenNotFoundError
 
 @pytest.mark.parametrize("model", MLIPEnum)
@@ -14,7 +15,7 @@ def test_calculate(model: MLIPEnum):
     try:
         calc = MLIPEnum[model.name].value()
 
-    except LocalTokenNotFoundError:
+    except (LocalTokenNotFoundError, HTTPError):
         # Gracefully skip the test if HF_TOKEN is not available
         pytest.skip("Skipping test because HF_TOKEN is not available for downloading the model.")
 
