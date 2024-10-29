@@ -2,13 +2,15 @@
     <h1>MLIP Arena</h1>
     <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>
     <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo-with-title.svg" style="height: 20px; background-color: white;" alt="Hugging Face"></a>
+    <!-- <a href="https://discord.gg/W8WvdQtT8T"><img alt="Discord" src="https://img.shields.io/discord/1299613474820984832?logo=discord"> -->
+</a>
 </div>
 
 > [!CAUTION]
 > MLIP Arena is currently in pre-alpha. The results are not stable. Please intepret them with care. 
 
 > [!NOTE]
-> If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu).
+> Contributions of new tasks are very welcome! If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks, or propose new one in [Discussion](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
 
 MLIP Arena is a platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional energy and force error metrics. It focuses on revealing the underlying physics and chemistry learned by these models and assessing their performance in molecular dynamics (MD) simulations. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
 
@@ -33,7 +35,7 @@ pip install .[mace]
 
 ## Contribute
 
-MLIP Arena is now in pre-alpha. If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks. 
+MLIP Arena is now in pre-alpha. If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). 
 
 ### Development
 
@@ -44,7 +46,7 @@ streamlit run serve/app.py
 ### Add new benchmark tasks (WIP)
 
 > [!NOTE]
-> Please reuse or extend the general tasks defined as Prefect / Atomate2 workflow. 
+> Please reuse or extend the general tasks defined as Prefect / [Atomate2](https://github.com/materialsproject/atomate2) / [Quacc](https://github.com/Quantum-Accelerators/quacc) workflow. 
 > The following are some tasks implemented:
 > - [Prefect structure optimization (OPT)](../mlip_arena/tasks/optimize.py)
 > - [Prefect molecular dynamics (MD)](../mlip_arena/tasks/md.py)
@@ -79,7 +81,7 @@ If you have pretrained MLIP models that you would like to contribute to the MLIP
 
 ### Add new datasets
 
-The goal is to compile and keep the copy of all the open source data in a unified format for lifelong learning with [Hugging Face Auto-Train](https://huggingface.co/docs/hub/webhooks-guide-auto-retrain). 
+The "ultimate" goal is to compile the copies of all the open data in a unified format for lifelong learning with [Hugging Face Auto-Train](https://huggingface.co/docs/hub/webhooks-guide-auto-retrain). 
 
 1. Create a new [Hugging Face Dataset](https://huggingface.co/new-dataset) repository and upload the reference data (e.g. DFT, AIMD, experimental measurements such as RDF).
 
