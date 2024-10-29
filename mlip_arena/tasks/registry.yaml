@@ -14,9 +14,8 @@ Combustion:
   task-page: combustion
   task-layout: centered
   rank-page: combustion
-# nacl:
-#   last-update: 2024-03-25T14:30:00 # TODO: Fake datetime
-# alexandria:
-#   last-update: 2024-03-25T14:30:00 # TODO: Fake datetime
-# qmof:
-#   last-update: 2024-03-25T14:30:00 # TODO: Fake datetime
+Thermal conductivity:
+  category: Properties
+  task-page: thermal-conductivity
+  task-layout: centered
+  rank-page:

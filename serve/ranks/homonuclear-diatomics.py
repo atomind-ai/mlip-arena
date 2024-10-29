@@ -74,7 +74,7 @@ table["Rank"] += np.argsort(table["Force flips"].to_numpy())
 
 table["Rank"] += 1
 
-table.sort_values("Rank", ascending=True, inplace=True)
+table.sort_values(["Rank", "Conservation deviation [eV/Å]"], ascending=True, inplace=True)
 
 table["Rank aggr."] = table["Rank"]
 
@@ -128,4 +128,3 @@ def render():
         s,
         use_container_width=True,
     )
-    # return table
