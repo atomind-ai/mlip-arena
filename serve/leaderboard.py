@@ -4,11 +4,12 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from mlip_arena import PKG_DIR
 from mlip_arena.models import REGISTRY as MODELS
 from mlip_arena.tasks import REGISTRY as TASKS
 
 # Read the data
-DATA_DIR = Path("mlip_arena/tasks/diatomics")
+DATA_DIR = PKG_DIR / "tasks" /"diatomics"
 
 dfs = []
 for model in MODELS:
@@ -126,6 +127,6 @@ for task in TASKS:
 
     st.page_link(
         f"tasks/{TASKS[task]['task-page']}.py",
-        label="Task page",
+        label="Go to the associated task page",
         icon=":material/link:",
     )
