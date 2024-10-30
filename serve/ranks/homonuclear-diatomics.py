@@ -116,6 +116,19 @@ s = (
         cmap="Blues",
         subset=["Rank", "Rank aggr."],
     )
+    .format(
+        "{:.4f}", 
+        subset=[
+            "Conservation deviation [eV/Å]",
+            "Spearman's coeff. (Energy - repulsion)",
+            "Spearman's coeff. (Force - descending)",
+            "Tortuosity",
+            "Energy jump [eV]",
+            "Force flips",
+            "Spearman's coeff. (Energy - attraction)",
+            "Spearman's coeff. (Force - ascending)",
+        ]
+    )
 )
 
 
@@ -124,7 +137,7 @@ def render():
         s,
         use_container_width=True,
     )
-    with st.expander(":material/info: Explanation"):
+    with st.expander("Explanation", icon=":material/info:"):
         st.caption(
             """
             - **Conservation deviation**: The average deviation of force from negative energy gradient along the diatomic curves. 
