@@ -11,33 +11,33 @@ table = pd.read_csv(DATA_DIR / "wte.csv")
 table.rename(
     columns={
         "method": "Model",
-        "srme": "SRME [1/Å]",
+        "srme": "SRME",
     },
     inplace=True,
 )
 
 table.set_index("Model", inplace=True)
 
-table.sort_values(["SRME [1/Å]"], ascending=True, inplace=True)
+table.sort_values(["SRME"], ascending=True, inplace=True)
 
-table["Rank"] = table["SRME [1/Å]"].rank(method='min').astype(int)
+table["Rank"] = table["SRME"].rank(method='min').astype(int)
 
 table = table.reindex(
     columns=[
         "Rank",
-        "SRME [1/Å]",
+        "SRME",
     ]
 )
 
 s = (
     table.style.background_gradient(
-        cmap="Reds", subset=["SRME [1/Å]"]
+        cmap="Reds", subset=["SRME"]
     )
     .background_gradient(
         cmap="Blues",
         subset=["Rank"],
     )
-    .format("{:.3f}", subset=["SRME [1/Å]"])
+    .format("{:.3f}", subset=["SRME"])
 )
 
 
@@ -48,7 +48,7 @@ def render():
         use_container_width=True
     )
 
-    with st.expander(":material/info: Explanation"):
+    with st.expander("Explanation", icon=":material/info:"):
         st.caption(
             """
             - **SRME**: symmetric relative mean error of single-phonon conductivity:
