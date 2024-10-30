@@ -4,6 +4,11 @@ Homonuclear diatomics:
   task-layout: wide
   rank-page: homonuclear-diatomics
   last-update: 2024-09-19
+Thermal conductivity:
+  category: Properties
+  task-page: thermal-conductivity
+  task-layout: centered
+  rank-page: thermal-conductivity
 High pressure stability:
   category: Molecular dynamics
   task-page: stability
@@ -14,8 +19,3 @@ Combustion:
   task-page: combustion
   task-layout: centered
   rank-page: combustion
-Thermal conductivity:
-  category: Properties
-  task-page: thermal-conductivity
-  task-layout: centered
-  rank-page:
