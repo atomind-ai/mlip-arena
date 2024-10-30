@@ -47,3 +47,9 @@ def get_com_drifts(df):
 df_exploded = get_com_drifts(df)
 
 table = pd.DataFrame()
+
+# def render():
+#     st.dataframe(
+#         table,
+#         use_container_width=True,
+#     )

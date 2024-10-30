@@ -74,14 +74,10 @@ table["Rank"] += np.argsort(table["Force flips"].to_numpy())
 
 table["Rank"] += 1
 
-table.sort_values("Rank", ascending=True, inplace=True)
+table.sort_values(["Rank", "Conservation deviation [eV/Å]"], ascending=True, inplace=True)
 
 table["Rank aggr."] = table["Rank"]
-
-table["Rank"] = np.argsort(table["Rank"].to_numpy()) + 1
-
-# table.drop(columns=["rank"], inplace=True)
-# table = table.rename(columns={"Rank": "Rank Aggr."})
+table["Rank"] = table["Rank aggr."].rank(method='min').astype(int)
 
 table = table.reindex(
     columns=[
@@ -128,4 +124,19 @@ def render():
         s,
         use_container_width=True,
     )
-    # return table
+    with st.expander(":material/info: Explanation"):
+        st.caption(
+            """
+            - **Conservation deviation**: The average deviation of force from negative energy gradient along the diatomic curves. 
+            
+            $$
+            \\text{Conservation deviation} = \\left\\langle\\left| \\mathbf{F}(\\mathbf{r})\\cdot\\frac{\\mathbf{r}}{\\|\\mathbf{r}\\|} +  \\nabla_rE\\right|\\right\\rangle_{r = \\|\\mathbf{r}\\|}
+            $$
+
+            - **Spearman's coeff. (Energy - repulsion)**: Spearman's correlation coefficient of energy prediction within equilibrium distance $r \\in (r_{min}, r_o = \\argmin_{r} E(r))$.
+            - **Spearman's coeff. (Force - descending)**: Spearman's correlation coefficient of force prediction within equilibrium distance $r \\in (r_{min}, r_o = \\argmin_{r} E(r))$.
+            - **Tortuosity**: The ratio between total variation in energy and sum of absolute energy differences between $r_{min}$, $r_o$, and $r_{max}$.
+            - **Energy jump**: The sum of energy discontinuity.
+            - **Force flips**: The number of sign changes.
+            """
+        )
