@@ -26,21 +26,21 @@ table = pd.read_csv(DATA_DIR / "wte.csv")
 table.rename(
     columns={
         "method": "Model",
-        "srme": "SRME [W/mK]",
+        "srme": "SRME [1/Å]",
     },
     inplace=True,
 )
 
 table.set_index("Model", inplace=True)
 
-table.sort_values(["SRME [W/mK]"], ascending=True, inplace=True)
+table.sort_values(["SRME [1/Å]"], ascending=True, inplace=True)
 
 s = table.style.background_gradient(
-    cmap="Reds", subset=["SRME [W/mK]"]
+    cmap="Reds", subset=["SRME [1/Å]"]
 )
 
 st.dataframe(
     s,
     use_container_width=True,
-    column_config={"SRME [W/mK]": {"format": "{:.3f}"}}
+    column_config={"SRME [1/Å]": {"format": "{:.3f}"}}
 )
