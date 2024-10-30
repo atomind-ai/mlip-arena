@@ -154,16 +154,16 @@ def plot_md_steps(counts_per_method, count_or_percetange):
 
 plot_md_steps(counts_per_method, count_or_percetange)
 
-st.markdown(
-    """
-> The histogram shows the distribution of the total number of MD steps before the system crashes or completes the trajectory. :red[The color of the bins indicates the number of steps in the bin]. :blue[The height of the bars indicates the number or percentage of each bin among all the runs].
+st.caption(
+"""
+The histogram shows the distribution of the total number of MD steps before the system crashes or completes the trajectory. :red[The color of the bins indicates the number of steps in the bin]. :blue[The height of the bars indicates the number or percentage of each bin among all the runs].
 """
 )
 
 ###
 
 st.markdown(
-    """
+"""
 ## Inference speed
 
 The inference speed of the MLIPs is crucial for the high-throughput virutal screening. Under high pressure conditions, the atoms often move faster and closer to each other, which increases the size of neighbor list and local graph construction and hence slows down the inference speed.
@@ -221,8 +221,8 @@ def plot_speed(df, method_color_mapping):
 
 plot_speed(df, method_color_mapping)
 
-st.markdown(
-    """
-> The plot shows the inference speed (steps per second) as a function of the number of atoms in the system. :red[The size of the points is proportional to the total number of steps in the MD trajectory before crash or completion (~49990)]. :blue[The lines show the fit of the data to the power law function $a N^{-n}$], where $N$ is the number of atoms and $a$ and $n$ are the fit parameters.
+st.caption(
+"""
+The plot shows the inference speed (steps per second) as a function of the number of atoms in the system. :red[The size of the points is proportional to the total number of steps in the MD trajectory before crash or completion (~49990)]. :blue[The lines show the fit of the data to the power law function $a N^{-n}$], where $N$ is the number of atoms and $a$ and $n$ are the fit parameters.
 """
 )
