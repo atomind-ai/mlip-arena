@@ -28,5 +28,5 @@ def render():
 
     st.dataframe(
         s,
-        use_container_width=True
+        use_container_width=False
     )
