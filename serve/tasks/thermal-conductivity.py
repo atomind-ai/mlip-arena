@@ -26,20 +26,20 @@ table = pd.read_csv(DATA_DIR / "wte.csv")
 table.rename(
     columns={
         "method": "Model",
-        "srme": "SRME",
+        "srme": "SRME[𝜅]",
     },
     inplace=True,
 )
 
 table.set_index("Model", inplace=True)
 
-table.sort_values(["SRME"], ascending=True, inplace=True)
+table.sort_values(["SRME[𝜅]"], ascending=True, inplace=True)
 
 s = (
     table.style.background_gradient(
-        cmap="Reds", subset=["SRME"]
+        cmap="Reds", subset=["SRME[𝜅]"]
     )
-    .format("{:.3f}", subset=["SRME"])
+    .format("{:.3f}", subset=["SRME[𝜅]"])
 )
 
 st.dataframe(

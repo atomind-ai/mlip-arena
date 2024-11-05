@@ -30,9 +30,9 @@ valid_models = [
 mlip_methods = container.multiselect(
     "MLIPs",
     valid_models,
-    ["EquiformerV2(OC22)", "CHGNet", "M3GNet", "SevenNet", "MACE-MP(M)", "ORB", "eqV2(OMat)"],
+    ["MACE-MP(M)", "CHGNet", "M3GNet", "SevenNet", "ORB", "ORBv2", "eqV2(OMat)"],
 )
-dft_methods = container.multiselect("DFT Methods", ["GPAW"], [])
+dft_methods = container.multiselect("DFT Methods", ["PBE"], ["PBE"])
 
 st.markdown("### Settings")
 vis = st.container(border=True)
@@ -71,8 +71,8 @@ def get_data(mlip_methods, dft_methods):
     ]
     dfs.extend(
         [
-            pd.read_json(DATA_DIR / method.lower() / "homonuclear-diatomics.json")
-            for method in dft_methods
+            pd.read_json(DATA_DIR / "vasp" / "homonuclear-diatomics.json")
+            # for method in dft_methods
         ]
     )
     df = pd.concat(dfs, ignore_index=True)
@@ -118,63 +118,110 @@ def get_plots(df, energy_plot: bool, force_plot: bool, method_color_mapping: dic
 
             rs = rs[ind]
             es = es[ind]
-            if "GPAW" not in method:
-                es = es - es[-1]
-            else:
-                pass
+            fs = fs[ind]
+            
+            # if method not in ["PBE"]:
+            es = es - es[-1]
 
-            if "GPAW" not in method:
-                fs = fs[ind]
 
-            if "GPAW" in method:
-                xs = np.linspace(rs.min() * 0.99, rs.max() * 1.01, int(5e2))
-            else:
-                xs = rs
+            # if method in ["PBE"]:
+            #     xs = np.linspace(rs.min() * 0.99, rs.max() * 1.01, int(5e2))
+            # else:
+            xs = rs
 
             if energy_plot:
-                if "GPAW" in method:
-                    cs = CubicSpline(rs, es)
-                    ys = cs(xs)
-                else:
-                    ys = es
+                # if "GPAW" in method:
+                #     cs = CubicSpline(rs, es)
+                #     ys = cs(xs)
+                # else:
+                ys = es
 
                 elo = min(elo, max(ys.min() * 1.2, -15), -1)
-                # elo = min(elo, ys.min()*1.2, -1)
 
-                fig.add_trace(
-                    go.Scatter(
-                        x=xs,
-                        y=ys,
-                        mode="lines",
-                        line=dict(
-                            color=method_color_mapping[method],
-                            width=3,
+                if method in ["PBE"]:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=xs,
+                            y=ys,
+                            mode="markers",
+                            line=dict(
+                                color=method_color_mapping[method],
+                                width=3,
+                            ),
+                            name=method,
                         ),
-                        name=method,
-                    ),
-                    secondary_y=False,
-                )
+                        secondary_y=False,
+                    )
+                    # xs = np.linspace(rs.min() * 0.99, rs.max() * 1.01, int(5e2))
+                    # cs = CubicSpline(rs, es)
+                    # ys = cs(xs)
+                    # fig.add_trace(
+                    #     go.Scatter(
+                    #         x=xs,
+                    #         y=ys,
+                    #         mode="lines",
+                    #         line=dict(
+                    #             color=method_color_mapping[method],
+                    #             width=3,
+                    #         ),
+                    #         name=method,
+                    #         showlegend=False,
+                    #     ),
+                    #     secondary_y=False,
+                    # )
+                else:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=xs,
+                            y=ys,
+                            mode="lines",
+                            line=dict(
+                                color=method_color_mapping[method],
+                                width=3,
+                            ),
+                            name=method,
+                        ),
+                        secondary_y=False,
+                    )
 
-            if force_plot and "GPAW" not in method:
+            # if force_plot and method not in ["PBE"]:
+            if force_plot:
                 ys = fs
 
                 flo = min(flo, max(ys.min() * 1.2, -50))
 
-                fig.add_trace(
-                    go.Scatter(
-                        x=xs,
-                        y=ys,
-                        mode="lines",
-                        line=dict(
-                            color=method_color_mapping[method],
-                            width=2,
-                            dash="dashdot",
+                if method in ["PBE"]:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=xs,
+                            y=ys,
+                            mode="lines+markers",
+                            line=dict(
+                                color=method_color_mapping[method],
+                                width=2,
+                                dash="dashdot",
+                            ),
+                            name=method,
+                            showlegend=not energy_plot,
                         ),
-                        name=method,
-                        showlegend=not energy_plot,
-                    ),
-                    secondary_y=True,
-                )
+                        secondary_y=True,
+                    )
+                else:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=xs,
+                            y=ys,
+                            mode="lines",
+                            line=dict(
+                                color=method_color_mapping[method],
+                                width=2,
+                                dash="dashdot",
+                            ),
+                            name=method,
+                            showlegend=not energy_plot,
+                        ),
+                        secondary_y=True,
+                    )
 
         name = f"{symbol}-{symbol}"
 
@@ -187,6 +234,7 @@ def get_plots(df, energy_plot: bool, force_plot: bool, method_color_mapping: dic
                 y=1,
                 yanchor="top",
                 bgcolor="rgba(0, 0, 0, 0)",
+                # traceorder='reversed',
                 # entrywidth=0.3,
                 # entrywidthmode='fraction',
             ),
