@@ -3,5 +3,7 @@ M3GNet,1.142
 CHGNet,1.717
 MACE-MP(M),0.647
 SevenNet,0.767
-ORBv2(MPTrj),1.732
+ORBv2,1.732
+ORBv2(MPTrj),1.725
 eqV2(OMat-S),1.772
+eqV2(OMat),1.940
