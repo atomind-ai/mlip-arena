@@ -1,4 +1,5 @@
 from pathlib import Path
+from ase.data import chemical_symbols
 
 import numpy as np
 import pandas as pd
@@ -29,21 +30,23 @@ for model in valid_models:
     new_row = {
         "Model": model,
         "Conservation deviation [eV/Å]": rows["conservation-deviation"].mean(),
-        "Spearman's coeff. (Energy - repulsion)": rows[
+        "Spearman's coeff. (E: repulsion)": rows[
             "spearman-repulsion-energy"
         ].mean(),
-        "Spearman's coeff. (Force - descending)": rows[
+        "Spearman's coeff. (F: descending)": rows[
             "spearman-descending-force"
         ].mean(),
         "Tortuosity": rows["tortuosity"].mean(),
         "Energy jump [eV]": rows["energy-jump"].mean(),
         "Force flips": rows["force-flip-times"].mean(),
-        "Spearman's coeff. (Energy - attraction)": rows[
+        "Spearman's coeff. (E: attraction)": rows[
             "spearman-attraction-energy"
         ].mean(),
-        "Spearman's coeff. (Force - ascending)": rows[
+        "Spearman's coeff. (F: ascending)": rows[
             "spearman-ascending-force"
         ].mean(),
+        "PBE energy MAE [eV]": rows["pbe-energy-mae"].mean(),
+        "PBE force MAE [eV/Å]": rows["pbe-force-mae"].mean(),
     }
 
     table = pd.concat([table, pd.DataFrame([new_row])], ignore_index=True)
@@ -54,14 +57,20 @@ table.sort_values("Conservation deviation [eV/Å]", ascending=True, inplace=Tru
 table["Rank"] = np.argsort(table["Conservation deviation [eV/Å]"].to_numpy())
 
 table.sort_values(
-    "Spearman's coeff. (Energy - repulsion)", ascending=True, inplace=True
+    "Spearman's coeff. (E: repulsion)", ascending=True, inplace=True
 )
-table["Rank"] += np.argsort(table["Spearman's coeff. (Energy - repulsion)"].to_numpy())
+table["Rank"] += np.argsort(table["Spearman's coeff. (E: repulsion)"].to_numpy())
 
 table.sort_values(
-    "Spearman's coeff. (Force - descending)", ascending=True, inplace=True
+    "Spearman's coeff. (F: descending)", ascending=True, inplace=True
 )
-table["Rank"] += np.argsort(table["Spearman's coeff. (Force - descending)"].to_numpy())
+table["Rank"] += np.argsort(table["Spearman's coeff. (F: descending)"].to_numpy())
+
+table.sort_values("PBE energy MAE [eV]", ascending=True, inplace=True)
+table["Rank"] += np.argsort(table["PBE energy MAE [eV]"].to_numpy())
+
+table.sort_values("PBE force MAE [eV/Å]", ascending=True, inplace=True)
+table["Rank"] += np.argsort(table["PBE force MAE [eV/Å]"].to_numpy())
 
 table.sort_values("Tortuosity", ascending=True, inplace=True)
 table["Rank"] += np.argsort(table["Tortuosity"].to_numpy())
@@ -70,7 +79,7 @@ table.sort_values("Energy jump [eV]", ascending=True, inplace=True)
 table["Rank"] += np.argsort(table["Energy jump [eV]"].to_numpy())
 
 table.sort_values("Force flips", ascending=True, inplace=True)
-table["Rank"] += np.argsort(table["Force flips"].to_numpy())
+table["Rank"] += np.argsort(np.abs(table["Force flips"].to_numpy() - 1))
 
 table["Rank"] += 1
 
@@ -84,13 +93,15 @@ table = table.reindex(
         "Rank",
         "Rank aggr.",
         "Conservation deviation [eV/Å]",
-        "Spearman's coeff. (Energy - repulsion)",
-        "Spearman's coeff. (Force - descending)",
-        "Tortuosity",
+        "PBE energy MAE [eV]",
+        "PBE force MAE [eV/Å]",
+        "Spearman's coeff. (E: repulsion)",
+        "Spearman's coeff. (F: descending)",
         "Energy jump [eV]",
         "Force flips",
-        "Spearman's coeff. (Energy - attraction)",
-        "Spearman's coeff. (Force - ascending)",
+        "Tortuosity",
+        "Spearman's coeff. (E: attraction)",
+        "Spearman's coeff. (F: ascending)",
     ]
 )
 
@@ -103,10 +114,17 @@ s = (
     .background_gradient(
         cmap="Reds",
         subset=[
-            "Spearman's coeff. (Energy - repulsion)",
-            "Spearman's coeff. (Force - descending)",
+            "Spearman's coeff. (E: repulsion)",
+            "Spearman's coeff. (F: descending)",
         ],
         # vmin=-1, vmax=-0.5
+    )
+    .background_gradient(
+        cmap="BuPu",
+        subset=[
+            "PBE energy MAE [eV]",
+            "PBE force MAE [eV/Å]",
+        ],
     )
     .background_gradient(
         cmap="RdPu",
@@ -117,16 +135,18 @@ s = (
         subset=["Rank", "Rank aggr."],
     )
     .format(
-        "{:.4f}", 
+        "{:.3f}", 
         subset=[
             "Conservation deviation [eV/Å]",
-            "Spearman's coeff. (Energy - repulsion)",
-            "Spearman's coeff. (Force - descending)",
+            "Spearman's coeff. (E: repulsion)",
+            "Spearman's coeff. (F: descending)",
             "Tortuosity",
             "Energy jump [eV]",
             "Force flips",
-            "Spearman's coeff. (Energy - attraction)",
-            "Spearman's coeff. (Force - ascending)",
+            "Spearman's coeff. (E: attraction)",
+            "Spearman's coeff. (F: ascending)",
+            "PBE energy MAE [eV]",
+            "PBE force MAE [eV/Å]",
         ]
     )
 )
@@ -146,8 +166,8 @@ def render():
             \\text{Conservation deviation} = \\left\\langle\\left| \\mathbf{F}(\\mathbf{r})\\cdot\\frac{\\mathbf{r}}{\\|\\mathbf{r}\\|} +  \\nabla_rE\\right|\\right\\rangle_{r = \\|\\mathbf{r}\\|}
             $$
 
-            - **Spearman's coeff. (Energy - repulsion)**: Spearman's correlation coefficient of energy prediction within equilibrium distance $r \\in (r_{min}, r_o = \\argmin_{r} E(r))$.
-            - **Spearman's coeff. (Force - descending)**: Spearman's correlation coefficient of force prediction within equilibrium distance $r \\in (r_{min}, r_o = \\argmin_{r} E(r))$.
+            - **Spearman's coeff. (E: repulsion)**: Spearman's correlation coefficient of energy prediction within equilibrium distance $r \\in (r_{min}, r_o = \\argmin_{r} E(r))$.
+            - **Spearman's coeff. (F: descending)**: Spearman's correlation coefficient of force prediction within equilibrium distance $r \\in (r_{min}, r_o = \\argmin_{r} E(r))$.
             - **Tortuosity**: The ratio between total variation in energy and sum of absolute energy differences between $r_{min}$, $r_o$, and $r_{max}$.
             - **Energy jump**: The sum of energy discontinuity.
             - **Force flips**: The number of sign changes.

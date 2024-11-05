@@ -139,8 +139,6 @@ def get_plots(df, energy_plot: bool, force_plot: bool, method_color_mapping: dic
                 elo = min(elo, max(ys.min() * 1.2, -15), -1)
 
                 if method in ["PBE"]:
-                    # cs = CubicSpline(rs, es)
-                    # ys = cs(xs)
                     fig.add_trace(
                         go.Scatter(
                             x=xs,
@@ -154,6 +152,23 @@ def get_plots(df, energy_plot: bool, force_plot: bool, method_color_mapping: dic
                         ),
                         secondary_y=False,
                     )
+                    # xs = np.linspace(rs.min() * 0.99, rs.max() * 1.01, int(5e2))
+                    # cs = CubicSpline(rs, es)
+                    # ys = cs(xs)
+                    # fig.add_trace(
+                    #     go.Scatter(
+                    #         x=xs,
+                    #         y=ys,
+                    #         mode="lines",
+                    #         line=dict(
+                    #             color=method_color_mapping[method],
+                    #             width=3,
+                    #         ),
+                    #         name=method,
+                    #         showlegend=False,
+                    #     ),
+                    #     secondary_y=False,
+                    # )
                 else:
                     fig.add_trace(
                         go.Scatter(
@@ -175,21 +190,38 @@ def get_plots(df, energy_plot: bool, force_plot: bool, method_color_mapping: dic
 
                 flo = min(flo, max(ys.min() * 1.2, -50))
 
-                fig.add_trace(
-                    go.Scatter(
-                        x=xs,
-                        y=ys,
-                        mode="lines",
-                        line=dict(
-                            color=method_color_mapping[method],
-                            width=2,
-                            dash="dashdot",
+                if method in ["PBE"]:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=xs,
+                            y=ys,
+                            mode="lines+markers",
+                            line=dict(
+                                color=method_color_mapping[method],
+                                width=2,
+                                dash="dashdot",
+                            ),
+                            name=method,
+                            showlegend=not energy_plot,
                         ),
-                        name=method,
-                        showlegend=not energy_plot,
-                    ),
-                    secondary_y=True,
-                )
+                        secondary_y=True,
+                    )
+                else:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=xs,
+                            y=ys,
+                            mode="lines",
+                            line=dict(
+                                color=method_color_mapping[method],
+                                width=2,
+                                dash="dashdot",
+                            ),
+                            name=method,
+                            showlegend=not energy_plot,
+                        ),
+                        secondary_y=True,
+                    )
 
         name = f"{symbol}-{symbol}"
 
