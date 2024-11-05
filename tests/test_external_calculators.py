@@ -12,6 +12,9 @@ def test_calculate(model: MLIPEnum):
     if model.name == "ALIGNN":
         pytest.xfail("ALIGNN has poor file download mechanism")
 
+    if model.name == "ORB":
+        pytest.xfail("Orbital Materials deprecated the model a month after its premature release in favor of ORBv2")
+
     try:
         calc = MLIPEnum[model.name].value()
 
