@@ -257,6 +257,25 @@ DeepMD:
   nvt: true
   npt: true
 
+ORBv2:
+  module: externals
+  class: ORBv2
+  family: orb
+  package: orb-models==0.4.0
+  checkpoint: orb-v2-20241011.ckpt
+  username: 
+  last-update: 2024-10-29T00:00:00
+  datetime: 2024-10-29T00:00:00 # TODO: Fake datetime
+  datasets:
+    - MPTrj
+    - Alexandria
+  github: https://github.com/orbital-materials/orb-models
+  doi: 
+  date: 2024-10-15
+  prediction: EFS
+  nvt: true
+  npt: true
+
 ORBv2(MPTrj):
   module: externals
   class: ORBv2
