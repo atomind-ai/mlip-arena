@@ -269,6 +269,8 @@ ORBv2:
   datasets:
     - MPTrj
     - Alexandria
+  gpu-tasks:
+    - homonuclear-diatomics
   github: https://github.com/orbital-materials/orb-models
   doi: 
   date: 2024-10-15

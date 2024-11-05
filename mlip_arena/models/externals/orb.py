@@ -45,7 +45,7 @@ class ORB(ORBCalculator):
 class ORBv2(ORBCalculator):
     def __init__(
         self,
-        checkpoint=REGISTRY["ORB"]["checkpoint"],
+        checkpoint=REGISTRY["ORBv2"]["checkpoint"],
         device=None,
         **kwargs,
     ):
