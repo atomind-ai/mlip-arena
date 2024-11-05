@@ -46,7 +46,7 @@ run = [
     "chgnet==0.3.8",
     "fairchem-core==1.2.0",
     "sevenn==0.9.3.post1",
-    "orb-models==0.3.1",
+    "orb-models==0.4.0",
     "alignn==2024.5.27",
     "prefect>=3.0.4",
     "prefect-dask"
@@ -65,7 +65,7 @@ test = [
     "chgnet==0.3.8",
     "fairchem-core==1.2.0",
     "sevenn==0.9.3.post1",
-    "orb-models==0.3.1",
+    "orb-models==0.4.0",
     "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168",
     "alignn==2024.5.27",
     "pytest",

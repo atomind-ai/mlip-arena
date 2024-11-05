@@ -31,6 +31,7 @@ table = pd.DataFrame(
         "Paper",
         "Checkpoint",
         "First Release",
+        "License",
     ]
 )
 
@@ -48,6 +49,7 @@ for model in MODELS:
         "Paper": metadata.get("doi", None) if metadata else None,
         "Checkpoint": metadata.get("checkpoint", None),
         "First Release": metadata.get("date", None),
+        "License": metadata.get("license", None),
     }
     table = pd.concat([table, pd.DataFrame([new_row])], ignore_index=True)
 
