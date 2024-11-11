@@ -32,6 +32,7 @@ _valid_filters: dict[str, Filter] = {
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
     "FIRE": FIRE,
+    "FIRE2": FIRE2,
     "LBFGS": LBFGS,
     "LBFGSLineSearch": LBFGSLineSearch,
     "BFGS": BFGS,
