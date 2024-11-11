@@ -170,6 +170,6 @@ def render():
             - **Spearman's coeff. (F: descending)**: Spearman's correlation coefficient of force prediction within equilibrium distance $r \\in (r_{min}, r_o = \\argmin_{r} E(r))$.
             - **Tortuosity**: The ratio between total variation in energy and sum of absolute energy differences between $r_{min}$, $r_o$, and $r_{max}$.
             - **Energy jump**: The sum of energy discontinuity.
-            - **Force flips**: The number of sign changes.
+            - **Force flips**: The number of force direction changes.
             """
         )
