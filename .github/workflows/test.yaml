@@ -25,11 +25,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install torch==2.2.0
+        pip install uv torch==2.2.0
         bash scripts/install-pyg.sh
         bash scripts/install-dgl.sh
-        pip install .[test]
-        pip install .[mace]
+        uv pip install -e .[test]
+        uv pip install -e .[mace]
 
     - name: List dependencies
       run: pip list
