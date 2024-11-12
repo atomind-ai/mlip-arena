@@ -26,12 +26,12 @@ pip install mlip-arena
 
 ```bash
 git clone https://github.com/atomind-ai/mlip-arena.git
-pip install uv torch==2.2.0
+pip install torch==2.2.0
 bash scripts/install-pyg.sh
 bash scripts/install-dgl.sh
-uv pip install -e .[test]
-uv pip install -e .[mace]
-uv pip install -e .[deepmd]
+pip install -e .[test]
+pip install -e .[mace]
+pip install -e .[deepmd]
 ```
 
 ## Contribute
