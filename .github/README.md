@@ -29,8 +29,9 @@ git clone https://github.com/atomind-ai/mlip-arena.git
 pip install torch==2.2.0
 bash scripts/install-pyg.sh
 bash scripts/install-dgl.sh
-pip install .[test]
-pip install .[mace]
+pip install -e .[test]
+pip install -e .[mace]
+pip install -e .[deepmd]
 ```
 
 ## Contribute

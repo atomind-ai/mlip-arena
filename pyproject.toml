@@ -48,7 +48,7 @@ run = [
     "sevenn==0.9.3.post1",
     "orb-models==0.4.0",
     "alignn==2024.5.27",
-    "prefect>=3.0.4",
+    "prefect>=3.0.4,<3.1.0",
     "prefect-dask"
 ]
 app = [
@@ -59,6 +59,7 @@ app = [
 ]
 test = [
     "torch==2.2.0",
+    "nvidia-ml-py==12.560.30",
     "e3nn==0.5.1",
     "matgl==1.1.2",
     "dgl==2.4.0",
@@ -69,11 +70,13 @@ test = [
     "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168",
     "alignn==2024.5.27",
     "pytest",
-    "prefect>=3.0.4",
-    "deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git@v3.0.0b4"
+    "prefect>=3.0.4,<3.1.0",
 ]
 mace = [
     "mace-torch==0.3.4",
+]
+deepmd = [
+    "deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git@v3.0.0b4"
 ]
 
 [project.urls]
