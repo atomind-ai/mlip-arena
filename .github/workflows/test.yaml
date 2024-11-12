@@ -22,8 +22,17 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
 
+    - name: Restore cached virtualenv
+      uses: actions/cache/restore@v4
+      with:
+        key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
+        path: .venv
+
+
     - name: Install dependencies
       run: |
+        python -m venv .venv
+        source .venv/bin/activate
         python -m pip install --upgrade pip
         pip install torch==2.2.0
         bash scripts/install-pyg.sh
@@ -33,6 +42,12 @@ jobs:
 
     - name: List dependencies
       run: pip list
+    
+    - name: Saved cached virtualenv
+      uses: actions/cache/save@v4
+      with:
+        key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
+        path: .venv
       
     - name: Login huggingface
       if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
