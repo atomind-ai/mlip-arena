@@ -31,6 +31,8 @@ bash scripts/install-pyg.sh
 bash scripts/install-dgl.sh
 pip install -e .[test]
 pip install -e .[mace]
+# DeePMD
+export DP_ENABLE_TENSORFLOW=0
 pip install -e .[deepmd]
 ```
 
