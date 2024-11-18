@@ -48,7 +48,7 @@ jobs:
       run: pip list
       
     - name: Login huggingface
-      if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+      # if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN_READ_ONLY }}
       run:
