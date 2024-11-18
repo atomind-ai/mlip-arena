@@ -38,19 +38,10 @@ dependencies=[
 
 [project.optional-dependencies]
 run = [
-    "torch==2.2.0",
-    "e3nn==0.5.1", # Conflict
-    "matgl==1.1.2",
-    "dgl==2.4.0",
-    "mace-torch==0.3.4",
-    "chgnet==0.3.8",
-    "fairchem-core==1.2.0",
-    "sevenn==0.9.3.post1",
-    "orb-models==0.4.0",
-    "alignn==2024.5.27",
     "prefect>=3.0.4,<3.1.0",
     "prefect-dask",
     "dask",
+    "dask_jobqueue",
 ]
 app = [
     "streamlit==1.38.0",
@@ -72,8 +63,6 @@ test = [
     "alignn==2024.5.27",
     "pytest",
     "prefect>=3.0.4,<3.1.0",
-    "prefect-dask",
-    "dask",
 ]
 mace = [
     "mace-torch==0.3.4",
