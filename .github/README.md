@@ -26,11 +26,14 @@ pip install mlip-arena
 
 ```bash
 git clone https://github.com/atomind-ai/mlip-arena.git
+cd mlip-arena
 pip install torch==2.2.0
 bash scripts/install-pyg.sh
 bash scripts/install-dgl.sh
-pip install .[test]
-pip install .[mace]
+pip install -e .[test]
+pip install -e .[mace]
+# DeePMD
+DP_ENABLE_TENSORFLOW=0 pip install -e .[deepmd]
 ```
 
 ## Contribute
