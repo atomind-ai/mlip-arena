@@ -1,5 +1,7 @@
 import pytest
 from ase import Atoms
+from ase.calculators.calculator import PropertyNotImplementedError
+import numpy as np
 
 from mlip_arena.models import MLIPEnum
 
@@ -31,5 +33,22 @@ def test_calculate(model: MLIPEnum):
 
     atoms.calc = calc
 
-    print(atoms.get_potential_energy())
-    assert isinstance(atoms.get_potential_energy(), float)
+    energy = atoms.get_potential_energy()
+
+    assert isinstance(energy, (float, np.float64, np.float32))
+
+    forces = atoms.get_forces()
+    assert isinstance(forces, (np.ndarray, list))
+    assert len(forces) == len(atoms)
+
+    try:
+        stress = atoms.get_stress()
+    except PropertyNotImplementedError:
+        stress = None
+
+    if stress is None:
+        pytest.xfail("Stress calculation is not supported by the model")
+    else:
+        assert isinstance(stress, (np.ndarray, list))
+
+
