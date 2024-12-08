@@ -155,7 +155,7 @@ eqV2(OMat):
     - homonuclear-diatomics
   prediction: EFS
   nvt: true
-  npt: true
+  npt: false # https://github.com/FAIR-Chem/fairchem/issues/888, https://github.com/atomind-ai/mlip-arena/issues/17
   date: 2024-10-18
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2410.12771

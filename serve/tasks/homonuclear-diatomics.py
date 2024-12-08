@@ -30,7 +30,7 @@ valid_models = [
 mlip_methods = container.multiselect(
     "MLIPs",
     valid_models,
-    ["MACE-MP(M)", "CHGNet", "M3GNet", "SevenNet", "ORB", "ORBv2", "eqV2(OMat)"],
+    ["MACE-MP(M)", "CHGNet", "M3GNet", "MatterSim", "SevenNet", "ORBv2", "eqV2(OMat)"],
 )
 dft_methods = container.multiselect("DFT Methods", ["PBE"], ["PBE"])
 

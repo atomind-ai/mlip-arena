@@ -119,13 +119,13 @@ s = (
         ],
         # vmin=-1, vmax=-0.5
     )
-    .background_gradient(
-        cmap="BuPu",
-        subset=[
-            "PBE energy MAE [eV]",
-            "PBE force MAE [eV/Å]",
-        ],
-    )
+    # .background_gradient(
+    #     cmap="Greys",
+    #     subset=[
+    #         "PBE energy MAE [eV]",
+    #         "PBE force MAE [eV/Å]",
+    #     ],
+    # )
     .background_gradient(
         cmap="RdPu",
         subset=["Tortuosity", "Energy jump [eV]", "Force flips"],
