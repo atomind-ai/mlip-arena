@@ -18,7 +18,7 @@ class CHGNet(CHGNetCalculator):
         on_isolated_atoms: Literal["ignore", "warn", "error"] = "warn",
         **kwargs,
     ) -> None:
-        use_device = device or str(get_freer_device())
+        use_device = str(device or get_freer_device())
         super().__init__(
             model=checkpoint,
             use_device=use_device,

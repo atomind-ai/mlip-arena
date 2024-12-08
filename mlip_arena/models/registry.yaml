@@ -67,6 +67,28 @@ M3GNet:
   npt: true
   license: BSD-3-Clause
 
+MatterSim:
+  module: externals
+  class: MatterSim
+  family: mattersim
+  package: mattersim==1.0.0rc9
+  checkpoint: MatterSim-v1.0.0-5M.pth
+  username: 
+  last-update: 2024-10-29T00:00:00
+  datetime: 2024-10-29T00:00:00 # TODO: Fake datetime
+  datasets:
+    - MPTrj
+    - Alexandria
+  gpu-tasks:
+    - homonuclear-diatomics
+  github: https://github.com/microsoft/mattersim
+  doi: https://arxiv.org/abs/2405.04967
+  date: 2024-12-05
+  prediction: EFS
+  nvt: true
+  npt: true
+  license: MIT
+
 ORB:
   module: externals
   class: ORB

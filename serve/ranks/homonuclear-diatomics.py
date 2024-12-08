@@ -1,5 +1,4 @@
 from pathlib import Path
-from ase.data import chemical_symbols
 
 import numpy as np
 import pandas as pd
@@ -66,11 +65,12 @@ table.sort_values(
 )
 table["Rank"] += np.argsort(table["Spearman's coeff. (F: descending)"].to_numpy())
 
-table.sort_values("PBE energy MAE [eV]", ascending=True, inplace=True)
-table["Rank"] += np.argsort(table["PBE energy MAE [eV]"].to_numpy())
+# NOTE: it's not fair to models trained on different level of theory
+# table.sort_values("PBE energy MAE [eV]", ascending=True, inplace=True)
+# table["Rank"] += np.argsort(table["PBE energy MAE [eV]"].to_numpy())
 
-table.sort_values("PBE force MAE [eV/Å]", ascending=True, inplace=True)
-table["Rank"] += np.argsort(table["PBE force MAE [eV/Å]"].to_numpy())
+# table.sort_values("PBE force MAE [eV/Å]", ascending=True, inplace=True)
+# table["Rank"] += np.argsort(table["PBE force MAE [eV/Å]"].to_numpy())
 
 table.sort_values("Tortuosity", ascending=True, inplace=True)
 table["Rank"] += np.argsort(table["Tortuosity"].to_numpy())
