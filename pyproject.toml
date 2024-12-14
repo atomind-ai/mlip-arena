@@ -71,6 +71,10 @@ mace = [
 deepmd = [
     "deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git@v3.0.0b4"
 ]
+phonon = [
+    "k-srme@git+https://github.com/MPA2suite/k_SRME.git",
+    "phono3py"
+]
 
 [project.urls]
 Homepage = "https://github.com/atomind-ai/mlip-arena"
