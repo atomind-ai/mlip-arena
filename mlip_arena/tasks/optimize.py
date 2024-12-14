@@ -1,10 +1,15 @@
-""" 
+"""
 Define structure optimization tasks.
 """
 
 from __future__ import annotations
 
 from datetime import timedelta
+
+from prefect import task
+from prefect.runtime import task_run
+from prefect.tasks import task_input_hash
+from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 
 from ase import Atoms
 from ase.calculators.calculator import Calculator
@@ -13,10 +18,6 @@ from ase.filters import *  # type: ignore
 from ase.filters import Filter
 from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
-from prefect import task
-from prefect.tasks import task_input_hash
-from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
-
 from mlip_arena.models import MLIPEnum
 from mlip_arena.models.utils import get_freer_device
 
@@ -26,7 +27,7 @@ _valid_filters: dict[str, Filter] = {
     "ExpCell": ExpCellFilter,
     "Strain": StrainFilter,
     "FrechetCell": FrechetCellFilter,
-} # type: ignore
+}  # type: ignore
 
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
@@ -39,14 +40,25 @@ _valid_optimizers: dict[str, Optimizer] = {
     "GPMin": GPMin,
     "CellAwareBFGS": CellAwareBFGS,
     "ODE12r": ODE12r,
-} # type: ignore
+}  # type: ignore
 
 
-# @task(
-#     cache_key_fn=task_input_hash, 
-#     cache_expiration=timedelta(days=1),
-#     timeout_seconds=120)
-@task(timeout_seconds=120, result_storage=None)
+def _generate_task_run_name():
+    task_name = task_run.task_name
+    parameters = task_run.parameters
+
+    atoms = parameters["atoms"]
+    calculator_name = parameters["calculator_name"]
+
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+
+
+@task(
+    name="MD",
+    task_run_name=_generate_task_run_name,
+    cache_key_fn=task_input_hash,
+    # cache_expiration=timedelta(days=1)
+)
 def run(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
@@ -103,7 +115,6 @@ def run(
             raise ValueError(f"Invalid optimizer: {optimizer}")
         optimizer = _valid_optimizers[optimizer]
 
-
     filter_kwargs = filter_kwargs or {}
     optimizer_kwargs = optimizer_kwargs or {}
     criterion = criterion or {}
@@ -126,4 +137,3 @@ def run(
     return {
         "atoms": atoms,
     }
-
