@@ -1,4 +1,4 @@
-""" 
+"""
 Define structure optimization tasks.
 """
 
@@ -6,17 +6,18 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from ase import Atoms
-from ase.calculators.calculator import Calculator
-from ase.calculators.mixing import SumCalculator
-from ase.filters import *  # type: ignore
-from ase.filters import Filter
-from ase.optimize import *  # type: ignore
-from ase.optimize.optimize import Optimizer
 from prefect import task
 from prefect.tasks import task_input_hash
 from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 
+from ase import Atoms
+from ase.calculators.calculator import Calculator
+from ase.calculators.mixing import SumCalculator
+from ase.constraints import FixSymmetry
+from ase.filters import *  # type: ignore
+from ase.filters import Filter
+from ase.optimize import *  # type: ignore
+from ase.optimize.optimize import Optimizer
 from mlip_arena.models import MLIPEnum
 from mlip_arena.models.utils import get_freer_device
 
@@ -26,7 +27,7 @@ _valid_filters: dict[str, Filter] = {
     "ExpCell": ExpCellFilter,
     "Strain": StrainFilter,
     "FrechetCell": FrechetCellFilter,
-} # type: ignore
+}  # type: ignore
 
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
@@ -39,11 +40,11 @@ _valid_optimizers: dict[str, Optimizer] = {
     "GPMin": GPMin,
     "CellAwareBFGS": CellAwareBFGS,
     "ODE12r": ODE12r,
-} # type: ignore
+}  # type: ignore
 
 
 # @task(
-#     cache_key_fn=task_input_hash, 
+#     cache_key_fn=task_input_hash,
 #     cache_expiration=timedelta(days=1),
 #     timeout_seconds=120)
 @task(timeout_seconds=120, result_storage=None)
@@ -59,7 +60,7 @@ def run(
     filter: Filter | str | None = None,
     filter_kwargs: dict | None = None,
     criterion: dict | None = None,
-    # TODO: fix symmetry
+    symmetry: bool = False,
 ):
     device = device or str(get_freer_device())
 
@@ -103,10 +104,12 @@ def run(
             raise ValueError(f"Invalid optimizer: {optimizer}")
         optimizer = _valid_optimizers[optimizer]
 
-
     filter_kwargs = filter_kwargs or {}
     optimizer_kwargs = optimizer_kwargs or {}
     criterion = criterion or {}
+
+    if symmetry:
+        atoms.set_constraint(FixSymmetry(atoms))
 
     if isinstance(filter, type) and issubclass(filter, Filter):
         filter_instance = filter(atoms, **filter_kwargs)
@@ -125,5 +128,5 @@ def run(
 
     return {
         "atoms": atoms,
+        "nsteps": optimizer_instance.nsteps
     }
-
