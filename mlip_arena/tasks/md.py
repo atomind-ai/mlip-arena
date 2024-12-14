@@ -1,5 +1,5 @@
 """
-Define molecular dynamics tasks.
+Define molecular dynamics task.
 
 This script has been adapted from Atomate2 MLFF MD workflow written by Aaron Kaplan and Yuan Chiang
 https://github.com/materialsproject/atomate2/blob/main/src/atomate2/forcefields/md.py
@@ -60,6 +60,14 @@ from pathlib import Path
 from typing import Literal
 
 import numpy as np
+from prefect import task
+from prefect.runtime import task_run
+from prefect.tasks import task_input_hash
+from scipy.interpolate import interp1d
+from scipy.linalg import schur
+from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
+from tqdm.auto import tqdm
+
 from ase import Atoms, units
 from ase.calculators.calculator import Calculator
 from ase.calculators.mixing import SumCalculator
@@ -77,13 +85,6 @@ from ase.md.velocitydistribution import (
     ZeroRotation,
 )
 from ase.md.verlet import VelocityVerlet
-from prefect import task
-from prefect.tasks import task_input_hash
-from scipy.interpolate import interp1d
-from scipy.linalg import schur
-from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
-from tqdm.auto import tqdm
-
 from mlip_arena.models import MLIPEnum
 from mlip_arena.models.utils import get_freer_device
 
@@ -186,7 +187,22 @@ def _get_ensemble_defaults(
     return ase_md_kwargs
 
 
-@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
+def _generate_task_run_name():
+    task_name = task_run.task_name
+    parameters = task_run.parameters
+
+    atoms = parameters["atoms"]
+    calculator_name = parameters["calculator_name"]
+
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+
+
+@task(
+    name="MD",
+    task_run_name=_generate_task_run_name,
+    cache_key_fn=task_input_hash,
+    # cache_expiration=timedelta(days=1)
+)
 def run(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
@@ -196,10 +212,10 @@ def run(
     device: str | None = None,
     ensemble: Literal["nve", "nvt", "npt"] = "nvt",
     dynamics: str | MolecularDynamics = "langevin",
-    time_step: float | None = None, # fs
+    time_step: float | None = None,  # fs
     total_time: float = 1000,  # fs
-    temperature: float | Sequence | np.ndarray | None = 300.0, # K
-    pressure: float | Sequence | np.ndarray | None = None, # eV/A^3
+    temperature: float | Sequence | np.ndarray | None = 300.0,  # K
+    pressure: float | Sequence | np.ndarray | None = None,  # eV/A^3
     ase_md_kwargs: dict | None = None,
     md_velocity_seed: int | None = None,
     zero_linear_momentum: bool = True,
@@ -282,7 +298,7 @@ def run(
         raise ValueError(f"Invalid dynamics: {dynamics}")
 
     if md_class is NPT:
-        #  Note that until md_func is instantiated, isinstance(md_func,NPT) is False
+        # Note that until md_func is instantiated, isinstance(md_func,NPT) is False
         # ASE NPT implementation requires upper triangular cell
         u, _ = schur(atoms.get_cell(complete=True), output="complex")
         atoms.set_cell(u.real, scale_atoms=True)

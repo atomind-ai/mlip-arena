@@ -1,5 +1,5 @@
 """
-Define equation of state flows.
+Define equation of state task.
 
 https://github.com/materialsvirtuallab/matcalc/blob/main/matcalc/eos.py
 """
@@ -9,23 +9,24 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
+from prefect import task
+from prefect.futures import wait
+from prefect.runtime import task_run
+from prefect.tasks import task_input_hash
+
 from ase import Atoms
 from ase.filters import *  # type: ignore
 from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
-from prefect import task
-from prefect.futures import wait
-from prefect.runtime import task_run
-from pymatgen.analysis.eos import BirchMurnaghan
-
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
+from pymatgen.analysis.eos import BirchMurnaghan
 
 if TYPE_CHECKING:
     from ase.filters import Filter
 
 
-def generate_task_run_name():
+def _generate_task_run_name():
     task_name = task_run.task_name
     parameters = task_run.parameters
 
@@ -35,7 +36,11 @@ def generate_task_run_name():
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
 
-@task(task_run_name=generate_task_run_name)
+@task(
+    name="EOS",
+    task_run_name=_generate_task_run_name,
+    cache_key_fn=task_input_hash,
+)
 def run(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
