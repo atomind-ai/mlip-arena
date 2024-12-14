@@ -1,5 +1,7 @@
 """
-Adapted from the k_SRME package, which is licensed under the GPL-3.0 license.
+Adapted from the k_SRME package by Póta, B., Ahlawat, P., Csányi, G., & Simoncelli, M. (2024). Thermal Conductivity Predictions with Foundation Atomistic Models. arXiv preprint arXiv:2408.00755.
+
+The original code is licensed under the GPL-3.0 license.
 https://github.com/MPA2suite/k_SRME?tab=GPL-3.0-1-ov-file
 """
 
