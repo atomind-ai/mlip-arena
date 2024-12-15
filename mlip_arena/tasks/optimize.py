@@ -63,7 +63,7 @@ def _generate_task_run_name():
 def run(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None,
+    calculator_kwargs: dict | None = None,
     dispersion: str | None = None,
     dispersion_kwargs: dict | None = None,
     device: str | None = None,

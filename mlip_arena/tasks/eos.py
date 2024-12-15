@@ -44,7 +44,7 @@ def _generate_task_run_name():
 def run(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None,
+    calculator_kwargs: dict | None = None,
     device: str | None = None,
     optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
     optimizer_kwargs: dict | None = None,
@@ -53,6 +53,7 @@ def run(
     criterion: dict | None = None,
     max_abs_strain: float = 0.1,
     npoints: int = 11,
+    concurrent: bool = True,
 ):
     """
     Compute the equation of state (EOS) for the given atoms and calculator.
@@ -69,6 +70,7 @@ def run(
         criterion: The criterion to use.
         max_abs_strain: The maximum absolute strain to use.
         npoints: The number of points to sample.
+        concurrent: Whether to relax multiple structures concurrently.
 
     Returns:
         A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy.
@@ -92,36 +94,48 @@ def run(
 
     factors = np.linspace(1 - max_abs_strain, 1 + max_abs_strain, npoints) ** (1 / 3)
 
-    futures = []
-    for f in factors:
-        atoms = relaxed.copy()
-        atoms.set_cell(c0 * f, scale_atoms=True)
+    if concurrent:
+        futures = []
+        for f in factors:
+            atoms = relaxed.copy()
+            atoms.set_cell(c0 * f, scale_atoms=True)
 
-        future = OPT.submit(
-            atoms=atoms,
-            calculator_name=calculator_name,
-            calculator_kwargs=calculator_kwargs,
-            device=device,
-            optimizer=optimizer,
-            optimizer_kwargs=optimizer_kwargs,
-            filter=None,
-            filter_kwargs=None,
-            criterion=criterion,
-        )
+            future = OPT.submit(
+                atoms=atoms,
+                calculator_name=calculator_name,
+                calculator_kwargs=calculator_kwargs,
+                device=device,
+                optimizer=optimizer,
+                optimizer_kwargs=optimizer_kwargs,
+                filter=None,
+                filter_kwargs=None,
+                criterion=criterion,
+            )
+            futures.append(future)
+        wait(futures)
+        results = [f.result() for f in futures]
+    else:
+        results = []
+        for f in factors:
+            atoms = relaxed.copy()
+            atoms.set_cell(c0 * f, scale_atoms=True)
 
-        futures.append(future)
+            result = OPT(
+                atoms=atoms,
+                calculator_name=calculator_name,
+                calculator_kwargs=calculator_kwargs,
+                device=device,
+                optimizer=optimizer,
+                optimizer_kwargs=optimizer_kwargs,
+                filter=None,
+                filter_kwargs=None,
+                criterion=criterion,
+            )
+            results.append(result)
 
-    wait(futures)
-
-    volumes = [
-        f.result()["atoms"].get_volume()
-        for f in futures
-        if isinstance(f.result(), dict)
-    ]
+    volumes = [r["atoms"].get_volume() for r in results if isinstance(r, dict)]
     energies = [
-        f.result()["atoms"].get_potential_energy()
-        for f in futures
-        if isinstance(f.result(), dict)
+        r["atoms"].get_potential_energy() for r in results if isinstance(r, dict)
     ]
 
     volumes, energies = map(
