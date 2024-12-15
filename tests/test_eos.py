@@ -45,4 +45,4 @@ def test_eos(model: MLIPEnum):
             calculator_name=model.name,
         )
 
-        assert isinstance(result["K"], float)
+        assert isinstance(result["b0"], float)

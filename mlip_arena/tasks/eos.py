@@ -71,7 +71,7 @@ def run(
         npoints: The number of points to sample.
 
     Returns:
-        A dictionary containing the EOS data and the bulk modulus.
+        A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy.
     """
     first_relax = OPT(
         atoms=atoms,
@@ -138,4 +138,8 @@ def run(
     return {
         "eos": {"volumes": volumes, "energies": energies},
         "K": bm.b0_GPa,
+        "b0": bm.b0,
+        "b1": bm.b1,
+        "e0": bm.e0,
+        "v0": bm.v0,
     }
