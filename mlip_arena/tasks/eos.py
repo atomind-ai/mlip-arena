@@ -139,6 +139,7 @@ def run(
         "eos": {"volumes": volumes, "energies": energies},
         "K": bm.b0_GPa,
         "b0": bm.b0,
+        "b1": bm.b1,
         "e0": bm.e0,
         "v0": bm.v0,
     }
