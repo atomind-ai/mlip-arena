@@ -43,11 +43,11 @@ def save_to_hdf(
         result = state.result()
 
         atoms = result["atoms"]
-        calculator_name = run.task_inputs["calculator_name"]
+        calculator_name = run.task_inputs["calculator_name"] or result["calculator_name"]
 
-        formula = Formula(atoms.get_chemical_symbols())
+        formula = Formula(atoms.get_chemical_formula())
 
-        compositions = {e: c / len(atoms) for e, c in formula.count()}
+        compositions = {e: c / len(atoms) for e, c in formula.count().items()}
 
         df = pd.DataFrame(
             {

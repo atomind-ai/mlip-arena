@@ -167,6 +167,7 @@ def run(
 
     return {
         "atoms": relaxed,
+        "calculator_name": calculator_name,
         "eos": {"volumes": volumes, "energies": energies},
         "K": bm.b0_GPa,
         "b0": bm.b0,
