@@ -4,18 +4,17 @@ Define structure optimization tasks.
 
 from __future__ import annotations
 
-
 from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
-from prefect.tasks import task_input_hash
 from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 
 from ase import Atoms
 from ase.calculators.calculator import Calculator
 from ase.calculators.mixing import SumCalculator
+from ase.constraints import FixSymmetry
 from ase.filters import *  # type: ignore
 from ase.filters import Filter
-from ase.constraints import FixSymmetry
 from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
 from mlip_arena.models import MLIPEnum
@@ -56,7 +55,8 @@ def _generate_task_run_name():
 @task(
     name="OPT",
     task_run_name=_generate_task_run_name,
-    cache_key_fn=task_input_hash,
+    cache_policy=TASK_SOURCE + INPUTS
+    # cache_key_fn=task_input_hash,
     # cache_expiration=timedelta(days=1)
 )
 def run(

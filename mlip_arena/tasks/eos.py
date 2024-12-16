@@ -6,13 +6,14 @@ https://github.com/materialsvirtuallab/matcalc/blob/main/matcalc/eos.py
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
 from prefect.runtime import task_run
-from prefect.tasks import task_input_hash
+from prefect.states import State
 
 from ase import Atoms
 from ase.filters import *  # type: ignore
@@ -39,7 +40,8 @@ def _generate_task_run_name():
 @task(
     name="EOS",
     task_run_name=_generate_task_run_name,
-    cache_key_fn=task_input_hash,
+    cache_policy=TASK_SOURCE + INPUTS
+    # cache_key_fn=task_input_hash,
 )
 def run(
     atoms: Atoms,
@@ -54,7 +56,7 @@ def run(
     max_abs_strain: float = 0.1,
     npoints: int = 11,
     concurrent: bool = True,
-):
+) -> dict[str, Any] | State:
     """
     Compute the equation of state (EOS) for the given atoms and calculator.
 
@@ -73,7 +75,7 @@ def run(
         concurrent: Whether to relax multiple structures concurrently.
 
     Returns:
-        A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy.
+        A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy if successful. Otherwise, a prefect state object.
     """
     state = OPT(
         atoms=atoms,
@@ -164,6 +166,7 @@ def run(
     bm.fit()
 
     return {
+        "atoms": relaxed,
         "eos": {"volumes": volumes, "energies": energies},
         "K": bm.b0_GPa,
         "b0": bm.b0,

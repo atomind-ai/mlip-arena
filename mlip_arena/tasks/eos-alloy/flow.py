@@ -42,8 +42,8 @@ def save_to_hdf(
     if state.is_completed():
         result = state.result()
 
-        atoms = run.parameters["atoms"]
-        calculator_name = run.parameters["calculator_name"]
+        atoms = result["atoms"]
+        calculator_name = run.task_inputs["calculator_name"]
 
         formula = Formula(atoms.get_chemical_symbols())
 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     client = Client(cluster)
 
     run_from_db_ = run_from_db.with_options(
-        task_runner=DaskTaskRunner(address=client.scheduler.address), log_prints=True
+        task_runner=DaskTaskRunner(address=client.scheduler.address), log_prints=True,
     )
 
     results = run_from_db_(
