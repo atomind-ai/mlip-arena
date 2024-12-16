@@ -31,15 +31,15 @@ def get_atoms_from_db(db_path: Path | str):
         for row in db.select():
             yield row.toatoms()
 
-
 def save_to_hdf(
     tsk: Task, run: TaskRun, state: State, fpath: Path | str, table_name: str
 ):
     """
     Define a hook on completion of EOS task to save results to HDF5 file.
     """
-    if state.is_completed():
-        result = state.result()
+    
+    if run.state.is_completed():
+        result = run.state.result(raise_on_failure=False)
 
         atoms = result["atoms"]
         calculator_name = (
@@ -65,7 +65,13 @@ def save_to_hdf(
         )
 
         with pd.HDFStore(fpath, mode="a") as store:
-            store.append(table_name, df, format="table", data_columns=True)
+            store.append(
+                table_name, 
+                df, 
+                format="table", 
+                data_columns=True,
+                min_itemsize={"formula": 50},
+            )
 
 
 @flow
@@ -87,9 +93,9 @@ def run_from_db(db_path: Path | str, out_path: Path | str, table_name: str):
                 atoms=atoms,
                 calculator_name=mlip.name,
                 calculator_kwargs=dict(),
-                optimizer="FIRE2",
+                optimizer="FIRE", # FIRE2
                 optimizer_kwargs=dict(
-                    use_abc=True,
+                    # use_abc=True,
                 ),
                 criterion=dict(fmax=0.1, steps=1000),
                 concurrent=False,
