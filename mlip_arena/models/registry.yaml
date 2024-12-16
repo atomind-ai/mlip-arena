@@ -10,7 +10,7 @@ MACE-MP(M):
   datasets:
     - MPTrj # TODO: fake HF dataset repo
   cpu-tasks:
-    - eos-alloy
+    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
     - stability
@@ -81,7 +81,7 @@ MatterSim:
     - MPTrj
     - Alexandria
   cpu-tasks:
-    - eos-alloy
+    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
   github: https://github.com/microsoft/mattersim
@@ -153,7 +153,7 @@ eqV2(OMat):
     - MPTrj
     - Alexandria
   cpu-tasks:
-    - eos-alloy
+    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
   prediction: EFS
@@ -305,7 +305,7 @@ ORBv2:
     - MPTrj
     - Alexandria
   cpu-tasks:
-    - eos-alloy
+    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
   github: https://github.com/orbital-materials/orb-models
