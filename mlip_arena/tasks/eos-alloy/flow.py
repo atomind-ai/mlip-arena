@@ -11,7 +11,6 @@ from prefect.futures import wait
 from prefect.states import State
 from prefect_dask import DaskTaskRunner
 
-from ase import Atoms
 from ase.db import connect
 from ase.formula import Formula
 from mlip_arena.models import REGISTRY, MLIPEnum
@@ -43,10 +42,11 @@ def save_to_hdf(
         result = state.result()
 
         atoms = result["atoms"]
-        calculator_name = run.task_inputs["calculator_name"] or result["calculator_name"]
+        calculator_name = (
+            run.task_inputs["calculator_name"] or result["calculator_name"]
+        )
 
         formula = Formula(atoms.get_chemical_formula())
-
         compositions = {e: c / len(atoms) for e, c in formula.count().items()}
 
         df = pd.DataFrame(
@@ -79,11 +79,18 @@ def run_from_db(db_path: Path | str, out_path: Path | str, table_name: str):
         for mlip in MLIPEnum:
             if not REGISTRY[mlip.name]["npt"]:
                 continue
+            if Path(__file__).parent.name not in (
+                REGISTRY[mlip.name].get("cpu-tasks", []) + REGISTRY[mlip.name].get("gpu-tasks", [])
+            ):
+                continue
             future = EOS_.submit(
                 atoms=atoms,
                 calculator_name=mlip.name,
-                calculator_kwargs={},
-                optimizer="FIRE",
+                calculator_kwargs=dict(),
+                optimizer="FIRE2",
+                optimizer_kwargs=dict(
+                    use_abc=True,
+                ),
                 criterion=dict(fmax=0.1, steps=1000),
                 concurrent=False,
             )
@@ -131,7 +138,8 @@ if __name__ == "__main__":
     client = Client(cluster)
 
     run_from_db_ = run_from_db.with_options(
-        task_runner=DaskTaskRunner(address=client.scheduler.address), log_prints=True,
+        task_runner=DaskTaskRunner(address=client.scheduler.address),
+        log_prints=True,
     )
 
     results = run_from_db_(
