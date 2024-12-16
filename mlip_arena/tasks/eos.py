@@ -75,7 +75,7 @@ def run(
     Returns:
         A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy.
     """
-    first_relax = OPT(
+    state = OPT(
         atoms=atoms,
         calculator_name=calculator_name,
         calculator_kwargs=calculator_kwargs,
@@ -85,8 +85,14 @@ def run(
         filter=filter,
         filter_kwargs=filter_kwargs,
         criterion=criterion,
+        return_state=True,
     )
 
+    if state.is_failed():
+        return state
+
+    first_relax = state.result(raise_on_failure=False)
+    assert isinstance(first_relax, dict)
     relaxed = first_relax["atoms"]
 
     # p0 = relaxed.get_positions()
@@ -112,15 +118,21 @@ def run(
                 criterion=criterion,
             )
             futures.append(future)
+
         wait(futures)
-        results = [f.result() for f in futures]
+
+        results = [
+            f.result(raise_on_failure=False)
+            for f in futures
+            if future.state.is_completed()
+        ]
     else:
-        results = []
+        states = []
         for f in factors:
             atoms = relaxed.copy()
             atoms.set_cell(c0 * f, scale_atoms=True)
 
-            result = OPT(
+            state = OPT(
                 atoms=atoms,
                 calculator_name=calculator_name,
                 calculator_kwargs=calculator_kwargs,
@@ -130,13 +142,15 @@ def run(
                 filter=None,
                 filter_kwargs=None,
                 criterion=criterion,
+                return_state=True,
             )
-            results.append(result)
+            states.append(state)
+        results = [
+            s.result(raise_on_failure=False) for s in states if state.is_completed()
+        ]
 
-    volumes = [r["atoms"].get_volume() for r in results if isinstance(r, dict)]
-    energies = [
-        r["atoms"].get_potential_energy() for r in results if isinstance(r, dict)
-    ]
+    volumes = [f["atoms"].get_volume() for f in results]
+    energies = [f["atoms"].get_potential_energy() for f in results]
 
     volumes, energies = map(
         list,

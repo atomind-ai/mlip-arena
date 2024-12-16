@@ -4,7 +4,6 @@ Define structure optimization tasks.
 
 from __future__ import annotations
 
-from datetime import timedelta
 
 from prefect import task
 from prefect.runtime import task_run
@@ -135,7 +134,6 @@ def run(
     elif filter is None:
         optimizer_instance = optimizer(atoms, **optimizer_kwargs)
         print(f"Using optimizer: {optimizer_instance}")
-
         optimizer_instance.run(**criterion)
 
     return {
