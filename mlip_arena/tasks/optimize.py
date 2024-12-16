@@ -14,6 +14,7 @@ from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 from ase import Atoms
 from ase.calculators.calculator import Calculator
 from ase.calculators.mixing import SumCalculator
+from ase.constraints import FixSymmetry
 from ase.filters import *  # type: ignore
 from ase.filters import Filter
 from ase.optimize import *  # type: ignore
@@ -32,6 +33,7 @@ _valid_filters: dict[str, Filter] = {
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
     "FIRE": FIRE,
+    "FIRE2": FIRE2,
     "LBFGS": LBFGS,
     "LBFGSLineSearch": LBFGSLineSearch,
     "BFGS": BFGS,
@@ -71,7 +73,7 @@ def run(
     filter: Filter | str | None = None,
     filter_kwargs: dict | None = None,
     criterion: dict | None = None,
-    # TODO: fix symmetry
+    symmetry: bool = False,
 ):
     device = device or str(get_freer_device())
 
@@ -118,6 +120,9 @@ def run(
     filter_kwargs = filter_kwargs or {}
     optimizer_kwargs = optimizer_kwargs or {}
     criterion = criterion or {}
+
+    if symmetry:
+        atoms.set_constraint(FixSymmetry(atoms))
 
     if isinstance(filter, type) and issubclass(filter, Filter):
         filter_instance = filter(atoms, **filter_kwargs)
