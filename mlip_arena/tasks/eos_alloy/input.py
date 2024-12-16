@@ -51,7 +51,9 @@ def get_endmember(structure, conc_lst, elements):
 def generate_alloy_db(
     structure_template: Atoms,
     elements: list[str],
+    local_path: Path | None = None,
     upload: bool = True,
+    repo_id: str = "atomind/mlip-arena",
 ) -> Path:
     # Load Hugging Face API token
     load_dotenv()
@@ -67,7 +69,7 @@ def generate_alloy_db(
     configurations = np.array(body_order(n=num_atoms, b=num_species))
 
     # Prepare the database
-    db_path = Path(f"sqs_{'-'.join(elements)}.db")
+    db_path = local_path or Path(__file__).resolve().parent / f"sqs_{'-'.join(elements)}.db"
     db_path.unlink(missing_ok=True)
 
     # Generate and save structures
@@ -95,8 +97,8 @@ def generate_alloy_db(
         api = HfApi(token=hf_token)
         api.upload_file(
             path_or_fileobj=db_path,
-            path_in_repo=f"{Path().resolve().name}/{db_path.name}",
-            repo_id="atomind/mlip-arena",
+            path_in_repo=f"{Path(__file__).parent.name}/{db_path.name}",
+            repo_id=repo_id,
             repo_type="dataset",
         )
         print(f"Database uploaded: {db_path}")

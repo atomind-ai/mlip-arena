@@ -12,7 +12,6 @@ from prefect.states import State
 from prefect_dask import DaskTaskRunner
 
 from ase.db import connect
-from ase.formula import Formula
 from mlip_arena.models import REGISTRY, MLIPEnum
 from mlip_arena.tasks.eos import run as EOS
 
@@ -31,13 +30,14 @@ def get_atoms_from_db(db_path: Path | str):
         for row in db.select():
             yield row.toatoms()
 
+
 def save_to_hdf(
     tsk: Task, run: TaskRun, state: State, fpath: Path | str, table_name: str
 ):
     """
     Define a hook on completion of EOS task to save results to HDF5 file.
     """
-    
+
     if run.state.is_completed():
         result = run.state.result(raise_on_failure=False)
 
@@ -46,13 +46,10 @@ def save_to_hdf(
             run.task_inputs["calculator_name"] or result["calculator_name"]
         )
 
-        formula = Formula(atoms.get_chemical_formula())
-        compositions = {e: c / len(atoms) for e, c in formula.count().items()}
-
         df = pd.DataFrame(
             {
                 "method": calculator_name,
-                "formula": str(formula),
+                "formula": atoms.get_chemical_formula(),
                 "total_run_time": run.total_run_time,
                 "v0": result["v0"],
                 "e0": result["e0"],
@@ -60,15 +57,14 @@ def save_to_hdf(
                 "b1": result["b1"],
                 "volume": result["eos"]["volumes"],
                 "energy": result["eos"]["energies"],
-                **compositions,
             }
         )
 
         with pd.HDFStore(fpath, mode="a") as store:
             store.append(
-                table_name, 
-                df, 
-                format="table", 
+                table_name,
+                df,
+                format="table",
                 data_columns=True,
                 min_itemsize={"formula": 50},
             )
@@ -86,14 +82,15 @@ def run_from_db(db_path: Path | str, out_path: Path | str, table_name: str):
             if not REGISTRY[mlip.name]["npt"]:
                 continue
             if Path(__file__).parent.name not in (
-                REGISTRY[mlip.name].get("cpu-tasks", []) + REGISTRY[mlip.name].get("gpu-tasks", [])
+                REGISTRY[mlip.name].get("cpu-tasks", [])
+                + REGISTRY[mlip.name].get("gpu-tasks", [])
             ):
                 continue
             future = EOS_.submit(
                 atoms=atoms,
                 calculator_name=mlip.name,
                 calculator_kwargs=dict(),
-                optimizer="FIRE", # FIRE2
+                optimizer="FIRE",  # FIRE2
                 optimizer_kwargs=dict(
                     # use_abc=True,
                 ),
