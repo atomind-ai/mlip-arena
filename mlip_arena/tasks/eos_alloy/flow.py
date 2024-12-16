@@ -66,7 +66,7 @@ def save_to_hdf(
                 df,
                 format="table",
                 data_columns=True,
-                min_itemsize={"formula": 50},
+                min_itemsize={"formula": 50, "method": 20},
             )
 
 
