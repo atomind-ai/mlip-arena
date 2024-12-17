@@ -23,7 +23,7 @@ def get_atoms_from_db(db_path: Path | str):
         db_path = hf_hub_download(
             repo_id="atomind/mlip-arena",
             repo_type="dataset",
-            subfolder=f"{Path().resolve().name}",
+            subfolder=f"{Path(__file__).parent.name}",
             filename=str(db_path),
         )
     with connect(db_path) as db:
