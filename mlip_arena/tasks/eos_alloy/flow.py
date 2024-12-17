@@ -12,6 +12,7 @@ from prefect.states import State
 from prefect_dask import DaskTaskRunner
 
 from ase.db import connect
+from mlip_arena.data.local import SafeHDFStore
 from mlip_arena.models import REGISTRY, MLIPEnum
 from mlip_arena.tasks.eos import run as EOS
 
@@ -46,6 +47,8 @@ def save_to_hdf(
             run.task_inputs["calculator_name"] or result["calculator_name"]
         )
 
+        energies = [float(e) for e in result["eos"]["energies"]]
+
         df = pd.DataFrame(
             {
                 "method": calculator_name,
@@ -56,11 +59,11 @@ def save_to_hdf(
                 "b0": result["b0"],
                 "b1": result["b1"],
                 "volume": result["eos"]["volumes"],
-                "energy": result["eos"]["energies"],
+                "energy": energies,
             }
         )
 
-        with pd.HDFStore(fpath, mode="a") as store:
+        with SafeHDFStore(fpath, mode="a") as store:
             store.append(
                 table_name,
                 df,
