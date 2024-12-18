@@ -50,7 +50,7 @@ def run(
     device: str | None = None,
     optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
     optimizer_kwargs: dict | None = None,
-    filter: Filter | str | None = None,
+    filter: Filter | str | None = "FrechetCell",  # type: ignore
     filter_kwargs: dict | None = None,
     criterion: dict | None = None,
     max_abs_strain: float = 0.1,

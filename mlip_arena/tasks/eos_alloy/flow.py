@@ -1,5 +1,6 @@
 from functools import partial
 from pathlib import Path
+import json
 
 import pandas as pd
 from dask.distributed import Client
@@ -49,10 +50,12 @@ def save_to_hdf(
 
         energies = [float(e) for e in result["eos"]["energies"]]
 
+        formula = atoms.get_chemical_formula()
+
         df = pd.DataFrame(
             {
                 "method": calculator_name,
-                "formula": atoms.get_chemical_formula(),
+                "formula": formula,
                 "total_run_time": run.total_run_time,
                 "v0": result["v0"],
                 "e0": result["e0"],
@@ -62,6 +65,15 @@ def save_to_hdf(
                 "energy": energies,
             }
         )
+
+        fpath = Path(fpath)
+        fpath = fpath.with_stem(fpath.stem + f"_{calculator_name}")
+
+        family_path = Path(__file__) / REGISTRY[calculator_name]["family"]
+        family_path.mkdir(parents=True, exist_ok=True)
+
+        with open(family_path / f"{calculator_name}_{formula}.json", "w") as f:
+            json.dump(result, f, indent=2)
 
         with SafeHDFStore(fpath, mode="a") as store:
             store.append(
@@ -83,8 +95,8 @@ def run_from_db(
     filter="FrechetCell",
     filter_kwargs=None,
     criterion=dict(fmax=0.1, steps=1000),
-    max_abs_strain=0.25,
-    concurrent=True,
+    max_abs_strain=0.20,
+    concurrent=False,
 ):
     EOS_ = EOS.with_options(
         on_completion=[partial(save_to_hdf, fpath=out_path, table_name=table_name)]
@@ -145,8 +157,8 @@ if __name__ == "__main__":
             "-J eos",
             "-q debug",
             f"-N {nodes_per_alloc}",
-            "-C cpu",
-            # f"-G {gpus_per_alloc}",
+            "-C gpu",
+            f"-G {gpus_per_alloc}",
         ],
     )
 
