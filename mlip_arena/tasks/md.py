@@ -55,14 +55,14 @@ works thereof, in binary and source code form.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
 import numpy as np
 from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
-from prefect.tasks import task_input_hash
 from scipy.interpolate import interp1d
 from scipy.linalg import schur
 from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
@@ -200,7 +200,8 @@ def _generate_task_run_name():
 @task(
     name="MD",
     task_run_name=_generate_task_run_name,
-    cache_key_fn=task_input_hash,
+    cache_policy=TASK_SOURCE + INPUTS
+    # cache_key_fn=task_input_hash,
     # cache_expiration=timedelta(days=1)
 )
 def run(

@@ -10,6 +10,7 @@ MACE-MP(M):
   datasets:
     - MPTrj # TODO: fake HF dataset repo
   cpu-tasks:
+    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
     - stability
@@ -79,6 +80,8 @@ MatterSim:
   datasets:
     - MPTrj
     - Alexandria
+  cpu-tasks:
+    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
   github: https://github.com/microsoft/mattersim
@@ -101,7 +104,6 @@ ORB:
   datasets:
     - MPTrj # TODO: fake HF dataset repo
     - Alexandria
-  cpu-tasks:
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
@@ -125,7 +127,6 @@ SevenNet:
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
   datasets:
     - MPTrj # TODO: fake HF dataset repo
-  cpu-tasks:
   gpu-tasks:
     - homonuclear-diatomics
     - stability
@@ -151,6 +152,8 @@ eqV2(OMat):
     - OMat
     - MPTrj
     - Alexandria
+  cpu-tasks:
+    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
   prediction: EFS
@@ -238,7 +241,6 @@ MACE-OFF(M):
   datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
   datasets:
     - SPICE # TODO: fake HF dataset repo
-  cpu-tasks:
   gpu-tasks:
     - homonuclear-diatomics
   github: https://github.com/ACEsuit/mace
@@ -302,6 +304,8 @@ ORBv2:
   datasets:
     - MPTrj
     - Alexandria
+  cpu-tasks:
+    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
   github: https://github.com/orbital-materials/orb-models
