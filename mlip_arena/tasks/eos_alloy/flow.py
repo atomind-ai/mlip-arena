@@ -74,7 +74,18 @@ def save_to_hdf(
 
 
 @flow
-def run_from_db(db_path: Path | str, out_path: Path | str, table_name: str):
+def run_from_db(
+    db_path: Path | str,
+    out_path: Path | str,
+    table_name: str,
+    optimizer="FIRE",
+    optimizer_kwargs=None,
+    filter="FrechetCell",
+    filter_kwargs=None,
+    criterion=dict(fmax=0.1, steps=1000),
+    max_abs_strain=0.25,
+    concurrent=True,
+):
     EOS_ = EOS.with_options(
         on_completion=[partial(save_to_hdf, fpath=out_path, table_name=table_name)]
     )
@@ -93,12 +104,13 @@ def run_from_db(db_path: Path | str, out_path: Path | str, table_name: str):
                 atoms=atoms,
                 calculator_name=mlip.name,
                 calculator_kwargs=dict(),
-                optimizer="FIRE",  # FIRE2
-                optimizer_kwargs=dict(
-                    # use_abc=True,
-                ),
-                criterion=dict(fmax=0.1, steps=1000),
-                concurrent=False,
+                optimizer=optimizer,
+                optimizer_kwargs=optimizer_kwargs,
+                filter=filter,
+                filter_kwargs=filter_kwargs,
+                criterion=criterion,
+                max_abs_strain=max_abs_strain,
+                concurrent=concurrent,
             )
             futures.append(future)
 

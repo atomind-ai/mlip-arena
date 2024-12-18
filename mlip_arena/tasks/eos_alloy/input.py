@@ -1,5 +1,23 @@
 """
-:Authors: Jan Janssen `@jan-jassen <https://github.com/jan-janssen>`_, Yuan Chiang `@chiang-yuan <https://github.com/chiang-yuan>`_
+Generates a database of special quasi-random structures (SQS) from a template structure.
+
+This script utilizes the `structuretoolkit <https://github.com/pyiron/structuretoolkit/tree/main>`_
+to call `sqsgenerator <https://sqsgenerator.readthedocs.io/en/latest/index.html#>`_ to generate
+SQS structures. The generated structures are saved to an ASE database file and optionally uploaded
+to the Hugging Face Hub.
+
+References
+~~~~~~~~~~
+- Alvi, S. M. A. A., Janssen, J., Khatamsaz, D., Perez, D., Allaire, D., & Arroyave, R. (2024).
+  Hierarchical Gaussian Process-Based Bayesian Optimization for Materials Discovery in High
+  Entropy Alloy Spaces. *arXiv preprint arXiv:2410.04314*.
+- Gehringer, D., Friák, M., & Holec, D. (2023). Models of configurationally-complex alloys made
+  simple. *Computer Physics Communications, 286*, 108664.
+
+Authors
+~~~~~~~
+- Jan Janssen (`@jan-janssen <https://github.com/jan-janssen>`_)
+- Yuan Chiang (`@chiang-yuan <https://github.com/chiang-yuan>`_)
 """
 
 import os
@@ -69,7 +87,9 @@ def generate_alloy_db(
     configurations = np.array(body_order(n=num_atoms, b=num_species))
 
     # Prepare the database
-    db_path = local_path or Path(__file__).resolve().parent / f"sqs_{'-'.join(elements)}.db"
+    db_path = (
+        local_path or Path(__file__).resolve().parent / f"sqs_{'-'.join(elements)}.db"
+    )
     db_path.unlink(missing_ok=True)
 
     # Generate and save structures
