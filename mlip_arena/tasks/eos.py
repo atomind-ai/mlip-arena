@@ -6,13 +6,14 @@ https://github.com/materialsvirtuallab/matcalc/blob/main/matcalc/eos.py
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
 from prefect.runtime import task_run
-from prefect.tasks import task_input_hash
+from prefect.states import State
 
 from ase import Atoms
 from ase.filters import *  # type: ignore
@@ -39,21 +40,23 @@ def _generate_task_run_name():
 @task(
     name="EOS",
     task_run_name=_generate_task_run_name,
-    cache_key_fn=task_input_hash,
+    cache_policy=TASK_SOURCE + INPUTS
+    # cache_key_fn=task_input_hash,
 )
 def run(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None,
+    calculator_kwargs: dict | None = None,
     device: str | None = None,
     optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
     optimizer_kwargs: dict | None = None,
-    filter: Filter | str | None = None,
+    filter: Filter | str | None = "FrechetCell",  # type: ignore
     filter_kwargs: dict | None = None,
     criterion: dict | None = None,
     max_abs_strain: float = 0.1,
     npoints: int = 11,
-):
+    concurrent: bool = True,
+) -> dict[str, Any] | State:
     """
     Compute the equation of state (EOS) for the given atoms and calculator.
 
@@ -69,11 +72,12 @@ def run(
         criterion: The criterion to use.
         max_abs_strain: The maximum absolute strain to use.
         npoints: The number of points to sample.
+        concurrent: Whether to relax multiple structures concurrently.
 
     Returns:
-        A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy.
+        A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy if successful. Otherwise, a prefect state object.
     """
-    first_relax = OPT(
+    state = OPT(
         atoms=atoms,
         calculator_name=calculator_name,
         calculator_kwargs=calculator_kwargs,
@@ -83,8 +87,14 @@ def run(
         filter=filter,
         filter_kwargs=filter_kwargs,
         criterion=criterion,
+        return_state=True,
     )
 
+    if state.is_failed():
+        return state
+
+    first_relax = state.result(raise_on_failure=False)
+    assert isinstance(first_relax, dict)
     relaxed = first_relax["atoms"]
 
     # p0 = relaxed.get_positions()
@@ -92,37 +102,57 @@ def run(
 
     factors = np.linspace(1 - max_abs_strain, 1 + max_abs_strain, npoints) ** (1 / 3)
 
-    futures = []
-    for f in factors:
-        atoms = relaxed.copy()
-        atoms.set_cell(c0 * f, scale_atoms=True)
+    if concurrent:
+        futures = []
+        for f in factors:
+            atoms = relaxed.copy()
+            atoms.set_cell(c0 * f, scale_atoms=True)
 
-        future = OPT.submit(
-            atoms=atoms,
-            calculator_name=calculator_name,
-            calculator_kwargs=calculator_kwargs,
-            device=device,
-            optimizer=optimizer,
-            optimizer_kwargs=optimizer_kwargs,
-            filter=None,
-            filter_kwargs=None,
-            criterion=criterion,
-        )
+            future = OPT.submit(
+                atoms=atoms,
+                calculator_name=calculator_name,
+                calculator_kwargs=calculator_kwargs,
+                device=device,
+                optimizer=optimizer,
+                optimizer_kwargs=optimizer_kwargs,
+                filter=None,
+                filter_kwargs=None,
+                criterion=criterion,
+            )
+            futures.append(future)
 
-        futures.append(future)
+        wait(futures)
 
-    wait(futures)
+        results = [
+            f.result(raise_on_failure=False)
+            for f in futures
+            if future.state.is_completed()
+        ]
+    else:
+        states = []
+        for f in factors:
+            atoms = relaxed.copy()
+            atoms.set_cell(c0 * f, scale_atoms=True)
 
-    volumes = [
-        f.result()["atoms"].get_volume()
-        for f in futures
-        if isinstance(f.result(), dict)
-    ]
-    energies = [
-        f.result()["atoms"].get_potential_energy()
-        for f in futures
-        if isinstance(f.result(), dict)
-    ]
+            state = OPT(
+                atoms=atoms,
+                calculator_name=calculator_name,
+                calculator_kwargs=calculator_kwargs,
+                device=device,
+                optimizer=optimizer,
+                optimizer_kwargs=optimizer_kwargs,
+                filter=None,
+                filter_kwargs=None,
+                criterion=criterion,
+                return_state=True,
+            )
+            states.append(state)
+        results = [
+            s.result(raise_on_failure=False) for s in states if state.is_completed()
+        ]
+
+    volumes = [f["atoms"].get_volume() for f in results]
+    energies = [f["atoms"].get_potential_energy() for f in results]
 
     volumes, energies = map(
         list,
@@ -136,6 +166,8 @@ def run(
     bm.fit()
 
     return {
+        "atoms": relaxed,
+        "calculator_name": calculator_name,
         "eos": {"volumes": volumes, "energies": energies},
         "K": bm.b0_GPa,
         "b0": bm.b0,

@@ -22,7 +22,7 @@ for model, metadata in REGISTRY.items():
     try:
         module = importlib.import_module(f"{__package__}.{metadata['module']}.{metadata['family']}")
         MLIPMap[model] = getattr(module, metadata["class"])
-    except (ModuleNotFoundError, AttributeError) as e:
+    except (ModuleNotFoundError, AttributeError, ValueError) as e:
         print(e)
         continue
 

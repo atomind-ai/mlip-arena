@@ -10,12 +10,12 @@ Thermal conductivity:
   task-layout: centered
   rank-page: thermal-conductivity
 High pressure stability:
-  category: Molecular dynamics
+  category: Molecular Dynamics
   task-page: stability
   task-layout: centered
   rank-page: 
 Combustion:
-  category: Molecular dynamics
+  category: Molecular Dynamics
   task-page: combustion
   task-layout: centered
   rank-page: combustion
