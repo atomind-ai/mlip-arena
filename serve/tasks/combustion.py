@@ -103,7 +103,7 @@ fig.add_vrect(
     opacity=0.2,
     layer="below",
     line_width=0,
-    annotation_text="Flame Temp.",
+    annotation_text="Flame Temp. [1]",
     annotation_position="top",
 )
 
@@ -219,7 +219,7 @@ fig.add_annotation(
         xanchor="center",
         y=exp_ref,
         yanchor="bottom",
-        text=f"Experiment: {exp_ref} kcal/mol [1]",
+        text=f"Experiment: {exp_ref} kcal/mol [2]",
         showarrow=False,
         font=dict(
             color="Red",
@@ -240,7 +240,7 @@ fig.add_vrect(
 
 
 fig.update_layout(
-    xaxis_title="Timestep <br> <span style='font-size: 10px;'>[1] Lide, D. R. (Ed.). (2004). CRC handbook of chemistry and physics (Vol. 85). CRC press.</span>",
+    xaxis_title="Timestep <br> <span style='font-size: 10px;'>[2] Lide, D. R. (Ed.). (2004). CRC handbook of chemistry and physics (Vol. 85). CRC press.</span>",
     yaxis_title="𝚫E (kcal/mol)",
 )
 
@@ -313,7 +313,7 @@ fig.add_annotation(
         xanchor="center",
         y=exp_ref,
         yanchor="bottom",
-        text=f"Experiment: {exp_ref} kcal/mol [1]",
+        text=f"Experiment: {exp_ref} kcal/mol [2]",
         showarrow=False,
         font=dict(
             color="Red",
@@ -416,6 +416,34 @@ def get_com_drifts(df):
 
 
 df_exploded = get_com_drifts(df)
+
+fig = go.Figure()
+
+for method in df_exploded["method"].unique():
+    row = df_exploded[df_exploded["method"] == method]
+    fig.add_trace(
+        go.Scatter(
+            x=row["timestep"],
+            y=row["total_com_drift"],
+            mode="lines",
+            name=method,
+            line=dict(
+                color=method_color_mapping[method],
+                # width=1
+            ),
+            marker=dict(color=method_color_mapping[method], size=3),
+            showlegend=True,
+            
+        ),
+    )
+
+fig.update_yaxes(type="log")
+fig.update_layout(
+    xaxis_title="Timestep",
+    yaxis_title="Total COM drift (Å)",
+)
+
+st.plotly_chart(fig)
 
 if "play" not in st.session_state:
     st.session_state.play = False
@@ -528,3 +556,13 @@ def draw_com_drifts_plot():
 
 
 draw_com_drifts_plot()
+
+
+st.markdown("""
+### References
+
+[1] Hasche, A., Navid, A., Krause, H., & Eckart, S. (2023). Experimental and numerical assessment of the effects of hydrogen admixtures on premixed methane-oxygen flames. Fuel, 352, 128964.
+            
+[2] Lide, D. R. (Ed.). (2004). CRC handbook of chemistry and physics (Vol. 85). CRC press.
+"""
+)
