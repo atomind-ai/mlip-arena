@@ -72,8 +72,7 @@ def save_to_hdf(
         family_path = Path(__file__).parent / REGISTRY[calculator_name]["family"]
         family_path.mkdir(parents=True, exist_ok=True)
 
-        with open(family_path / f"{calculator_name}_{formula}.json", "w") as f:
-            json.dump(result, f, indent=2)
+        df.to_json(family_path / f"{calculator_name}_{formula}.json", indent=2)
 
         with SafeHDFStore(fpath, mode="a") as store:
             store.append(

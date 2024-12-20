@@ -65,12 +65,9 @@ from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 from scipy.interpolate import interp1d
 from scipy.linalg import schur
-from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 from tqdm.auto import tqdm
 
 from ase import Atoms, units
-from ase.calculators.calculator import Calculator
-from ase.calculators.mixing import SumCalculator
 from ase.io import read
 from ase.io.trajectory import Trajectory
 from ase.md.andersen import Andersen
@@ -86,7 +83,7 @@ from ase.md.velocitydistribution import (
 )
 from ase.md.verlet import VelocityVerlet
 from mlip_arena.models import MLIPEnum
-from mlip_arena.models.utils import get_freer_device
+from mlip_arena.tasks.utils import get_calculator
 
 _valid_dynamics: dict[str, tuple[str, ...]] = {
     "nve": ("velocityverlet",),
@@ -162,29 +159,29 @@ def _get_ensemble_defaults(
     dynamics: str | MolecularDynamics,
     t_schedule: np.ndarray,
     p_schedule: np.ndarray,
-    ase_md_kwargs: dict | None = None,
+    dynamics_kwargs: dict | None = None,
 ) -> dict:
     """Update ASE MD kwargs"""
-    ase_md_kwargs = ase_md_kwargs or {}
+    dynamics_kwargs = dynamics_kwargs or {}
 
     if ensemble == "nve":
-        ase_md_kwargs.pop("temperature", None)
-        ase_md_kwargs.pop("temperature_K", None)
-        ase_md_kwargs.pop("externalstress", None)
+        dynamics_kwargs.pop("temperature", None)
+        dynamics_kwargs.pop("temperature_K", None)
+        dynamics_kwargs.pop("externalstress", None)
     elif ensemble == "nvt":
-        ase_md_kwargs["temperature_K"] = t_schedule[0]
-        ase_md_kwargs.pop("externalstress", None)
+        dynamics_kwargs["temperature_K"] = t_schedule[0]
+        dynamics_kwargs.pop("externalstress", None)
     elif ensemble == "npt":
-        ase_md_kwargs["temperature_K"] = t_schedule[0]
-        ase_md_kwargs["externalstress"] = p_schedule[0]  # * 1e3 * units.bar
+        dynamics_kwargs["temperature_K"] = t_schedule[0]
+        dynamics_kwargs["externalstress"] = p_schedule[0]  # * 1e3 * units.bar
 
     if isinstance(dynamics, str) and dynamics.lower() == "langevin":
-        ase_md_kwargs["friction"] = ase_md_kwargs.get(
+        dynamics_kwargs["friction"] = dynamics_kwargs.get(
             "friction",
             10.0 * 1e-3 / units.fs,  # Same default as in VASP: 10 ps^-1
         )
 
-    return ase_md_kwargs
+    return dynamics_kwargs
 
 
 def _generate_task_run_name():
@@ -217,45 +214,22 @@ def run(
     total_time: float = 1000,  # fs
     temperature: float | Sequence | np.ndarray | None = 300.0,  # K
     pressure: float | Sequence | np.ndarray | None = None,  # eV/A^3
-    ase_md_kwargs: dict | None = None,
-    md_velocity_seed: int | None = None,
+    dynamics_kwargs: dict | None = None,
+    velocity_seed: int | None = None,
     zero_linear_momentum: bool = True,
     zero_angular_momentum: bool = True,
     traj_file: str | Path | None = None,
     traj_interval: int = 1,
     restart: bool = True,
 ):
-    device = device or str(get_freer_device())
-
-    print(f"Using device: {device}")
-
-    calculator_kwargs = calculator_kwargs or {}
-
-    if isinstance(calculator_name, MLIPEnum) and calculator_name in MLIPEnum:
-        assert issubclass(calculator_name.value, Calculator)
-        calc = calculator_name.value(**calculator_kwargs)
-    elif (
-        isinstance(calculator_name, str) and calculator_name in MLIPEnum._member_names_
-    ):
-        calc = MLIPEnum[calculator_name].value(**calculator_kwargs)
-    else:
-        raise ValueError(f"Invalid calculator: {calculator_name}")
-
-    print(f"Using calculator: {calc}")
-
-    dispersion_kwargs = dispersion_kwargs or {}
-
-    dispersion_kwargs.update({"device": device})
-
-    if dispersion is not None:
-        disp_calc = TorchDFTD3Calculator(
-            **dispersion_kwargs,
-        )
-        calc = SumCalculator([calc, disp_calc])
-
-        print(f"Using dispersion: {dispersion}")
-
-    atoms.calc = calc
+    
+    atoms.calc = get_calculator(
+        calculator_name=calculator_name,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
+        device=device,
+    )
 
     if time_step is None:
         # If a structure contains an isotope of hydrogen, set default `time_step`
@@ -273,12 +247,12 @@ def run(
         pressure=pressure,
     )
 
-    ase_md_kwargs = _get_ensemble_defaults(
+    dynamics_kwargs = _get_ensemble_defaults(
         ensemble=ensemble,
         dynamics=dynamics,
         t_schedule=t_schedule,
         p_schedule=p_schedule,
-        ase_md_kwargs=ase_md_kwargs,
+        dynamics_kwargs=dynamics_kwargs,
     )
 
     if isinstance(dynamics, str):
@@ -327,7 +301,7 @@ def run(
                     MaxwellBoltzmannDistribution(
                         atoms=atoms,
                         temperature_K=t_schedule[last_step],
-                        rng=np.random.default_rng(seed=md_velocity_seed),
+                        rng=np.random.default_rng(seed=velocity_seed),
                     )
 
                 if zero_linear_momentum:
@@ -341,7 +315,7 @@ def run(
                 MaxwellBoltzmannDistribution(
                     atoms=atoms,
                     temperature_K=t_schedule[last_step],
-                    rng=np.random.default_rng(seed=md_velocity_seed),
+                    rng=np.random.default_rng(seed=velocity_seed),
                 )
 
             if zero_linear_momentum:
@@ -352,7 +326,7 @@ def run(
     md_runner = md_class(
         atoms=atoms,
         timestep=time_step * units.fs,
-        **ase_md_kwargs,
+        **dynamics_kwargs,
     )
 
     if traj_file is not None:

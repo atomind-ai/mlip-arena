@@ -7,18 +7,15 @@ from __future__ import annotations
 from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
-from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 
 from ase import Atoms
-from ase.calculators.calculator import Calculator
-from ase.calculators.mixing import SumCalculator
 from ase.constraints import FixSymmetry
 from ase.filters import *  # type: ignore
 from ase.filters import Filter
 from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
 from mlip_arena.models import MLIPEnum
-from mlip_arena.models.utils import get_freer_device
+from mlip_arena.tasks.utils import get_calculator
 
 _valid_filters: dict[str, Filter] = {
     "Filter": Filter,
@@ -74,37 +71,14 @@ def run(
     criterion: dict | None = None,
     symmetry: bool = False,
 ):
-    device = device or str(get_freer_device())
-
-    print(f"Using device: {device}")
-
-    calculator_kwargs = calculator_kwargs or {}
-
-    if isinstance(calculator_name, MLIPEnum) and calculator_name in MLIPEnum:
-        assert issubclass(calculator_name.value, Calculator)
-        calc = calculator_name.value(**calculator_kwargs)
-    elif (
-        isinstance(calculator_name, str) and calculator_name in MLIPEnum._member_names_
-    ):
-        calc = MLIPEnum[calculator_name].value(**calculator_kwargs)
-    else:
-        raise ValueError(f"Invalid calculator: {calculator_name}")
-
-    print(f"Using calculator: {calc}")
-
-    dispersion_kwargs = dispersion_kwargs or {}
-
-    dispersion_kwargs.update({"device": device})
-
-    if dispersion is not None:
-        disp_calc = TorchDFTD3Calculator(
-            **dispersion_kwargs,
-        )
-        calc = SumCalculator([calc, disp_calc])
-
-        print(f"Using dispersion: {dispersion}")
-
-    atoms.calc = calc
+    
+    atoms.calc = get_calculator(
+        calculator_name=calculator_name,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
+        device=device,
+    )
 
     if isinstance(filter, str):
         if filter not in _valid_filters:

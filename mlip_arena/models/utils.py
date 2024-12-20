@@ -5,12 +5,12 @@ import torch
 
 def get_freer_device() -> torch.device:
     """Get the GPU with the most free memory, or use MPS if available.
-    s
-        Returns:
-            torch.device: The selected GPU device or MPS.
 
-        Raises:
-            ValueError: If no GPU or MPS is available.
+    Returns:
+        torch.device: The selected GPU device or MPS.
+
+    Raises:
+        ValueError: If no GPU or MPS is available.
     """
     device_count = torch.cuda.device_count()
     if device_count > 0:
