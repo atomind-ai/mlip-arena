@@ -308,6 +308,7 @@ ORBv2:
     - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
+    - combustion
   github: https://github.com/orbital-materials/orb-models
   doi: 
   date: 2024-10-15
