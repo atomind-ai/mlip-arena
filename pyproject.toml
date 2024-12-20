@@ -43,6 +43,7 @@ run = [
     "dask",
     "dask_jobqueue",
     "tables",
+    "MDAnalysis", # mof
 ]
 app = [
     "streamlit==1.38.0",
