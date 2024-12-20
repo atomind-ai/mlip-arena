@@ -9,7 +9,7 @@ from huggingface_hub import hf_hub_download
 from prefect import Task, flow, task
 from prefect.client.schemas.objects import TaskRun
 from prefect.futures import wait
-from prefect.states import State
+from prefect.states import State, Failed
 from prefect_dask import DaskTaskRunner
 
 from ase.db import connect
@@ -40,9 +40,15 @@ def save_to_hdf(
     Define a hook on completion of EOS task to save results to HDF5 file.
     """
 
-    if run.state.is_completed():
-        result = run.state.result(raise_on_failure=False)
+    if run.state.is_failed():
+        return
 
+    result = run.state.result(raise_on_failure=False)
+
+    if not isinstance(result, dict):
+        return
+    
+    try:
         atoms = result["atoms"]
         calculator_name = (
             run.task_inputs["calculator_name"] or result["calculator_name"]
@@ -83,6 +89,8 @@ def save_to_hdf(
                 data_columns=True,
                 min_itemsize={"formula": 50, "method": 20},
             )
+    except Exception as e:
+        print(e)
 
 
 @flow
