@@ -148,7 +148,7 @@ def run(
             )
             states.append(state)
         results = [
-            s.result(raise_on_failure=False) for s in states if state.is_completed()
+            s.result(raise_on_failure=False) for s in states if s.is_completed()
         ]
 
     volumes = [f["atoms"].get_volume() for f in results]
