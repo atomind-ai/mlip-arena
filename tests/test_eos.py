@@ -27,7 +27,7 @@ def single_eos_flow(calculator_name):
         ),
         max_abs_strain=0.1,
         npoints=6,
-        concurrent=True,
+        concurrent=True
     )
 
 
