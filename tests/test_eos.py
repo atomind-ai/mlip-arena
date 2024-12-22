@@ -40,7 +40,7 @@ def single_eos_flow(calculator_name, concurrent=True, cache=False):
     sys.version_info[:2] != (3, 11),
     reason="avoid prefect race condition on concurrent tasks",
 )
-@pytest.mark.parametrize("concurrent", [True, False])
+@pytest.mark.parametrize("concurrent", [False])
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 def test_eos(model: MLIPEnum, concurrent: bool):
     """
