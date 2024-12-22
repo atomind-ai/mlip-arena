@@ -16,6 +16,7 @@ from typing import IO, Any
 import numpy as np
 from prefect import flow, task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.futures import wait
 from prefect.logging import get_run_logger
 from prefect.runtime import task_run
 from prefect.states import State
@@ -99,10 +100,11 @@ def _generate_task_run_name():
     task_name = task_run.task_name
     parameters = task_run.parameters
 
-    atoms = parameters["atoms"]
+    structure = parameters["structure"]
+    gas = parameters["gas"]
     calculator_name = parameters["calculator_name"]
 
-    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+    return f"{task_name}: {structure.get_chemical_formula()} + {gas.get_chemical_formula()} - {calculator_name}"
 
 
 @task(
@@ -339,7 +341,7 @@ def widom_insertion(
 
 @flow
 def run(
-    db_path: Path | str = "mof.db",
+    db_path: Path | str = "mofs.db",
 ):
     states = []
     for model in MLIPEnum:
@@ -352,4 +354,5 @@ def run(
             )
             states.append(state)
 
+    wait(states)
     return [s.result(raise_on_failture=False) for s in states if s.is_completed()]

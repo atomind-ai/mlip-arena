@@ -1,16 +1,17 @@
-import os
-import warnings
+from pathlib import Path
+from loguru import logger
 
-# Locate the LICENSE file
-license_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "LICENSE")
+license_path = Path(__file__).parent / "LICENSE"
 
-if os.path.exists(license_path):
-    try:
-        with open(license_path, "r") as license_file:
-            license_content = license_file.read()
-            warnings.warn(
-                f"LICENSE content:\n{license_content}",
-                category=UserWarning
-            )
-    except Exception as e:
-        pass
+logger.info(f"""
+The module '{__name__}' is adapted from the repository: https://github.com/hspark1212/DAC-SIM. 
+By using this module, you agree to the terms and conditions specified in the following license: 
+
+https://github.com/hspark1212/DAC-SIM/blob/main/LICENSE
+
+Additionally, please ensure proper attribution by citing the reference: 
+
+Lim, Y., Park, H., Walsh, A., & Kim, J. (2024). Accelerating CO₂ Direct Air Capture Screening for Metal-Organic Frameworks with a Transferable Machine Learning Force Field.
+
+A local copy of the LICENSE file can be found at: {license_path}.
+""")

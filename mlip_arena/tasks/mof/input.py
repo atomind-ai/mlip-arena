@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from typing import Generator, Iterable
-
+from loguru import logger
 from huggingface_hub import HfApi, hf_hub_download
 from prefect import task
 
@@ -42,13 +42,14 @@ def save_to_db(
             repo_id=repo_id,
             repo_type=repo_type,
         )
-        print(f"{db_path.name} uploaded to {repo_id}/{subfolder}")
+        logger.info(f"{db_path.name} uploaded to {repo_id}/{subfolder}")
 
     return db_path
 
 @task
 def get_atoms_from_db(
     db_path: Path | str,
+    hf_token: str | None = os.getenv("HF_TOKEN", None),
     repo_id: str = "atomind/mlip-arena",
     repo_type: str = "dataset",
     subfolder: str = Path(__file__).parent.name,
@@ -61,6 +62,7 @@ def get_atoms_from_db(
             repo_type=repo_type,
             subfolder=subfolder,
             filename=str(db_path),
+            token=hf_token,
         )
     with connect(db_path) as db:
         for row in db.select():
