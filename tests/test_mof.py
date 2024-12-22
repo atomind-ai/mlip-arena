@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.mof.flow import widom_insertion
@@ -6,7 +8,10 @@ from prefect.testing.utilities import prefect_test_harness
 
 from ase.build import molecule
 
-
+@pytest.mark.skipif(
+    sys.version_info[:2] != (3, 11),
+    reason="avoid prefect race condition on concurrent tasks",
+)
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 def test_widom_insertion(model: MLIPEnum):
     with prefect_test_harness():

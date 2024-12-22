@@ -187,9 +187,7 @@ def widom_insertion(
         if state.is_failed():
             return state
 
-        result = state.result(raise_on_failure=False)
-        # assert isinstance(result, dict)
-        structure = result.result["atoms"]
+        structure = state.result(raise_on_failure=False)["atoms"]
 
     if init_gas_optimize:
         logger.info("Optimizing gas molecule")
@@ -209,9 +207,7 @@ def widom_insertion(
         if state.is_failed():
             return state
 
-        result = state.result(raise_on_failure=False)
-        # assert isinstance(result, dict)
-        gas = result.result["atoms"]
+        gas = state.result(raise_on_failure=False)["atoms"]
 
     # Calculate accessible positions
     ret = get_accessible_positions(
