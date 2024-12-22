@@ -13,7 +13,7 @@ from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
 from prefect.runtime import task_run
-from prefect.states import State, Completed
+from prefect.states import State
 
 from ase import Atoms
 from ase.filters import *  # type: ignore
