@@ -1,16 +1,12 @@
 from functools import partial
 from pathlib import Path
-import json
 
 import pandas as pd
-from dask.distributed import Client
-from dask_jobqueue import SLURMCluster
 from huggingface_hub import hf_hub_download
 from prefect import Task, flow, task
 from prefect.client.schemas.objects import TaskRun
 from prefect.futures import wait
-from prefect.states import State, Failed
-from prefect_dask import DaskTaskRunner
+from prefect.states import State
 
 from ase.db import connect
 from mlip_arena.data.local import SafeHDFStore
@@ -47,7 +43,7 @@ def save_to_hdf(
 
     if not isinstance(result, dict):
         return
-    
+
     try:
         atoms = result["atoms"]
         calculator_name = (
@@ -78,8 +74,7 @@ def save_to_hdf(
         family_path = Path(__file__).parent / REGISTRY[calculator_name]["family"]
         family_path.mkdir(parents=True, exist_ok=True)
 
-        with open(family_path / f"{calculator_name}_{formula}.json", "w") as f:
-            json.dump(result, f, indent=2)
+        df.to_json(family_path / f"{calculator_name}_{formula}.json", indent=2)
 
         with SafeHDFStore(fpath, mode="a") as store:
             store.append(
@@ -131,6 +126,7 @@ def run_from_db(
                 criterion=criterion,
                 max_abs_strain=max_abs_strain,
                 concurrent=concurrent,
+                cache_opt=False,
             )
             futures.append(future)
 
@@ -141,45 +137,3 @@ def run_from_db(
         for f in futures
         if f.state.is_completed()
     ]
-
-
-if __name__ == "__main__":
-    nodes_per_alloc = 1
-    gpus_per_alloc = 4
-    ntasks = 1
-
-    cluster_kwargs = dict(
-        cores=1,
-        memory="64 GB",
-        shebang="#!/bin/bash",
-        account="m3828",
-        walltime="00:30:00",
-        job_mem="0",
-        job_script_prologue=[
-            "source ~/.bashrc",
-            "module load python",
-            "source activate /pscratch/sd/c/cyrusyc/.conda/mlip-arena",
-        ],
-        job_directives_skip=["-n", "--cpus-per-task", "-J"],
-        job_extra_directives=[
-            "-J eos",
-            "-q debug",
-            f"-N {nodes_per_alloc}",
-            "-C gpu",
-            f"-G {gpus_per_alloc}",
-        ],
-    )
-
-    cluster = SLURMCluster(**cluster_kwargs)
-    print(cluster.job_script())
-    cluster.adapt(minimum_jobs=2, maximum_jobs=2)
-    client = Client(cluster)
-
-    run_from_db_ = run_from_db.with_options(
-        task_runner=DaskTaskRunner(address=client.scheduler.address),
-        log_prints=True,
-    )
-
-    results = run_from_db_(
-        db_path="sqs_Fe-Ni-Cr.db", out_path="eos.h5", table_name="Fe-Ni-Cr"
-    )
