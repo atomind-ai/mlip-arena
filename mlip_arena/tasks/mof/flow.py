@@ -11,10 +11,10 @@ References
 
 from collections import defaultdict
 from pathlib import Path
-from typing import IO, Any, Optional
+from typing import IO, Any
 
 import numpy as np
-from prefect import task, flow
+from prefect import flow, task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.logging import get_run_logger
 from prefect.runtime import task_run
@@ -23,6 +23,7 @@ from tqdm.auto import tqdm
 
 from ase import Atoms, units
 from ase.atoms import Atoms
+from ase.build import molecule
 from ase.filters import Filter
 from ase.io.trajectory import Trajectory, TrajectoryWriter
 from ase.optimize.optimize import Optimizer
@@ -31,6 +32,7 @@ from mlip_arena.tasks.optimize import run as OPT
 from mlip_arena.tasks.utils import get_calculator
 
 from .grid import get_accessible_positions
+from .input import get_atoms_from_db
 
 
 def add_molecule(gas: Atoms, rotate: bool = True, translate: tuple = None) -> Atoms:
@@ -121,8 +123,6 @@ def widom_insertion(
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = "FrechetCell",
     filter_kwargs: dict | None = None,
-    time_step: float | None = None,  # fs
-    total_time: float = 1000,  # fs
     temperature: float = 300,
     init_structure_optimize: bool = True,
     init_gas_optimize: bool = True,
@@ -335,3 +335,21 @@ def widom_insertion(
         results["heat_of_adsorption"].append(qst)
         # self.log_results(results)
     return results
+
+
+@flow
+def run(
+    db_path: Path | str = "mof.db",
+):
+    states = []
+    for model in MLIPEnum:
+        for atoms in tqdm(get_atoms_from_db(db_path)):
+            state = widom_insertion.submit(
+                atoms,
+                molecule("CO2"),
+                calculator_name=model.name,
+                return_state=True
+            )
+            states.append(state)
+
+    return [s.result(raise_on_failture=False) for s in states if s.is_completed()]
