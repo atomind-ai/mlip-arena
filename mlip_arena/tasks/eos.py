@@ -13,7 +13,7 @@ from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
 from prefect.runtime import task_run
-from prefect.states import State
+from prefect.states import State, Completed
 
 from ase import Atoms
 from ase.filters import *  # type: ignore
@@ -56,6 +56,7 @@ def run(
     max_abs_strain: float = 0.1,
     npoints: int = 11,
     concurrent: bool = True,
+    cache_opt: bool = True,
 ) -> dict[str, Any] | State:
     """
     Compute the equation of state (EOS) for the given atoms and calculator.
@@ -73,11 +74,17 @@ def run(
         max_abs_strain: The maximum absolute strain to use.
         npoints: The number of points to sample.
         concurrent: Whether to relax multiple structures concurrently.
+        cache_opt: Whether to cache the intermediate optimization results.
 
     Returns:
         A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy if successful. Otherwise, a prefect state object.
     """
-    state = OPT(
+
+    OPT_ = OPT.with_options(
+        refresh_cache=not cache_opt
+    )
+
+    state = OPT_(
         atoms=atoms,
         calculator_name=calculator_name,
         calculator_kwargs=calculator_kwargs,
@@ -92,8 +99,11 @@ def run(
 
     if state.is_failed():
         return state
-
-    first_relax = state.result(raise_on_failure=False)
+    elif state.is_completed() and state.name in ["Completed", "Cached"]:
+        first_relax = state.result(raise_on_failure=False)
+    elif state.is_completed() and state.name in ["Rollback"]:
+        first_relax = state.result(raise_on_failure=False)
+    
     assert isinstance(first_relax, dict)
     relaxed = first_relax["atoms"]
 
@@ -108,7 +118,7 @@ def run(
             atoms = relaxed.copy()
             atoms.set_cell(c0 * f, scale_atoms=True)
 
-            future = OPT.submit(
+            future = OPT_.submit(
                 atoms=atoms,
                 calculator_name=calculator_name,
                 calculator_kwargs=calculator_kwargs,
@@ -134,7 +144,7 @@ def run(
             atoms = relaxed.copy()
             atoms.set_cell(c0 * f, scale_atoms=True)
 
-            state = OPT(
+            state = OPT_(
                 atoms=atoms,
                 calculator_name=calculator_name,
                 calculator_kwargs=calculator_kwargs,
