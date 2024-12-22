@@ -9,18 +9,22 @@ References
 - Lim, Y., Park, H., Walsh, A., & Kim, J. (2024). Accelerating CO₂ Direct Air Capture Screening for Metal-Organic Frameworks with a Transferable Machine Learning Force Field.
 """
 
+import logging
 from collections import defaultdict
 from pathlib import Path
-from typing import IO, Optional
+from typing import IO, Any, Optional
 
 import numpy as np
 from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.runtime import task_run
+from prefect.states import State
 from tqdm.auto import tqdm
 
 from ase import Atoms, units
-from ase.io.trajectory import Trajectory, TrajectoryWriter
 from ase.atoms import Atoms
 from ase.filters import Filter
+from ase.io.trajectory import Trajectory, TrajectoryWriter
 from ase.optimize.optimize import Optimizer
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
@@ -89,13 +93,27 @@ def get_atomic_density(atoms: Atoms) -> float:
     return total_mass / volume
 
 
-@task
+def _generate_task_run_name():
+    task_name = task_run.task_name
+    parameters = task_run.parameters
+
+    atoms = parameters["atoms"]
+    calculator_name = parameters["calculator_name"]
+
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+
+
+@task(
+    name="Widom Insertion",
+    task_run_name=_generate_task_run_name,
+    cache_policy=TASK_SOURCE + INPUTS,
+)
 def widom_insertion(
     # init
     structure: Atoms,
     gas: Atoms,
     calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None,
+    calculator_kwargs: dict | None = None,
     device: str | None = None,
     dispersion: str | None = None,
     dispersion_kwargs: dict | None = None,
@@ -118,7 +136,7 @@ def widom_insertion(
     min_interplanar_distance: float = 6.0,
     fold: int = 2,
     random_seed: Optional[int] = None,
-):
+) -> dict[str, Any] | State:
     """
     Run the Widom insertion algorithm to calculate the Henry coefficient and heat of adsorption.
 
@@ -147,8 +165,8 @@ def widom_insertion(
 
     # Optimize structure and gas molecule
     if init_structure_optimize:
-        print("Optimizing the structure...")
-        state = OPT.submit(
+        logging.info("Optimizing structure")
+        state = OPT(
             atoms=structure,
             calculator_name=calculator_name,
             calculator_kwargs=calculator_kwargs,
@@ -165,12 +183,14 @@ def widom_insertion(
         if state.is_failed():
             return state
 
-        structure = state.result(raise_on_failure=False)["atoms"]
+        result = state.result(raise_on_failure=False)
+        # assert isinstance(result, dict)
+        structure = result.result["atoms"]
 
     if init_gas_optimize:
-        print("Optimizing the gas molecule...")
-        state = OPT.submit(
-            atoms=structure,
+        logging.info("Optimizing gas molecule")
+        state = OPT(
+            atoms=gas,
             calculator_name=calculator_name,
             calculator_kwargs=calculator_kwargs,
             dispersion=dispersion,
@@ -185,7 +205,9 @@ def widom_insertion(
         if state.is_failed():
             return state
 
-        gas = state.result(raise_on_failure=False)["atoms"]
+        result = state.result(raise_on_failure=False)
+        # assert isinstance(result, dict)
+        gas = result.result["atoms"]
 
     # Calculate accessible positions
     ret = get_accessible_positions(

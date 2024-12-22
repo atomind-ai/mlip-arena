@@ -2,7 +2,8 @@
 *.ipynb
 *.extxyz
 *.traj
-mlip_arena/tasks/*/*
+mlip_arena/tasks/*/
+examples/*/
 lab/
 manuscripts/
 
