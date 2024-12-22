@@ -3,7 +3,7 @@
 *.extxyz
 *.traj
 mlip_arena/tasks/*/
-examples/*/
+examples/
 lab/
 manuscripts/
 
