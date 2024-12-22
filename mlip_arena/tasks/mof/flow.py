@@ -9,14 +9,14 @@ References
 - Lim, Y., Park, H., Walsh, A., & Kim, J. (2024). Accelerating CO₂ Direct Air Capture Screening for Metal-Organic Frameworks with a Transferable Machine Learning Force Field.
 """
 
-import logging
 from collections import defaultdict
 from pathlib import Path
 from typing import IO, Any, Optional
 
 import numpy as np
-from prefect import task
+from prefect import task, flow
 from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.logging import get_run_logger
 from prefect.runtime import task_run
 from prefect.states import State
 from tqdm.auto import tqdm
@@ -135,7 +135,7 @@ def widom_insertion(
     cutoff_distance: float = 1.50,
     min_interplanar_distance: float = 6.0,
     fold: int = 2,
-    random_seed: Optional[int] = None,
+    random_seed: int | None = None,
 ) -> dict[str, Any] | State:
     """
     Run the Widom insertion algorithm to calculate the Henry coefficient and heat of adsorption.
@@ -160,12 +160,14 @@ def widom_insertion(
     Dict[str, Any]
         Dictionary containing the calculated Henry coefficient (mol/kg Pa), averaged interaction energy (eV), and heat of adsorption (kJ/mol) over the number of folds.
     """
+    logger = get_run_logger()
+
     structure = structure.copy()
     gas = gas.copy()
 
     # Optimize structure and gas molecule
     if init_structure_optimize:
-        logging.info("Optimizing structure")
+        logger.info("Optimizing structure")
         state = OPT(
             atoms=structure,
             calculator_name=calculator_name,
@@ -188,7 +190,7 @@ def widom_insertion(
         structure = result.result["atoms"]
 
     if init_gas_optimize:
-        logging.info("Optimizing gas molecule")
+        logger.info("Optimizing gas molecule")
         state = OPT(
             atoms=gas,
             calculator_name=calculator_name,
@@ -257,7 +259,9 @@ def widom_insertion(
             len(pos_grid), size=num_insertions, replace=True
         )
         interaction_energies = np.zeros(num_insertions)
-        for i, rand_idx in enumerate(tqdm(random_indices)):
+        for i, rand_idx in enumerate(
+            tqdm(random_indices, desc=f"Fold {ifold + 1}/{fold}")
+        ):
             if rand_idx not in idx_accessible_pos:
                 # TODO: Log results
                 # self.log(
