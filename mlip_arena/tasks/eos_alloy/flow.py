@@ -88,8 +88,10 @@ def save_to_hdf(
         print(e)
 
 
-@flow
-def run_from_db(
+@flow(
+    name="EOS Alloy"
+)
+def run(
     db_path: Path | str,
     out_path: Path | str,
     table_name: str,
@@ -100,9 +102,11 @@ def run_from_db(
     criterion=dict(fmax=0.1, steps=1000),
     max_abs_strain=0.20,
     concurrent=False,
+    cache=True,
 ):
     EOS_ = EOS.with_options(
-        on_completion=[partial(save_to_hdf, fpath=out_path, table_name=table_name)]
+        on_completion=[partial(save_to_hdf, fpath=out_path, table_name=table_name)],
+        refresh_cache=not cache,
     )
 
     futures = []
@@ -126,7 +130,9 @@ def run_from_db(
                 criterion=criterion,
                 max_abs_strain=max_abs_strain,
                 concurrent=concurrent,
-                cache_opt=False,
+                persist_opt=cache,
+                cache_opt=cache,
+                # return_state=True
             )
             futures.append(future)
 
