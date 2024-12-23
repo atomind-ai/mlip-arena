@@ -38,6 +38,8 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt-get update
+        sudo apt-get install -y liblapack-dev liblapacke-dev
         TORCH=2.2
         CUDA=cu121
         uv pip install torch==${TORCH}.0
@@ -47,7 +49,6 @@ jobs:
         uv pip install -e .[test]
         uv pip install -e .[mace]
         uv pip install -e .[deepmd]
-        sudo apt-get install liblapack-dev liblapacke-dev
         uv pip install -e .[phonon]
 
     - name: List dependencies
