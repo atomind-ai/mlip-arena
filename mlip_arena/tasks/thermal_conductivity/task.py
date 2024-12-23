@@ -5,7 +5,6 @@ The original code is licensed under the GPL-3.0 license.
 https://github.com/MPA2suite/k_SRME?tab=GPL-3.0-1-ov-file
 """
 
-from k_srme import STRUCTURES
 from k_srme.conductivity import (
     calculate_conductivity,
     get_fc2_and_freqs,
@@ -17,21 +16,29 @@ from k_srme.utils import (
     log_message,
     log_symmetry,
 )
-from mlip_arena.models import MLIPEnum
-from mlip_arena.tasks.optimize import run as OPT
 from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.runtime import task_run
+from prefect.states import Failed
 
 from ase import Atoms
-from ase.io import iread
+from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks.optimize import run as OPT
 
 
-@task
-def get_atoms():
-    for atoms in iread(STRUCTURES, format="extxyz", index=":"):
-        yield atoms
+def _generate_task_run_name():
+    task_name = task_run.task_name
+    parameters = task_run.parameters
 
+    atoms = parameters["atoms"]
+    calculator_name = parameters["calculator_name"]
 
-@task
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+
+@task(
+    task_run_name=_generate_task_run_name,
+    cache_policy=TASK_SOURCE + INPUTS,
+)
 def get_thermal_conductivity(
     atoms: Atoms,
     calculator_name: str,
@@ -44,6 +51,7 @@ def get_thermal_conductivity(
     symprec_tests: list[float] = [1e-5, 1e-4, 1e-3, 1e-1],
     # save_forces: bool = True,
 ):
+    calc = MLIPEnum[calculator_name].value(**calculator_kwargs)
     # TODO: move to flow
     # mat_id = atoms.info[ID]
     # init_info = deepcopy(atoms.info)
@@ -80,10 +88,12 @@ def get_thermal_conductivity(
         symmetry=True,
     )
 
+    atoms = result1["atoms"].copy()
+    atoms.calc = calc
+
     sym_stage1 = log_symmetry(atoms, symprec, output=True)
     max_stress_stage1 = atoms.get_stress().reshape((2, 3), order="C").max(axis=1)
 
-    atoms = result1["atoms"].copy()
     atoms_stage1 = atoms.copy()
     atoms.constraints = None
 
@@ -101,6 +111,9 @@ def get_thermal_conductivity(
         criterion=dict(fmax=1e-4, steps=steps_stage2),
         symmetry=False,
     )
+
+    atoms = result2["atoms"].copy()
+    atoms.calc = calc
 
     sym_stage2 = log_symmetry(atoms, symprec, output=True)
 
@@ -149,57 +162,55 @@ def get_thermal_conductivity(
 
     # Force calculation
 
-    calc = MLIPEnum[calculator_name].value(**calculator_kwargs)
+    # try:
+    ph3 = init_phono3py(atoms, log=False, symprec=symprec)
 
-    try:
-        ph3 = init_phono3py(atoms, log=False, symprec=symprec)
+    ph3, fc2_set, freqs = get_fc2_and_freqs(
+        ph3,
+        calculator=calc,
+        log=False,
+        pbar_kwargs={"leave": False, "disable": True},
+    )
 
-        ph3, fc2_set, freqs = get_fc2_and_freqs(
+    imaginary_freqs = check_imaginary_freqs(freqs)
+    freqs_dict = {"imaginary_freqs": imaginary_freqs, "frequencies": freqs}
+
+    # if conductivity condition is met, calculate fc3
+    ltc_condition = not imaginary_freqs and (
+        not relax_dict["broken_symmetry"] or conductivity_broken_symm
+    )
+
+    if ltc_condition:
+        ph3, fc3_set = get_fc3(
             ph3,
             calculator=calc,
             log=False,
-            pbar_kwargs={"leave": False, "disable": True},
+            pbar_kwargs={"leave": False, "disable": not True},
         )
+    else:
+        fc3_set = []
 
-        imaginary_freqs = check_imaginary_freqs(freqs)
-        freqs_dict = {"imaginary_freqs": imaginary_freqs, "frequencies": freqs}
-
-        # if conductivity condition is met, calculate fc3
-        ltc_condition = not imaginary_freqs and (
-            not relax_dict["broken_symmetry"] or conductivity_broken_symm
-        )
-
-        if ltc_condition:
-            ph3, fc3_set = get_fc3(
-                ph3,
-                calculator=calc,
-                log=False,
-                pbar_kwargs={"leave": False, "disable": not True},
-            )
-        else:
-            fc3_set = []
-
-        if not ltc_condition:
-            # warnings.warn(f"Material {mat_desc}, {mat_id} has imaginary frequencies.")
-            return {}
-    except Exception as exc:
+    if not ltc_condition:
+        # warnings.warn(f"Material {mat_desc}, {mat_id} has imaginary frequencies.")
+        return Failed(message="Material has imaginary frequencies.")
+    # except Exception as exc:
         # warnings.warn(f"Failed to calculate force sets {mat_id}: {exc!r}")
         # traceback.print_exc()
-        info_dict["errors"].append(f"ForceConstantError: {exc!r}")
+        # info_dict["errors"].append(f"ForceConstantError: {exc!r}")
         # info_dict["error_traceback"].append(traceback.format_exc())
 
     # Conductivity calculation
 
-    try:
-        ph3, kappa_dict = calculate_conductivity(ph3, log=False)
+    # try:
+    ph3, kappa_dict = calculate_conductivity(ph3, log=False)
 
-    except Exception:
+    # except Exception:
         # warnings.warn(f"Failed to calculate conductivity {mat_id}: {exc!r}")
         # traceback.print_exc()
         # info_dict["errors"].append(f"ConductivityError: {exc!r}")
         # info_dict["error_traceback"].append(traceback.format_exc())
         # kappa_results[mat_id] = info_dict | relax_dict | freqs_dict
-        return {}
+        # return {}
 
     return {
         "force": {"fc2_set": fc2_set, "fc3_set": fc3_set},

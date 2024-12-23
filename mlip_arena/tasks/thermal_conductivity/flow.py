@@ -1,11 +1,10 @@
 
+from .input import get_atoms_from_db
 from .task import (
-    get_atoms,
     get_thermal_conductivity
 )
 from mlip_arena.models import MLIPEnum
 from prefect import flow
-
 
 
 @flow(
@@ -15,7 +14,7 @@ def run():
 
     states = []
     for model in MLIPEnum:
-        for atoms in get_atoms():
+        for atoms in get_atoms_from_db("phononDB-PBE"):
 
             state = get_thermal_conductivity(
                 atoms=atoms,
