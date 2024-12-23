@@ -56,6 +56,7 @@ def run(
     max_abs_strain: float = 0.1,
     npoints: int = 11,
     concurrent: bool = True,
+    persist_opt: bool = True,
     cache_opt: bool = True,
 ) -> dict[str, Any] | State:
     """
@@ -81,7 +82,8 @@ def run(
     """
 
     OPT_ = OPT.with_options(
-        refresh_cache=not cache_opt
+        refresh_cache=not cache_opt,
+        persist_result=persist_opt,     
     )
 
     state = OPT_(
