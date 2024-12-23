@@ -3,8 +3,6 @@ import numpy as np
 
 import pytest
 from mlip_arena.models import MLIPEnum
-from mlip_arena.tasks.thermal_conductivity.task import get_thermal_conductivity
-from mlip_arena.tasks.thermal_conductivity.input import get_atoms_from_extxyz
 from prefect.testing.utilities import prefect_test_harness
 
 
@@ -17,6 +15,8 @@ def test_tc_task(model: MLIPEnum):
     """Test thermal conductivity task on single structure"""
 
     pytest.importorskip("phono3py")
+    from mlip_arena.tasks.thermal_conductivity.task import get_thermal_conductivity
+    from mlip_arena.tasks.thermal_conductivity.input import get_atoms_from_extxyz
 
     # Phono3py will raise FloatingPointError in pytest environment if not ignored
     np.seterr(all="ignore")
