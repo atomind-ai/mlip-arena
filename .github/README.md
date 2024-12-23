@@ -53,7 +53,7 @@ streamlit run serve/app.py
 > The following are some tasks implemented:
 > - [Prefect structure optimization (OPT)](../mlip_arena/tasks/optimize.py)
 > - [Prefect molecular dynamics (MD)](../mlip_arena/tasks/md.py)
-> - [Prefect equation of states (EOS)](../mlip_arena/tasks/eos/run.py)
+> - [Prefect equation of states (EOS)](../mlip_arena/tasks/eos.py)
 
 1. Follow the task template to implement the task class and upload the script along with metadata to the MLIP Arena [here](../mlip_arena/tasks/README.md).
 2. Code a benchmark script to evaluate the performance of your model on the task. The script should be able to load the model and the dataset, and output the evaluation metrics.

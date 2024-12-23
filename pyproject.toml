@@ -42,6 +42,7 @@ run = [
     "prefect-dask",
     "dask",
     "dask_jobqueue",
+    "tables",
 ]
 app = [
     "streamlit==1.38.0",

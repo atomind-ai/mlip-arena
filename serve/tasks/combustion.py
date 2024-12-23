@@ -33,7 +33,8 @@ models = container.multiselect(
         "M3GNet",
         "SevenNet",
         "ORB",
-        "EquiformerV2(OC22)",
+        "ORBv2",
+        "EquiformerV2(OC20)",
         "eSCN(OC20)",
     ],
 )
@@ -61,13 +62,13 @@ if not models:
 
 @st.cache_data
 def get_data(models):
-    families = [MODELS[str(model)]["family"] for model in models]
+    # List comprehension for concise looping and filtering
     dfs = [
-        pd.read_json(DATA_DIR / family.lower() / "hydrogen.json") for family in families
+        pd.read_json(DATA_DIR / MODELS[str(model)]["family"].lower() / "hydrogen.json")[lambda df: df["method"] == model]
+        for model in models
     ]
-    df = pd.concat(dfs, ignore_index=True)
-    df.drop_duplicates(inplace=True, subset=["formula", "method"])
-    return df
+    # Concatenate all filtered DataFrames
+    return pd.concat(dfs, ignore_index=True)
 
 
 df = get_data(models)
@@ -94,6 +95,17 @@ for method in df["method"].unique():
             showlegend=True,
         ),
     )
+
+fig.add_vrect(
+    x0=512345.94,
+    x1=666667,
+    fillcolor="lightblue",
+    opacity=0.2,
+    layer="below",
+    line_width=0,
+    annotation_text="Flame Temp. [1]",
+    annotation_position="top",
+)
 
 fig.update_layout(
     title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
@@ -136,8 +148,19 @@ fig.add_trace(
     ),
 )
 
+fig.add_vrect(
+    x0=512345.94,
+    x1=666667,
+    fillcolor="lightblue",
+    opacity=0.2,
+    layer="below",
+    line_width=0,
+    annotation_text="Flame Temp.",
+    annotation_position="top",
+)
+
 fig.update_layout(
-    title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
+    # title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
     xaxis_title="Timestep",
     yaxis_title="Temperature (K)",
     # yaxis2=dict(
@@ -154,6 +177,10 @@ st.plotly_chart(fig)
 
 # Energy
 
+exp_ref = -68.3078 # kcal/mol
+factor = 23.0609 
+nh2os = 128
+
 fig = go.Figure()
 
 for method in df["method"].unique():
@@ -161,7 +188,7 @@ for method in df["method"].unique():
     fig.add_trace(
         go.Scatter(
             x=row["timestep"],
-            y=np.array(row["energies"]) - row["energies"][0],
+            y=(np.array(row["energies"]) - row["energies"][0]) / nh2os * factor,
             mode="lines",
             name=method,
             line=dict(
@@ -173,11 +200,48 @@ for method in df["method"].unique():
         ),
     )
 
+target_steps = df["target_steps"].iloc[0]
+
+fig.add_shape(
+    go.layout.Shape(
+        type="line",
+        x0=0, x1=target_steps,
+        y0=exp_ref, y1=exp_ref,  # y-values for the horizontal line
+        line=dict(color="Red", width=2, dash="dash"),
+        layer="below"
+    )
+)
+
+fig.add_annotation(
+    go.layout.Annotation(
+        x=0.5,
+        xref="paper",
+        xanchor="center",
+        y=exp_ref,
+        yanchor="bottom",
+        text=f"Experiment: {exp_ref} kcal/mol [2]",
+        showarrow=False,
+        font=dict(
+            color="Red",
+        ),
+    )
+)
+
+fig.add_vrect(
+    x0=512345.94,
+    x1=666667,
+    fillcolor="lightblue",
+    opacity=0.2,
+    layer="below",
+    line_width=0,
+    annotation_text="Flame Temp.",
+    annotation_position="top",
+)
+
+
 fig.update_layout(
-    # title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
-    xaxis_title="Timestep",
-    yaxis_title="Potential Energy 𝚫 (eV)",
-    # template="plotly_dark",
+    xaxis_title="Timestep <br> <span style='font-size: 10px;'>[2] Lide, D. R. (Ed.). (2004). CRC handbook of chemistry and physics (Vol. 85). CRC press.</span>",
+    yaxis_title="𝚫E (kcal/mol)",
 )
 
 st.plotly_chart(fig)
@@ -216,9 +280,8 @@ st.plotly_chart(fig)
 
 fig = go.Figure()
 
-exp_ref = -68.3078 # kcal/mol
 
-df["reaction_energy"] = df["energies"].apply(lambda x: x[-1] - x[0]) / 128 * 23.0609 # kcal/mol
+df["reaction_energy"] = df["energies"].apply(lambda x: x[-1] - x[0]) / nh2os * factor # kcal/mol
 
 df["reaction_energy_abs_err"] = np.abs(df["reaction_energy"] - exp_ref)
 
@@ -250,7 +313,7 @@ fig.add_annotation(
         xanchor="center",
         y=exp_ref,
         yanchor="bottom",
-        text=f"Experiment: {exp_ref} kcal/mol [1]",
+        text=f"Experiment: {exp_ref} kcal/mol [2]",
         showarrow=False,
         font=dict(
             color="Red",
@@ -353,6 +416,34 @@ def get_com_drifts(df):
 
 
 df_exploded = get_com_drifts(df)
+
+fig = go.Figure()
+
+for method in df_exploded["method"].unique():
+    row = df_exploded[df_exploded["method"] == method]
+    fig.add_trace(
+        go.Scatter(
+            x=row["timestep"],
+            y=row["total_com_drift"],
+            mode="lines",
+            name=method,
+            line=dict(
+                color=method_color_mapping[method],
+                # width=1
+            ),
+            marker=dict(color=method_color_mapping[method], size=3),
+            showlegend=True,
+            
+        ),
+    )
+
+fig.update_yaxes(type="log")
+fig.update_layout(
+    xaxis_title="Timestep",
+    yaxis_title="Total COM drift (Å)",
+)
+
+st.plotly_chart(fig)
 
 if "play" not in st.session_state:
     st.session_state.play = False
@@ -465,3 +556,13 @@ def draw_com_drifts_plot():
 
 
 draw_com_drifts_plot()
+
+
+st.markdown("""
+### References
+
+[1] Hasche, A., Navid, A., Krause, H., & Eckart, S. (2023). Experimental and numerical assessment of the effects of hydrogen admixtures on premixed methane-oxygen flames. Fuel, 352, 128964.
+            
+[2] Lide, D. R. (Ed.). (2004). CRC handbook of chemistry and physics (Vol. 85). CRC press.
+"""
+)

@@ -4,10 +4,9 @@ Define structure optimization tasks.
 
 from __future__ import annotations
 
-from datetime import timedelta
-
 from prefect import task
-from prefect.tasks import task_input_hash
+from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.runtime import task_run
 from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 
 from ase import Atoms
@@ -32,6 +31,7 @@ _valid_filters: dict[str, Filter] = {
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
     "FIRE": FIRE,
+    "FIRE2": FIRE2,
     "LBFGS": LBFGS,
     "LBFGSLineSearch": LBFGSLineSearch,
     "BFGS": BFGS,
@@ -43,15 +43,27 @@ _valid_optimizers: dict[str, Optimizer] = {
 }  # type: ignore
 
 
-# @task(
-#     cache_key_fn=task_input_hash,
-#     cache_expiration=timedelta(days=1),
-#     timeout_seconds=120)
-@task(timeout_seconds=120, result_storage=None)
+def _generate_task_run_name():
+    task_name = task_run.task_name
+    parameters = task_run.parameters
+
+    atoms = parameters["atoms"]
+    calculator_name = parameters["calculator_name"]
+
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+
+
+@task(
+    name="OPT",
+    task_run_name=_generate_task_run_name,
+    cache_policy=TASK_SOURCE + INPUTS
+    # cache_key_fn=task_input_hash,
+    # cache_expiration=timedelta(days=1)
+)
 def run(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None,
+    calculator_kwargs: dict | None = None,
     dispersion: str | None = None,
     dispersion_kwargs: dict | None = None,
     device: str | None = None,
@@ -123,7 +135,6 @@ def run(
     elif filter is None:
         optimizer_instance = optimizer(atoms, **optimizer_kwargs)
         print(f"Using optimizer: {optimizer_instance}")
-
         optimizer_instance.run(**criterion)
 
     return {
