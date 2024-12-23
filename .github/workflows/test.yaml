@@ -47,6 +47,7 @@ jobs:
         uv pip install -e .[test]
         uv pip install -e .[mace]
         uv pip install -e .[deepmd]
+        uv pip install -e .[phonon]
 
     - name: List dependencies
       run: pip list
