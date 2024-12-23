@@ -39,7 +39,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y liblapack-dev liblapacke-dev
+        sudo apt-get install -y libblas-dev liblapack-dev liblapacke-dev
         TORCH=2.2
         CUDA=cu121
         uv pip install torch==${TORCH}.0
