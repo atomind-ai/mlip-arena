@@ -47,6 +47,7 @@ jobs:
         uv pip install -e .[test]
         uv pip install -e .[mace]
         uv pip install -e .[deepmd]
+        sudo apt-get install liblapack-dev liblapacke-dev
         uv pip install -e .[phonon]
 
     - name: List dependencies
