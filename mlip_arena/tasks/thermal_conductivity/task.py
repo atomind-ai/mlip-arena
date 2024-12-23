@@ -5,6 +5,7 @@ The original code is licensed under the GPL-3.0 license.
 https://github.com/MPA2suite/k_SRME?tab=GPL-3.0-1-ov-file
 """
 
+import numpy as np
 from k_srme.conductivity import (
     calculate_conductivity,
     get_fc2_and_freqs,
@@ -35,6 +36,7 @@ def _generate_task_run_name():
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
+
 @task(
     task_run_name=_generate_task_run_name,
     cache_policy=TASK_SOURCE + INPUTS,
@@ -50,7 +52,13 @@ def get_thermal_conductivity(
     conductivity_broken_symm: bool = False,
     symprec_tests: list[float] = [1e-5, 1e-4, 1e-3, 1e-1],
     # save_forces: bool = True,
+    suppress_numpy_warnings: bool = True,
 ):
+    """Calculate thermal conductivity of a given structure"""
+
+    if suppress_numpy_warnings:
+        np.seterr(all="ignore")
+
     calc = MLIPEnum[calculator_name].value(**calculator_kwargs)
     # TODO: move to flow
     # mat_id = atoms.info[ID]
@@ -194,10 +202,10 @@ def get_thermal_conductivity(
         # warnings.warn(f"Material {mat_desc}, {mat_id} has imaginary frequencies.")
         return Failed(message="Material has imaginary frequencies.")
     # except Exception as exc:
-        # warnings.warn(f"Failed to calculate force sets {mat_id}: {exc!r}")
-        # traceback.print_exc()
-        # info_dict["errors"].append(f"ForceConstantError: {exc!r}")
-        # info_dict["error_traceback"].append(traceback.format_exc())
+    # warnings.warn(f"Failed to calculate force sets {mat_id}: {exc!r}")
+    # traceback.print_exc()
+    # info_dict["errors"].append(f"ForceConstantError: {exc!r}")
+    # info_dict["error_traceback"].append(traceback.format_exc())
 
     # Conductivity calculation
 
@@ -205,12 +213,12 @@ def get_thermal_conductivity(
     ph3, kappa_dict = calculate_conductivity(ph3, log=False)
 
     # except Exception:
-        # warnings.warn(f"Failed to calculate conductivity {mat_id}: {exc!r}")
-        # traceback.print_exc()
-        # info_dict["errors"].append(f"ConductivityError: {exc!r}")
-        # info_dict["error_traceback"].append(traceback.format_exc())
-        # kappa_results[mat_id] = info_dict | relax_dict | freqs_dict
-        # return {}
+    # warnings.warn(f"Failed to calculate conductivity {mat_id}: {exc!r}")
+    # traceback.print_exc()
+    # info_dict["errors"].append(f"ConductivityError: {exc!r}")
+    # info_dict["error_traceback"].append(traceback.format_exc())
+    # kappa_results[mat_id] = info_dict | relax_dict | freqs_dict
+    # return {}
 
     return {
         "force": {"fc2_set": fc2_set, "fc3_set": fc3_set},
