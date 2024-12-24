@@ -38,8 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal
 
 from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
@@ -48,11 +48,12 @@ from prefect.states import State
 
 from ase import Atoms
 from ase.filters import *  # type: ignore
+from ase.mep.neb import NEB, NEBTools, DyNEB
 from ase.optimize import *  # type: ignore
-from ase.neb import NEB, NEBTools
 from ase.optimize.optimize import Optimizer
+from ase.utils.forcecurve import fit_images
 from mlip_arena.models import MLIPEnum
-from mlip_arena.tasks.utils import get_calculator, _valid_optimizers
+from mlip_arena.tasks.utils import get_calculator
 
 if TYPE_CHECKING:
     pass
@@ -64,7 +65,7 @@ _valid_optimizers: dict[str, Optimizer] = {
     "LBFGS": LBFGS,
     "LBFGSLineSearch": LBFGSLineSearch,
     "BFGS": BFGS,
-    "BFGSLineSearch": BFGSLineSearch,
+    # "BFGSLineSearch": BFGSLineSearch, # NEB does not support BFGSLineSearch
     "QuasiNewton": QuasiNewton,
     "GPMin": GPMin,
     "CellAwareBFGS": CellAwareBFGS,
@@ -76,7 +77,7 @@ def _generate_task_run_name():
     task_name = task_run.task_name
     parameters = task_run.parameters
 
-    atoms = parameters["atoms"]
+    atoms = parameters["images"][0]
     calculator_name = parameters["calculator_name"]
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
@@ -94,12 +95,33 @@ def run(
     dispersion: str | None = None,
     dispersion_kwargs: dict | None = None,
     device: str | None = None,
-    optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
+    optimizer: Optimizer | str = "MDMin",  # type: ignore
     optimizer_kwargs: dict | None = None,
     criterion: dict | None = None,
+    interpolation: Literal["linear", "idpp"] = "idpp",
     climb: bool = True,
     traj_file: str | Path | None = None,
 ) -> dict[str, Any] | State:
+    """Run the nudged elastic band (NEB) calculation.
+
+    Args:
+        images (list[Atoms]): The images.
+        calculator_name (str | MLIPEnum): The calculator name.
+        calculator_kwargs (dict, optional): The calculator kwargs. Defaults to None.
+        dispersion (str, optional): The dispersion. Defaults to None.
+        dispersion_kwargs (dict, optional): The dispersion kwargs. Defaults to None.
+        device (str, optional): The device. Defaults to None.
+        optimizer (Optimizer | str, optional): The optimizer. Defaults to "BFGSLineSearch".
+        optimizer_kwargs (dict, optional): The optimizer kwargs. Defaults to None.
+        criterion (dict, optional): The criterion. Defaults to None.
+        interpolation (Literal['linear', 'idpp'], optional): The interpolation method. Defaults to "idpp".
+        climb (bool, optional): Whether to use the climbing image. Defaults to True.
+        traj_file (str | Path, optional): The trajectory file. Defaults to None.
+
+    Returns:
+        dict[str, Any] | State: The energy barrier.
+    """
+
     calc = get_calculator(
         calculator_name,
         calculator_kwargs,
@@ -114,7 +136,7 @@ def run(
 
     neb = NEB(images, climb=climb, allow_shared_calculator=True)
 
-    neb.interpolate(method="idpp")
+    neb.interpolate(method=interpolation)
 
     if isinstance(optimizer, str):
         if optimizer not in _valid_optimizers:
@@ -124,12 +146,14 @@ def run(
     optimizer_kwargs = optimizer_kwargs or {}
     criterion = criterion or {}
 
-    optimizer_instance = optimizer(neb, trajectory=traj_file, **optimizer_kwargs)
+    optimizer_instance = optimizer(neb, trajectory=traj_file, **optimizer_kwargs) # type: ignore
 
     optimizer_instance.run(**criterion)
 
     neb_tool = NEBTools(neb.images)
 
     return {
-        "barriers": neb_tool.get_barrier(),
+        "barrier": neb_tool.get_barrier(),
+        "images": neb.images,
+        "forcefit": fit_images(neb.images)
     }
