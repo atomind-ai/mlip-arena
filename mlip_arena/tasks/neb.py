@@ -1,0 +1,135 @@
+"""
+Defines nudged elastic band (NEB) task
+
+This module has been modified from MatCalc
+https://github.com/materialsvirtuallab/matcalc/blob/main/src/matcalc/neb.py
+
+https://github.com/materialsvirtuallab/matcalc/blob/main/LICENSE
+
+BSD 3-Clause License
+
+Copyright (c) 2023, Materials Virtual Lab
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+from pathlib import Path
+
+from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.runtime import task_run
+from prefect.states import State
+
+from ase import Atoms
+from ase.filters import *  # type: ignore
+from ase.optimize import *  # type: ignore
+from ase.neb import NEB, NEBTools
+from ase.optimize.optimize import Optimizer
+from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks.utils import get_calculator, _valid_optimizers
+
+if TYPE_CHECKING:
+    pass
+
+_valid_optimizers: dict[str, Optimizer] = {
+    "MDMin": MDMin,
+    "FIRE": FIRE,
+    "FIRE2": FIRE2,
+    "LBFGS": LBFGS,
+    "LBFGSLineSearch": LBFGSLineSearch,
+    "BFGS": BFGS,
+    "BFGSLineSearch": BFGSLineSearch,
+    "QuasiNewton": QuasiNewton,
+    "GPMin": GPMin,
+    "CellAwareBFGS": CellAwareBFGS,
+    "ODE12r": ODE12r,
+}  # type: ignore
+
+
+def _generate_task_run_name():
+    task_name = task_run.task_name
+    parameters = task_run.parameters
+
+    atoms = parameters["atoms"]
+    calculator_name = parameters["calculator_name"]
+
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+
+
+@task(
+    name="NEB",
+    task_run_name=_generate_task_run_name,
+    cache_policy=TASK_SOURCE + INPUTS,
+)
+def run(
+    images: list[Atoms],
+    calculator_name: str | MLIPEnum,
+    calculator_kwargs: dict | None = None,
+    dispersion: str | None = None,
+    dispersion_kwargs: dict | None = None,
+    device: str | None = None,
+    optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
+    optimizer_kwargs: dict | None = None,
+    criterion: dict | None = None,
+    climb: bool = True,
+    traj_file: str | Path | None = None,
+) -> dict[str, Any] | State:
+    calc = get_calculator(
+        calculator_name,
+        calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
+        device=device,
+    )
+
+    for image in images:
+        assert isinstance(image, Atoms)
+        image.calc = calc
+
+    neb = NEB(images, climb=climb, allow_shared_calculator=True)
+
+    neb.interpolate(method="idpp")
+
+    if isinstance(optimizer, str):
+        if optimizer not in _valid_optimizers:
+            raise ValueError(f"Invalid optimizer: {optimizer}")
+        optimizer = _valid_optimizers[optimizer]
+
+    optimizer_kwargs = optimizer_kwargs or {}
+    criterion = criterion or {}
+
+    optimizer_instance = optimizer(neb, trajectory=traj_file, **optimizer_kwargs)
+
+    optimizer_instance.run(**criterion)
+
+    neb_tool = NEBTools(neb.images)
+
+    return {
+        "barriers": neb_tool.get_barrier(),
+    }
