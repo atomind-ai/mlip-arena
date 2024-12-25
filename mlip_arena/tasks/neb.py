@@ -48,12 +48,14 @@ from prefect.states import State
 
 from ase import Atoms
 from ase.filters import *  # type: ignore
-from ase.mep.neb import NEB, NEBTools, DyNEB
+from ase.mep.neb import NEB, NEBTools
 from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
 from ase.utils.forcecurve import fit_images
 from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks.optimize import run as OPT
 from mlip_arena.tasks.utils import get_calculator
+from pymatgen.io.ase import AseAtomsAdaptor
 
 if TYPE_CHECKING:
     pass
@@ -146,7 +148,7 @@ def run(
     optimizer_kwargs = optimizer_kwargs or {}
     criterion = criterion or {}
 
-    optimizer_instance = optimizer(neb, trajectory=traj_file, **optimizer_kwargs) # type: ignore
+    optimizer_instance = optimizer(neb, trajectory=traj_file, **optimizer_kwargs)  # type: ignore
 
     optimizer_instance.run(**criterion)
 
@@ -155,5 +157,106 @@ def run(
     return {
         "barrier": neb_tool.get_barrier(),
         "images": neb.images,
-        "forcefit": fit_images(neb.images)
+        "forcefit": fit_images(neb.images),
     }
+
+
+@task(
+    name="NEB",
+    task_run_name=_generate_task_run_name,
+    cache_policy=TASK_SOURCE + INPUTS,
+)
+def run_from_end_points(
+    start: Atoms,
+    end: Atoms,
+    n_images: int,
+    calculator_name: str | MLIPEnum,
+    calculator_kwargs: dict | None = None,
+    dispersion: str | None = None,
+    dispersion_kwargs: dict | None = None,
+    device: str | None = None,
+    optimizer: Optimizer | str = "MDMin",  # type: ignore
+    optimizer_kwargs: dict | None = None,
+    criterion: dict | None = None,
+    relax_end_points: bool = True,
+    interpolation: Literal["linear", "idpp"] = "idpp",
+    climb: bool = True,
+    traj_file: str | Path | None = None,
+) -> dict[str, Any] | State:
+    """Run the nudged elastic band (NEB) calculation from end points.
+
+    Args:
+        start (Atoms): The start image.
+        end (Atoms): The end image.
+        n_images (int): The number of images.
+        calculator_name (str | MLIPEnum): The calculator name.
+        calculator_kwargs (dict, optional): The calculator kwargs. Defaults to None.
+        dispersion (str, optional): The dispersion. Defaults to None.
+        dispersion_kwargs (dict, optional): The dispersion kwargs. Defaults to None.
+        device (str, optional): The device. Defaults to None.
+        optimizer (Optimizer | str, optional): The optimizer. Defaults to "BFGSLineSearch".
+        optimizer_kwargs (dict, optional): The optimizer kwargs. Defaults to None.
+        criterion (dict, optional): The criterion. Defaults to None.
+        interpolation (Literal['linear', 'idpp'], optional): The interpolation method. Defaults to "idpp".
+        climb (bool, optional): Whether to use the climbing image. Defaults to True.
+        traj_file (str | Path, optional): The trajectory file. Defaults to None.
+
+    Returns:
+        dict[str, Any] | State: The energy barrier.
+    """
+
+    if relax_end_points:
+        relax = OPT(
+            atoms=start.copy(),
+            calculator_name=calculator_name,
+            calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
+            device=device,
+            optimizer=optimizer,
+            optimizer_kwargs=optimizer_kwargs,
+            criterion=criterion,
+        )
+        start = relax["atoms"]
+
+        relax = OPT(
+            atoms=end.copy(),
+            calculator_name=calculator_name,
+            calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
+            device=device,
+            optimizer=optimizer,
+            optimizer_kwargs=optimizer_kwargs,
+            criterion=criterion,
+        )
+        end = relax["atoms"]
+
+    path = (
+        AseAtomsAdaptor()
+        .get_structure(start)
+        .interpolate(
+            AseAtomsAdaptor().get_structure(end),
+            nimages=n_images - 1,
+            interpolate_lattices=False,
+            pbc=False,
+            autosort_tol=0.5,
+        )
+    )
+
+    images = [s.to_ase_atoms() for s in path]
+
+    return run(
+        images,
+        calculator_name,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
+        device=device,
+        optimizer=optimizer,
+        optimizer_kwargs=optimizer_kwargs,
+        criterion=criterion,
+        interpolation=interpolation,
+        climb=climb,
+        traj_file=traj_file,
+    )
