@@ -26,7 +26,7 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@v4
       with:
-        enable-cahce: true
+        enable-cache: true
         cache-dependency-glob: "pyproject.toml"
 
     - name: Set up Python ${{ matrix.python-version }}
@@ -63,4 +63,4 @@ jobs:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
       run: |
-        pytest -vvra tests
+        pytest -vra tests -n 5
