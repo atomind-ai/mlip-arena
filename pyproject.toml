@@ -64,6 +64,7 @@ test = [
     "alignn==2024.5.27",
     "mattersim==1.0.0rc9",
     "pytest",
+    "pytest-xdist",
     "prefect>=3.0.4,<3.1.0",
 ]
 mace = [

@@ -63,4 +63,4 @@ jobs:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
       run: |
-        pytest -n 5 -vra tests
+        pytest -vra tests -n 5
