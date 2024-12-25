@@ -37,6 +37,7 @@ def test_neb(model: MLIPEnum):
             end=end.copy(),
             n_images=5,
             calculator_name=model.name,
+            optimizer="FIRE2",
         )
 
         assert isinstance(result, dict)
