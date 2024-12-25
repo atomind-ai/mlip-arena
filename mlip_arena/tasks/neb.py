@@ -79,14 +79,20 @@ def _generate_task_run_name():
     task_name = task_run.task_name
     parameters = task_run.parameters
 
-    atoms = parameters["images"][0]
+    if "images" in parameters:
+        atoms = parameters["images"][0]
+    elif "start" in parameters:
+        atoms = parameters["start"]
+    else:
+        raise ValueError("No images or start atoms found in parameters")
+    
     calculator_name = parameters["calculator_name"]
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
 
 @task(
-    name="NEB",
+    name="NEB from images",
     task_run_name=_generate_task_run_name,
     cache_policy=TASK_SOURCE + INPUTS,
 )
@@ -162,7 +168,7 @@ def run(
 
 
 @task(
-    name="NEB",
+    name="NEB from end points",
     task_run_name=_generate_task_run_name,
     cache_policy=TASK_SOURCE + INPUTS,
 )
@@ -175,7 +181,7 @@ def run_from_end_points(
     dispersion: str | None = None,
     dispersion_kwargs: dict | None = None,
     device: str | None = None,
-    optimizer: Optimizer | str = "MDMin",  # type: ignore
+    optimizer: Optimizer | str = "BFGS",  # type: ignore
     optimizer_kwargs: dict | None = None,
     criterion: dict | None = None,
     relax_end_points: bool = True,
