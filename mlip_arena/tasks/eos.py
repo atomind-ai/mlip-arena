@@ -39,10 +39,7 @@ def _generate_task_run_name():
 
 
 @task(
-    name="EOS",
-    task_run_name=_generate_task_run_name,
-    cache_policy=TASK_SOURCE + INPUTS,
-    # cache_key_fn=task_input_hash,
+    name="EOS", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS
 )
 def run(
     atoms: Atoms,
@@ -161,7 +158,7 @@ def run(
                 return_state=True,
             )
             states.append(state)
-        
+
         results = [s.result(raise_on_failure=False) for s in states if s.is_completed()]
 
     results = [r.result if isinstance(r, ResultRecord) else r for r in results]
