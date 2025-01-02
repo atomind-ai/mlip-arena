@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 import warnings
+
+# Suppress DeprecationWarning
+# See https://github.com/CederGroupHub/chgnet/issues/221
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 from typing import Literal
 
 from ase import Atoms
@@ -8,9 +13,6 @@ from chgnet.model.dynamics import CHGNetCalculator
 from chgnet.model.model import CHGNet as CHGNetModel
 from mlip_arena.models.utils import get_freer_device
 
-# Suppress DeprecationWarning
-# See https://github.com/CederGroupHub/chgnet/issues/221
-warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 class CHGNet(CHGNetCalculator):
     def __init__(
