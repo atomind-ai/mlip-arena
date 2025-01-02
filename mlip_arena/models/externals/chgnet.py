@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-import warnings
+import monty.dev
 
-# Suppress DeprecationWarning
-# See https://github.com/CederGroupHub/chgnet/issues/221
-warnings.simplefilter("ignore", category=DeprecationWarning)
+# Replace the function with a no-op
+def no_op_warning():
+    pass
+
+monty.dev.raise_deadline_warning = no_op_warning
 
 from typing import Literal
 
