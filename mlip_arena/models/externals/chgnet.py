@@ -4,7 +4,7 @@ import warnings
 
 # Suppress DeprecationWarning
 # See https://github.com/CederGroupHub/chgnet/issues/221
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.simplefilter("ignore", category=DeprecationWarning)
 
 from typing import Literal
 
