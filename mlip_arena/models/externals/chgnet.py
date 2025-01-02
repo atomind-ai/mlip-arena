@@ -1,18 +1,11 @@
 from __future__ import annotations
 
-import monty.dev
-
-# Replace the function with a no-op
-def no_op_warning():
-    pass
-
-monty.dev.raise_deadline_warning = no_op_warning
-
 from typing import Literal
 
 from ase import Atoms
 from chgnet.model.dynamics import CHGNetCalculator
 from chgnet.model.model import CHGNet as CHGNetModel
+
 from mlip_arena.models.utils import get_freer_device
 
 
