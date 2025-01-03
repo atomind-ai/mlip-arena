@@ -12,6 +12,7 @@ import numpy as np
 from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
+from prefect.results import ResultRecord
 from prefect.runtime import task_run
 from prefect.states import State
 
@@ -38,10 +39,7 @@ def _generate_task_run_name():
 
 
 @task(
-    name="EOS",
-    task_run_name=_generate_task_run_name,
-    cache_policy=TASK_SOURCE + INPUTS
-    # cache_key_fn=task_input_hash,
+    name="EOS", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS
 )
 def run(
     atoms: Atoms,
@@ -75,6 +73,7 @@ def run(
         max_abs_strain: The maximum absolute strain to use.
         npoints: The number of points to sample.
         concurrent: Whether to relax multiple structures concurrently.
+        persist_opt: Whether to persist the optimization results.
         cache_opt: Whether to cache the intermediate optimization results.
 
     Returns:
@@ -83,7 +82,7 @@ def run(
 
     OPT_ = OPT.with_options(
         refresh_cache=not cache_opt,
-        persist_result=persist_opt,     
+        persist_result=persist_opt,
     )
 
     state = OPT_(
@@ -101,13 +100,13 @@ def run(
 
     if state.is_failed():
         return state
-    elif state.is_completed() and state.name in ["Completed", "Cached"]:
-        first_relax = state.result(raise_on_failure=False)
-    elif state.is_completed() and state.name in ["Rollback"]:
-        first_relax = state.result(raise_on_failure=False)
-    
-    assert isinstance(first_relax, dict)
-    relaxed = first_relax["atoms"]
+
+    first_relax = state.result(raise_on_failure=False)
+
+    if isinstance(first_relax, ResultRecord):
+        relaxed = first_relax.result["atoms"]
+    else:
+        relaxed = first_relax["atoms"]
 
     # p0 = relaxed.get_positions()
     c0 = relaxed.get_cell()
@@ -159,12 +158,13 @@ def run(
                 return_state=True,
             )
             states.append(state)
-        results = [
-            s.result(raise_on_failure=False) for s in states if s.is_completed()
-        ]
 
-    volumes = [f["atoms"].get_volume() for f in results]
-    energies = [f["atoms"].get_potential_energy() for f in results]
+        results = [s.result(raise_on_failure=False) for s in states if s.is_completed()]
+
+    results = [r.result if isinstance(r, ResultRecord) else r for r in results]
+
+    volumes = [r["atoms"].get_volume() for r in results]
+    energies = [r["atoms"].get_potential_energy() for r in results]
 
     volumes, energies = map(
         list,
