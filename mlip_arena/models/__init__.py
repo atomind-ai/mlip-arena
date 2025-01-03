@@ -22,8 +22,7 @@ for model, metadata in REGISTRY.items():
     try:
         module = importlib.import_module(f"{__package__}.{metadata['module']}.{metadata['family']}")
         MLIPMap[model] = getattr(module, metadata["class"])
-    except (ModuleNotFoundError, AttributeError, ValueError, DeprecationWarning) as e:
-        # Add DeprecationWarning to ignore list to safely ignore chgnet due to deprecated pymargen `is_rare_earth_metal` https://github.com/materialsproject/pymatgen/pull/4242
+    except (ModuleNotFoundError, AttributeError, ValueError) as e:
         print(e)
         continue
 
