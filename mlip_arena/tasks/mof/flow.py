@@ -136,7 +136,7 @@ def widom_insertion(
     grid_spacing: float = 0.15,
     cutoff_distance: float = 1.50,
     min_interplanar_distance: float = 6.0,
-    fold: int = 2,
+    fold: int = 3,
     random_seed: int | None = None,
 ) -> dict[str, Any] | State:
     """
@@ -152,7 +152,7 @@ def widom_insertion(
         When the distance between framework atoms and the gas molecule is less than this value, the insertion is rejected. In angstroms.
     min_interplanar_distance : float, default=6.0
         When the interplanar distance of the framework is less than this value, a supercell is constructed. In angstroms.
-    fold : int, default=2
+    fold : int, default=3
         Number of repetitions of Widom insertion to improve statistics.
     random_seed : int, optional
         Seed for the random number generator for reproducibility.
@@ -346,7 +346,7 @@ def run(
                 atoms,
                 molecule("CO2"),
                 calculator_name=model.name,
-                return_state=True
+                return_state=True,
             )
             states.append(state)
 
