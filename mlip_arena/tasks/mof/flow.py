@@ -284,8 +284,8 @@ def widom_insertion(
             interaction_energy = total_energy - energy_structure - energy_gas  # [eV]
 
             # Handle invalid interaction energy
-            if interaction_energy < -1.25:
-                interaction_energy = 100.0  # lead to zero boltzmann factor
+            # if interaction_energy < -1.25:
+            #    interaction_energy = 100.0  # lead to zero boltzmann factor
 
             interaction_energies[i] = interaction_energy
             boltzmann_factor = np.exp(
