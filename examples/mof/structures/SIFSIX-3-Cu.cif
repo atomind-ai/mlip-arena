@@ -1,0 +1,468 @@
+ data_SIFIX-3-Cu_Mohamed_EDDAOUDI_FMD3_KAUST
+
+#=============================================================================
+ 
+# 1. SUBMISSION DETAILS
+ 
+_publ_contact_author_name            'Prof. Mohamed EDDAOUDI'
+_publ_contact_author_address            
+; 
+Functional Material Design, development & Discovery (FMD3), Advanced Membrane &
+Porous Materials (AMPM); King Abdullah University of Science and Technology
+(KAUST), Thuwal 23955-6900, Kingdom of Saudi Arabia
+;
+_publ_contact_author_email           ' Mohamed.eddaoudi@kaust.edu.sa '
+_publ_contact_author_fax             ?
+_publ_contact_author_phone           ?
+ 
+_publ_contact_letter
+; ?
+;
+ 
+_publ_requested_journal              ' Nature Communications '
+_publ_requested_coeditor_name        ?
+_publ_requested_category             ?   # Acta C: one of CI/CM/CO/FI/FM/FO
+ 
+ 
+# Definition of non standard CIF items (Reliability indices used in FULLPROF) 
+ 
+loop_ 
+_publ_manuscript_incl_extra_item
+_publ_manuscript_incl_extra_info
+_publ_manuscript_incl_extra_defn
+#      Name                               Explanation                 Standard?
+#     ------                              -----------                 ---------
+ '_pd_proc_ls_prof_cR_factor'    'Prof. R-factor CORRECTED for background'   no
+ '_pd_proc_ls_prof_cwR_factor'   'wProf.R-factor CORRECTED for background'   no
+ '_pd_proc_ls_prof_cwR_expected' 'wProf.Expected CORRECTED for background'   no
+ '_pd_proc_ls_prof_chi2'         'Chi-square for all considered points'      no
+ '_pd_proc_ls_prof_echi2'        'Chi-2 for points with Bragg contribution'  no
+#=============================================================================
+ 
+# 3. TITLE AND AUTHOR LIST
+ 
+_publ_section_title
+; ' SIFIX-3-Cu'
+;
+_publ_section_title_footnote
+;
+;
+ 
+# The loop structure below should contain the names and addresses of all 
+# authors, in the required order of publication. Repeat as necessary.
+ 
+loop_
+    _publ_author_name
+    _publ_author_footnote
+    _publ_author_address
+?                                   #<--'Last name, first name' 
+; ?
+;
+; ?
+;
+ 
+#=============================================================================
+ 
+# 4. TEXT
+ 
+_publ_section_synopsis
+;  ?
+;
+_publ_section_abstract
+; ?
+;          
+_publ_section_comment
+; ?
+;
+_publ_section_exptl_prep      # Details of the preparation of the sample(s)
+                              # should be given here. 
+; ?
+;
+_publ_section_exptl_refinement
+; ?
+;
+_publ_section_references
+; ?
+;
+_publ_section_figure_captions
+; ?
+;
+_publ_section_acknowledgements
+; ?
+;
+ 
+#=============================================================================
+ 
+#=============================================================================
+# If more than one structure is reported, the remaining sections should be 
+# completed per structure. For each data set, replace the '?' in the
+# data_? line below by a unique identifier.
+ 
+data_SIFIX-3-Cu_Mohamed_EDDAOUDI_KAUST                    
+ 
+#=============================================================================
+ 
+# 5. CHEMICAL DATA
+ 
+_chemical_name_systematic
+; ?
+;
+_chemical_name_common             ?
+_chemical_formula_moiety          ' C8 H8 Cu F6 N4 Si '
+_chemical_formula_sum             ' C8 H8 Cu F6 N4 Si '
+_chemical_formula_weight          365.82
+ 
+loop_
+    _atom_type_symbol               
+    _atom_type_scat_Cromer_Mann_a1 
+    _atom_type_scat_Cromer_Mann_b1 
+    _atom_type_scat_Cromer_Mann_a2 
+    _atom_type_scat_Cromer_Mann_b2 
+    _atom_type_scat_Cromer_Mann_a3 
+    _atom_type_scat_Cromer_Mann_b3 
+    _atom_type_scat_Cromer_Mann_a4 
+    _atom_type_scat_Cromer_Mann_b4 
+    _atom_type_scat_Cromer_Mann_c 
+    _atom_type_scat_dispersion_real 
+    _atom_type_scat_dispersion_imag 
+    _atom_type_scat_source          
+n     12.21260   0.00570   3.13220   9.89330   2.01250  28.99750
+       1.16630   0.58260 -11.52900   0.02900   0.01800
+ International_Tables_for_Crystallography_Vol.C(1991)_Tables_6.1.1.4_and_6.1.1.5
+c      2.31000  20.84390   1.02000  10.20750   1.58860   0.56870
+       0.86500  51.65120   0.21560   0.01700   0.00900
+ International_Tables_for_Crystallography_Vol.C(1991)_Tables_6.1.1.4_and_6.1.1.5
+h      0.49300  10.51090   0.32291  26.12570   0.14019   3.14236
+       0.04081  57.79970   0.00304   0.00000   0.00000
+ International_Tables_for_Crystallography_Vol.C(1991)_Tables_6.1.1.4_and_6.1.1.5
+cu    13.33800   3.58280   7.16760   0.24700   5.61580  11.39660
+       1.67350  64.81260   1.19100  -2.01900   0.58900
+ International_Tables_for_Crystallography_Vol.C(1991)_Tables_6.1.1.4_and_6.1.1.5
+f      3.53920  10.28250   2.64120   4.29440   1.51700   0.26150
+       1.02430  26.14760   0.27760   0.06900   0.05300
+ International_Tables_for_Crystallography_Vol.C(1991)_Tables_6.1.1.4_and_6.1.1.5
+si     6.29150   2.43860   3.03530  32.33370   1.98910   0.67850
+       1.54100  81.69370   1.14070   0.24400   0.33000
+ International_Tables_for_Crystallography_Vol.C(1991)_Tables_6.1.1.4_and_6.1.1.5
+o      3.04850  13.27710   2.28680   5.70110   1.54630   0.32390
+       0.86700  32.90890   0.25080   0.04700   0.03200
+ International_Tables_for_Crystallography_Vol.C(1991)_Tables_6.1.1.4_and_6.1.1.5
+ 
+#=============================================================================
+ 
+# 6. POWDER SPECIMEN AND CRYSTAL DATA
+ 
+_symmetry_cell_setting                Tetragonal
+_symmetry_space_group_name_H-M       'P 4/m m m'
+_symmetry_space_group_name_Hall      '-P 4 2'
+ 
+loop_
+    _symmetry_equiv_pos_as_xyz   #<--must include 'x,y,z'
+'x,y,z'
+'-y,x,z'
+'-x,-y,z'
+'y,-x,z'
+'-x,y,z'
+'y,x,z'
+'x,-y,z'
+'-y,-x,z'
+'-x,-y,-z'
+'y,-x,-z'
+'x,y,-z'
+'-y,x,-z'
+'x,-y,-z'
+'-y,-x,-z'
+'-x,y,-z'
+'y,x,-z'
+ 
+_cell_length_a                       6.9186(2)
+_cell_length_b                       6.9186(2)
+_cell_length_c                       7.9061(3)
+_cell_angle_alpha                    90.00000
+_cell_angle_beta                     90.00000
+_cell_angle_gamma                    90.00000
+_cell_volume                         378.44(2)
+_cell_formula_units_Z                1
+_cell_measurement_temperature        298
+_cell_special_details
+; ?
+;
+# The next three fields give the specimen dimensions in mm.  The equatorial
+# plane contains the incident and diffracted beam.
+ 
+_pd_spec_size_axial               ?       # perpendicular to 
+                                          # equatorial plane
+_pd_spec_size_equat               ?       # parallel to 
+                                          # scattering vector
+                                          # in transmission
+_pd_spec_size_thick               ?       # parallel to 
+                                          # scattering vector
+                                          # in reflection
+ 
+# The next five fields are character fields that describe the specimen.
+ 
+_pd_spec_mounting                         # This field should be
+                                          # used to give details of the 
+                                          # container.
+; ?
+;
+_pd_spec_mount_mode               ?       # options are 'reflection'
+                                          # or 'transmission'
+_pd_spec_shape                    ?       # options are 'cylinder' 
+                                          # 'flat_sheet' or 'irregular'
+_pd_char_particle_morphology      ?
+_pd_char_colour                   ?       # use ICDD colour descriptions
+ 
+# The following three fields describe the preparation of the specimen.
+# The cooling rate is in K/min.  The pressure at which the sample was 
+# prepared is in kPa.  The temperature of preparation is in K.        
+ 
+_pd_prep_cool_rate                ?
+_pd_prep_pressure                 ?
+_pd_prep_temperature              ?
+ 
+# The next four fields are normally only needed for transmission experiments.
+ 
+_exptl_absorpt_coefficient_mu        ?
+_exptl_absorpt_correction_type       ?
+_exptl_absorpt_process_details       ?
+_exptl_absorpt_correction_T_min      ?
+_exptl_absorpt_correction_T_max      ?
+ 
+#=============================================================================
+ 
+# 7. EXPERIMENTAL DATA
+ 
+_exptl_special_details
+; ?
+;
+ 
+# The following item is used to identify the equipment used to record 
+# the powder pattern when the diffractogram was measured at a laboratory 
+# other than the authors' home institution, e.g. when neutron or synchrotron
+# radiation is used.
+ 
+_pd_instr_location
+; ?
+;
+_pd_calibration_special_details           # description of the method used
+                                          # to calibrate the instrument
+; ?
+;
+ 
+_diffrn_ambient_temperature          298 
+_diffrn_source                   'classical X-ray tube'
+_diffrn_radiation_type           'Cu K\a' 
+_diffrn_radiation_wavelength     1.5418 
+_diffrn_radiation_monochromator      ?
+_diffrn_measurement_device_type      ?
+_diffrn_measurement_method           ?
+_diffrn_detector_area_resol_mean     ?   # Not in version 2.0.1
+_diffrn_detector                     ' X PANanalytical'
+_diffrn_detector_type                ' CCD'
+_pd_meas_scan_method                 'step-scan ' 
+_pd_meas_special_details
+;  ?
+;
+ 
+#  The following four items give details of the measured (not processed)
+#  powder pattern.  Angles are in degrees.
+ 
+_pd_meas_number_of_points         1501
+_pd_meas_2theta_range_min         3.00000
+_pd_meas_2theta_range_max         78.00000
+_pd_meas_2theta_range_inc         0.050000
+ 
+#=============================================================================
+ 
+# 8. REFINEMENT DATA
+ 
+_refine_special_details
+; ?
+;
+ 
+# Use the next field to give any special details about the fitting of the
+# powder pattern.
+ 
+_pd_proc_ls_special_details
+; ?
+;
+ 
+# The next three items are given as text.
+ 
+_pd_proc_ls_profile_function      ?
+_pd_proc_ls_background_function   ?
+_pd_proc_ls_pref_orient_corr
+; ?
+;
+ 
+#  The following profile R-factors are NOT CORRECTED for background
+#  The sum is extended to all non-excluded points.
+#  These are the current CIF standard
+ 
+_pd_proc_ls_prof_R_factor                1.8180
+_pd_proc_ls_prof_wR_factor               2.7928
+_pd_proc_ls_prof_wR_expected             0.6200
+ 
+#  The following profile R-factors are CORRECTED for background
+#  The sum is extended to all non-excluded points.
+#  These items are not in the current CIF standard, but are defined above
+ 
+_pd_proc_ls_prof_cR_factor               15.1079
+_pd_proc_ls_prof_cwR_factor              12.3179
+_pd_proc_ls_prof_cwR_expected             2.7348
+ 
+#  The following items are not in the CIF standard, but are defined above
+ 
+_pd_proc_ls_prof_chi2                20.2879
+_pd_proc_ls_prof_echi2               20.7262
+ 
+#  Items related to LS refinement
+ 
+_refine_ls_R_I_factor                 5.1628
+_refine_ls_number_reflns                   192
+_refine_ls_number_parameters                91
+_refine_ls_number_restraints                 0
+_refine_ls_goodness_of_fit_all 20.7
+ 
+# The following four items apply to angular dispersive measurements.
+# 2theta minimum, maximum and increment (in degrees) are for the 
+# intensities used in the refinement.
+ 
+_pd_proc_2theta_range_min                3.1108
+_pd_proc_2theta_range_max               78.1108
+_pd_proc_2theta_range_inc              0.050000
+_pd_proc_wavelength                    1.540510
+ 
+_pd_block_diffractogram_id        ?  # The id used for the block containing
+                                     # the powder pattern profile (section 11)
+ 
+# Give appropriate details in the next two text fields.
+ 
+_pd_proc_info_excluded_regions    ?
+_pd_proc_info_data_reduction      ?
+ 
+# The following items are used to identify the programs used.
+ 
+_computing_cell_refinement           'McMaille (Le Bail, 2004)'
+_computing_structure_solution        'ESPOIR (Le Bail, 2001)'
+_computing_structure_refinement      'FULLPROF (Rodriguez-Carvajal, 1993)'
+_computing_molecular_graphics        'DIAMOND, '
+_computing_publication_material      'PLATON (Spek, 2003)'
+ 
+#=============================================================================
+ 
+# 9. ATOMIC COORDINATES AND DISPLACEMENT PARAMETERS
+ 
+loop_
+    _atom_site_label
+    _atom_site_fract_x
+    _atom_site_fract_y
+    _atom_site_fract_z
+    _atom_site_U_iso_or_equiv
+    _atom_site_occupancy
+    _atom_site_adp_type              # Not in version 2.0.1
+    _atom_site_type_symbol
+ N1  0.50000  0.217(2)  0.50000  0.099(8)  1.00000 Uiso N   
+ C1  0.50000  0.0893(1)  0.3843(1)  0.121(1)  1.00000 Uiso C   
+ H1  0.50000  0.14010  0.27980  0.1665  1.00000 Uiso H   
+ Cu1  0.50000  0.50000  0.50000  0.098(3)  1.00000 Uiso Cu  
+ F1  0.50000  0.50000  0.232(3)  0.119(8)  1.00000 Uiso F   
+ F2  0.3313(15)  0.3313(15)  0.00000  0.204(8)  1.00000 Uiso F   
+ Si1  0.50000  0.50000  0.00000  0.158(7)  1.00000 Uiso Si  
+
+ 
+# Note: if the displacement parameters were refined anisotropically
+# the U matrices should be given as for single-crystal studies.
+ 
+#=============================================================================
+ 
+## 10. DISTANCES AND ANGLES / MOLECULAR GEOMETRY 
+ 
+_geom_special_details                ?
+ 
+loop_
+_geom_bond_atom_site_label_1
+_geom_bond_atom_site_label_2
+_geom_bond_distance
+_geom_bond_site_symmetry_1
+_geom_bond_site_symmetry_2
+_geom_bond_publ_flag
+ Cu1     F1        2.12(1)                     .       .                   no
+ Cu1     N1        1.96(1)                     .       .                   no
+ Si1     F1        1.83(1)                     .       .                   no
+ Si1     F2        1.65(1)                     .     .                 no
+ N1      C1        1.27(1)                     .     .                 no
+ C1      C1        1.235(1)                     .     3_655                 no
+ C1      H1           0.9000                     .       .                   no
+
+ 
+loop_
+_geom_angle_atom_site_label_1
+_geom_angle_atom_site_label_2
+_geom_angle_atom_site_label_3
+_geom_angle
+_geom_angle_site_symmetry_1
+_geom_angle_site_symmetry_2
+_geom_angle_site_symmetry_3
+_geom_angle_publ_flag
+ F1      Cu1     N1            90.00             .       .       .           no
+ F1      Cu1     F1           180.00             .       .     .         no
+ N1      Cu1     N1            90.00             .       .     2_655         no
+ N1      Cu1     N1           180.00             .       .     3_665         no
+ F1      Si1     F2            90.00             .       .       .           no
+ F1      Si1     F1           180.00             .       .     .         no
+ Cu1     F1      Si1          180.00             .       .       .           no
+ Cu1     N1      C1           134.0(3)             .       .       .           no
+ C1      N1      C1            91.99             .       .     .         no
+ N1      C1      H1           113.00             .       .       .           no
+ C1      C1      H1           113.00           3_655     .       .           no
+
+ 
+ 
+loop_
+_geom_torsion_atom_site_label_1 
+_geom_torsion_atom_site_label_2 
+_geom_torsion_atom_site_label_3 
+_geom_torsion_atom_site_label_4 
+_geom_torsion_site_symmetry_1   
+_geom_torsion_site_symmetry_2   
+_geom_torsion_site_symmetry_3   
+_geom_torsion_site_symmetry_4   
+_geom_torsion                   
+_geom_torsion_publ_flag         
+?   ?   ?   ?   ?   ?   ?   ?   ?   ?
+ 
+loop_
+_geom_hbond_atom_site_label_D 
+_geom_hbond_atom_site_label_H 
+_geom_hbond_atom_site_label_A 
+_geom_hbond_site_symmetry_D   
+_geom_hbond_site_symmetry_H   
+_geom_hbond_site_symmetry_A   
+_geom_hbond_distance_DH       
+_geom_hbond_distance_HA       
+_geom_hbond_distance_DA       
+_geom_hbond_angle_DHA         
+_geom_hbond_publ_flag         
+?   ?   ?   ?   ?   ?   ?   ?   ?   ?   ?
+ 
+#=============================================================================
+ 
+#=============================================================================
+# Additional structures (last six sections and associated data_? identifiers) 
+# may be added at this point.                                                 
+#=============================================================================
+ 
+# The following lines are used to test the character set of files sent by     
+# network email or other means. They are not part of the CIF data set.        
+# abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789              
+# !@#$%^&*()_+{}:"~<>?|\-=[];'`,./ 
+
+# start Validation Reply Form
+_vrf_PLAT601_SIFIX-3-Cu_Mohamed_EDDAOUDI_KAUST
+;
+PROBLEM: Structure Contains Solvent Accessible VOIDS of .        108 Ang3  
+RESPONSE: Highly disordered water molecules are localized within channels. 
+;
+# end Validation Reply Form
