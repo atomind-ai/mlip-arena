@@ -31,23 +31,19 @@ dependencies=[
     "torch_dftd>=0.4.0",
     "huggingface_hub",
     "datasets",
-    "torch-geometric",
     "safetensors",
     "pymatgen",
-]
-
-[project.optional-dependencies]
-run = [
-    "prefect>=3.0.4,<3.1.0",
+    "prefect>3.1.0",
     "prefect-dask",
     "dask",
     "dask_jobqueue",
     "tables",
 ]
+
+[project.optional-dependencies]
 app = [
     "streamlit==1.38.0",
     "plotly",
-    "bokeh==2.4.3",
     "statsmodels"
 ]
 test = [
@@ -65,11 +61,11 @@ test = [
     "mattersim==1.0.0rc9",
     "pytest",
     "pytest-xdist",
-    "prefect>=3.0.4,<3.1.0",
+    "prefect==3.1.11",
     "pymatgen@git+https://github.com/chiang-yuan/pymatgen" # hotfix for deprecated pymatgen property https://github.com/materialsproject/pymatgen/pull/4242
 ]
 mace = [
-    "mace-torch==0.3.4",
+    "mace-torch==0.3.9",
 ]
 deepmd = [
     "deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git@v3.0.0b4"
