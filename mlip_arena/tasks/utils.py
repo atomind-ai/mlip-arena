@@ -6,8 +6,6 @@ from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 
 from ase.calculators.calculator import Calculator
 from ase.calculators.mixing import SumCalculator
-from ase.filters import *  # type: ignore
-from ase.optimize import *  # type: ignore
 from mlip_arena.models import MLIPEnum
 from mlip_arena.models.utils import get_freer_device
 
