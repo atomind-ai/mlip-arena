@@ -24,11 +24,6 @@ leaderboard = st.Page(
     "leaderboard.py", title="Leaderboard", icon=":material/trophy:", default=True
 )
 
-search = st.Page("tools/search.py", title="Search", icon=":material/search:")
-history = st.Page("tools/history.py", title="History", icon=":material/history:")
-ptable = st.Page("tools/ptable.py", title="Periodic table", icon=":material/gradient:")
-
-
 nav = defaultdict(list)
 nav[""].append(leaderboard)
 
