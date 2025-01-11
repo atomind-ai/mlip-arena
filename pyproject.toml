@@ -62,13 +62,13 @@ test = [
     "pytest",
     "pytest-xdist",
     "prefect==3.1.11",
-    "pymatgen@git+https://github.com/chiang-yuan/pymatgen" # hotfix for deprecated pymatgen property https://github.com/materialsproject/pymatgen/pull/4242
+    "pymatgen>=2025.1.9"
 ]
 mace = [
     "mace-torch==0.3.9",
 ]
 deepmd = [
-    "deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git@v3.0.0b4"
+    "deepmd-kit==v3.0.1"
 ]
 
 [project.urls]
