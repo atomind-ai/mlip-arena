@@ -9,15 +9,13 @@ from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.eos import run as EOS
 
 
-@flow
+@flow(persist_result=True)
 def single_eos_flow(calculator_name, concurrent=True, cache=False):
     atoms = bulk("Cu", "fcc", a=3.6)
 
-    EOS_ = EOS.with_options(
+    return EOS.with_options(
         refresh_cache=not cache,
-    )
-    
-    return EOS_(
+    )(
         atoms=atoms,
         calculator_name=calculator_name,
         calculator_kwargs={},
@@ -32,7 +30,6 @@ def single_eos_flow(calculator_name, concurrent=True, cache=False):
         max_abs_strain=0.1,
         npoints=6,
         concurrent=concurrent,
-        cache_opt=cache
     )
 
 
