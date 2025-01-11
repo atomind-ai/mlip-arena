@@ -68,8 +68,7 @@ mace = [
     "mace-torch==0.3.9",
 ]
 deepmd = [
-    "torch==2.2.0",
-    "deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git@v3.0.0b4"
+    "deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git#egg=0b3f860424550dcec0cdda012138fb9eafcaba92"
 ]
 
 [project.urls]
