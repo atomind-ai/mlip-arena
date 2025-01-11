@@ -54,8 +54,6 @@ def run(
     max_abs_strain: float = 0.1,
     npoints: int = 11,
     concurrent: bool = True,
-    persist_opt: bool = True,
-    cache_opt: bool = True,
 ) -> dict[str, Any] | State:
     """
     Compute the equation of state (EOS) for the given atoms and calculator.
@@ -80,12 +78,7 @@ def run(
         A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy if successful. Otherwise, a prefect state object.
     """
 
-    OPT_ = OPT.with_options(
-        refresh_cache=not cache_opt,
-        persist_result=persist_opt,
-    )
-
-    state = OPT_(
+    state = OPT(
         atoms=atoms,
         calculator_name=calculator_name,
         calculator_kwargs=calculator_kwargs,
@@ -119,7 +112,7 @@ def run(
             atoms = relaxed.copy()
             atoms.set_cell(c0 * f, scale_atoms=True)
 
-            future = OPT_.submit(
+            future = OPT.submit(
                 atoms=atoms,
                 calculator_name=calculator_name,
                 calculator_kwargs=calculator_kwargs,
@@ -145,7 +138,7 @@ def run(
             atoms = relaxed.copy()
             atoms.set_cell(c0 * f, scale_atoms=True)
 
-            state = OPT_(
+            state = OPT(
                 atoms=atoms,
                 calculator_name=calculator_name,
                 calculator_kwargs=calculator_kwargs,
