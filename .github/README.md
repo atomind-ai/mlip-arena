@@ -33,7 +33,7 @@ bash scripts/install-dgl.sh
 pip install -e .[test]
 pip install -e .[mace]
 # DeePMD
-DP_ENABLE_TENSORFLOW=0 pip install -e .[deepmd]
+DP_ENABLE_TENSORFLOW=0 pip install deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git@v3.0.0b4
 ```
 
 ## Contribute

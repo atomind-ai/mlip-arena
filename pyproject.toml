@@ -67,9 +67,6 @@ test = [
 mace = [
     "mace-torch==0.3.9",
 ]
-deepmd = [
-    "deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git#egg=0b3f860424550dcec0cdda012138fb9eafcaba92"
-]
 
 [project.urls]
 Homepage = "https://github.com/atomind-ai/mlip-arena"
