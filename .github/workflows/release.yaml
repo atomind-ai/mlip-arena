@@ -1,9 +1,10 @@
 name: Publish Release
 
 on:
-  push:
-    branches:
-      - main  # Trigger on push to main branch
+  workflow_run:
+    workflows: [Python Test]
+    types: [completed]
+  workflow_dispatch:
 
 permissions:
   contents: write  # Ensure write access to push tags

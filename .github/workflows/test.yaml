@@ -44,7 +44,7 @@ jobs:
         uv pip install dgl -f https://data.dgl.ai/wheels/torch-${TORCH}/${CUDA}/repo.html
         uv pip install -e .[test]
         uv pip install -e .[mace]
-        uv pip install deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git@v3.0.0b4
+        uv pip install -e .[deepmd]
 
     - name: List dependencies
       run: pip list

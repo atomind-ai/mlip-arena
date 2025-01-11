@@ -1,11 +1,9 @@
 name: Sync to Hugging Face hub
 
 on:
-  workflows: ["Python Test"]
-    types:
-      - completed
-
-  # to run this workflow manually from the Actions tab
+  workflow_run:
+    workflows: [Python Test]
+    types: [completed]
   workflow_dispatch:
 
 jobs:
