@@ -109,6 +109,29 @@ jobs:
           echo "Version bumped. Proceeding."
           echo "version_bumped=true" >> $GITHUB_ENV
         fi
+    
+    # Step 5: Remove problematic optional dependencies
+    - name: Strip problematic optional dependencies
+      run: |
+        python - <<EOF
+        import toml
+        from pathlib import Path
+
+        pyproject_path = Path("pyproject.toml")
+        data = toml.loads(pyproject_path.read_text())
+        
+        # Process optional dependencies
+        optional_deps = data.get("project", {}).get("optional-dependencies", {})
+        for key, deps in optional_deps.items():
+            new_deps = []
+            for dep in deps:
+                if "@git" in dep:
+                    dep = dep.split("@git")[0].strip()  # Remove everything after "@git"
+                new_deps.append(dep)
+            optional_deps[key] = new_deps
+            
+        pyproject_path.write_text(toml.dumps(data))
+        EOF
 
     # Step 7: Install Flit (only if version bumped)
     - name: Install Flit
