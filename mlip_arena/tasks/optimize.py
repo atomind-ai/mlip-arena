@@ -15,7 +15,8 @@ from ase.filters import Filter
 from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
 from mlip_arena.models import MLIPEnum
-from mlip_arena.tasks.utils import get_calculator
+from mlip_arena.tasks.utils import get_calculator, logger, pformat
+
 
 _valid_filters: dict[str, Filter] = {
     "Filter": Filter,
@@ -94,16 +95,20 @@ def run(
 
     if isinstance(filter, type) and issubclass(filter, Filter):
         filter_instance = filter(atoms, **filter_kwargs)
-        print(f"Using filter: {filter_instance}")
+        logger.info(f"Using filter: {filter_instance}")
+        logger.info(pformat(filter_kwargs))
 
-        optimizer_instance = optimizer(atoms, **optimizer_kwargs)
-        print(f"Using optimizer: {optimizer_instance}")
+        optimizer_instance = optimizer(filter_instance, **optimizer_kwargs)
+        logger.info(f"Using optimizer: {optimizer_instance}")
+        logger.info(pformat(optimizer_kwargs))
+        logger.info(f"Criterion: {pformat(criterion)}")
 
         optimizer_instance.run(**criterion)
-
     elif filter is None:
         optimizer_instance = optimizer(atoms, **optimizer_kwargs)
-        print(f"Using optimizer: {optimizer_instance}")
+        logger.info(f"Using optimizer: {optimizer_instance}")
+        logger.info(pformat(optimizer_kwargs))
+        logger.info(f"Criterion: {pformat(criterion)}")
         optimizer_instance.run(**criterion)
 
     return {
