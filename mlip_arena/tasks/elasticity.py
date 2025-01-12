@@ -48,8 +48,6 @@ from prefect.runtime import task_run
 from prefect.states import State
 
 from ase import Atoms
-from ase.filters import *  # type: ignore
-from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
@@ -81,6 +79,8 @@ def run(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
     calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     device: str | None = None,
     optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
     optimizer_kwargs: dict | None = None,
@@ -90,7 +90,7 @@ def run(
     normal_strains: list[float] | np.ndarray | None = np.linspace(-0.01, 0.01, 4),
     shear_strains: list[float] | np.ndarray | None = np.linspace(-0.06, 0.06, 4),
     persist_opt: bool = True,
-    cache_opt: bool = True,
+    cache_opt: bool = False,
 ) -> dict[str, Any] | State:
     """
     Compute the elastic tensor for the given structure and calculator.
@@ -124,6 +124,8 @@ def run(
         atoms=atoms,
         calculator_name=calculator_name,
         calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
         device=device,
         optimizer=optimizer,
         optimizer_kwargs=optimizer_kwargs,

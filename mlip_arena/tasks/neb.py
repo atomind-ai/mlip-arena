@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
 
 from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
@@ -54,11 +54,8 @@ from ase.optimize.optimize import Optimizer
 from ase.utils.forcecurve import fit_images
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import get_calculator
+from mlip_arena.tasks.utils import get_calculator, logger, pformat
 from pymatgen.io.ase import AseAtomsAdaptor
-
-if TYPE_CHECKING:
-    pass
 
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
@@ -85,7 +82,7 @@ def _generate_task_run_name():
         atoms = parameters["start"]
     else:
         raise ValueError("No images or start atoms found in parameters")
-    
+
     calculator_name = parameters["calculator_name"]
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
@@ -100,7 +97,7 @@ def run(
     images: list[Atoms],
     calculator_name: str | MLIPEnum,
     calculator_kwargs: dict | None = None,
-    dispersion: str | None = None,
+    dispersion: bool = False,
     dispersion_kwargs: dict | None = None,
     device: str | None = None,
     optimizer: Optimizer | str = "MDMin",  # type: ignore
@@ -155,7 +152,9 @@ def run(
     criterion = criterion or {}
 
     optimizer_instance = optimizer(neb, trajectory=traj_file, **optimizer_kwargs)  # type: ignore
-
+    logger.info(f"Using optimizer: {optimizer_instance}")
+    logger.info(pformat(optimizer_kwargs))
+    logger.info(f"Criterion: {pformat(criterion)}")
     optimizer_instance.run(**criterion)
 
     neb_tool = NEBTools(neb.images)
@@ -168,11 +167,11 @@ def run(
 
 
 @task(
-    name="NEB from end points",
+    name="NEB from endpoints",
     task_run_name=_generate_task_run_name,
     cache_policy=TASK_SOURCE + INPUTS,
 )
-def run_from_end_points(
+def run_from_endpoints(
     start: Atoms,
     end: Atoms,
     n_images: int,
@@ -188,6 +187,7 @@ def run_from_end_points(
     interpolation: Literal["linear", "idpp"] = "idpp",
     climb: bool = True,
     traj_file: str | Path | None = None,
+    cache_subtasks: bool = False,
 ) -> dict[str, Any] | State:
     """Run the nudged elastic band (NEB) calculation from end points.
 
@@ -212,7 +212,9 @@ def run_from_end_points(
     """
 
     if relax_end_points:
-        relax = OPT(
+        relax = OPT.with_options(
+            refresh_cache=not cache_subtasks,
+        )(
             atoms=start.copy(),
             calculator_name=calculator_name,
             calculator_kwargs=calculator_kwargs,
@@ -225,7 +227,9 @@ def run_from_end_points(
         )
         start = relax["atoms"]
 
-        relax = OPT(
+        relax = OPT.with_options(
+            refresh_cache=not cache_subtasks,
+        )(
             atoms=end.copy(),
             calculator_name=calculator_name,
             calculator_kwargs=calculator_kwargs,
@@ -250,9 +254,11 @@ def run_from_end_points(
         )
     )
 
-    images = [s.to_ase_atoms() for s in path]
+    images = [s.to_ase_atoms(msonable=False) for s in path]
 
-    return run(
+    return run.with_options(
+        refresh_cache=not cache_subtasks,
+    )(
         images,
         calculator_name,
         calculator_kwargs=calculator_kwargs,

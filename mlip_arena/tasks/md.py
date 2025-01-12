@@ -198,14 +198,12 @@ def _generate_task_run_name():
     name="MD",
     task_run_name=_generate_task_run_name,
     cache_policy=TASK_SOURCE + INPUTS
-    # cache_key_fn=task_input_hash,
-    # cache_expiration=timedelta(days=1)
 )
 def run(
     atoms: Atoms,
     calculator_name: str | MLIPEnum,
     calculator_kwargs: dict | None,
-    dispersion: str | None = None,
+    dispersion: bool = False,
     dispersion_kwargs: dict | None = None,
     device: str | None = None,
     ensemble: Literal["nve", "nvt", "npt"] = "nvt",
