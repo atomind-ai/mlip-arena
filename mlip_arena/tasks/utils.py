@@ -21,7 +21,7 @@ from pprint import pformat
 
 
 def get_calculator(
-    calculator_name: str | MLIPEnum,
+    calculator_name: str | MLIPEnum | Calculator,
     calculator_kwargs: dict | None,
     dispersion: bool = False,
     dispersion_kwargs: dict | None = None,
@@ -30,7 +30,7 @@ def get_calculator(
     """Get a calculator with optional dispersion correction."""
     device = device or str(get_freer_device())
 
-    logger.info(f"Using device: {device}")
+    logger.info("Using device: %s", device)
 
     calculator_kwargs = calculator_kwargs or {}
 
@@ -39,10 +39,13 @@ def get_calculator(
         calc = calculator_name.value(**calculator_kwargs)
     elif isinstance(calculator_name, str) and hasattr(MLIPEnum, calculator_name):
         calc = MLIPEnum[calculator_name].value(**calculator_kwargs)
+    elif isinstance(calculator_name, Calculator):
+        logger.warning("Using custom calculator: {calculator_name}")
+        calc = calculator_name
     else:
         raise ValueError(f"Invalid calculator: {calculator_name}")
 
-    logger.info(f"Using calculator: {calc}")
+    logger.info("Using calculator: %s", calc)
     if calculator_kwargs:
         logger.info(pformat(calculator_kwargs))
 
@@ -58,7 +61,7 @@ def get_calculator(
         )
         calc = SumCalculator([calc, disp_calc])
 
-        logger.info(f"Using dispersion: {disp_calc}")
+        logger.info("Using dispersion: %s", disp_calc)
         if dispersion_kwargs:
             logger.info(pformat(dispersion_kwargs))
 
