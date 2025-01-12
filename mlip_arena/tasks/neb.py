@@ -57,6 +57,7 @@ from mlip_arena.tasks.optimize import run as OPT
 from mlip_arena.tasks.utils import get_calculator
 from pymatgen.io.ase import AseAtomsAdaptor
 
+
 if TYPE_CHECKING:
     pass
 
@@ -100,7 +101,7 @@ def run(
     images: list[Atoms],
     calculator_name: str | MLIPEnum,
     calculator_kwargs: dict | None = None,
-    dispersion: str | None = None,
+    dispersion: bool = False,
     dispersion_kwargs: dict | None = None,
     device: str | None = None,
     optimizer: Optimizer | str = "MDMin",  # type: ignore
@@ -159,11 +160,16 @@ def run(
     optimizer_instance.run(**criterion)
 
     neb_tool = NEBTools(neb.images)
+    barrier = neb_tool.get_barrier()
+
+    forcefit = fit_images(neb.images)
+
+    images = neb.images
 
     return {
-        "barrier": neb_tool.get_barrier(),
-        "images": neb.images,
-        "forcefit": fit_images(neb.images),
+        "barrier": barrier,
+        "images": images,
+        "forcefit": forcefit,
     }
 
 
@@ -188,6 +194,7 @@ def run_from_end_points(
     interpolation: Literal["linear", "idpp"] = "idpp",
     climb: bool = True,
     traj_file: str | Path | None = None,
+    cache_subtasks: bool = False,
 ) -> dict[str, Any] | State:
     """Run the nudged elastic band (NEB) calculation from end points.
 
@@ -212,7 +219,9 @@ def run_from_end_points(
     """
 
     if relax_end_points:
-        relax = OPT(
+        relax = OPT.with_options(
+            refresh_cache=not cache_subtasks,
+        )(
             atoms=start.copy(),
             calculator_name=calculator_name,
             calculator_kwargs=calculator_kwargs,
@@ -225,7 +234,9 @@ def run_from_end_points(
         )
         start = relax["atoms"]
 
-        relax = OPT(
+        relax = OPT.with_options(
+            refresh_cache=not cache_subtasks,
+        )(
             atoms=end.copy(),
             calculator_name=calculator_name,
             calculator_kwargs=calculator_kwargs,
@@ -252,7 +263,9 @@ def run_from_end_points(
 
     images = [s.to_ase_atoms() for s in path]
 
-    return run(
+    return run.with_options(
+        refresh_cache=not cache_subtasks,
+    )(
         images,
         calculator_name,
         calculator_kwargs=calculator_kwargs,

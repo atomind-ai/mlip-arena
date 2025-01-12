@@ -17,8 +17,6 @@ from prefect.runtime import task_run
 from prefect.states import State
 
 from ase import Atoms
-from ase.filters import *  # type: ignore
-from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
@@ -54,6 +52,7 @@ def run(
     max_abs_strain: float = 0.1,
     npoints: int = 11,
     concurrent: bool = True,
+    cache_opt: bool = False,
 ) -> dict[str, Any] | State:
     """
     Compute the equation of state (EOS) for the given atoms and calculator.
@@ -78,7 +77,12 @@ def run(
         A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy if successful. Otherwise, a prefect state object.
     """
 
-    state = OPT(
+    OPT_ = OPT.with_options(
+        refresh_cache=not cache_opt,
+        persist_result=cache_opt,
+    )
+
+    state = OPT_(
         atoms=atoms,
         calculator_name=calculator_name,
         calculator_kwargs=calculator_kwargs,
@@ -112,7 +116,7 @@ def run(
             atoms = relaxed.copy()
             atoms.set_cell(c0 * f, scale_atoms=True)
 
-            future = OPT.submit(
+            future = OPT_.submit(
                 atoms=atoms,
                 calculator_name=calculator_name,
                 calculator_kwargs=calculator_kwargs,
@@ -138,7 +142,7 @@ def run(
             atoms = relaxed.copy()
             atoms.set_cell(c0 * f, scale_atoms=True)
 
-            state = OPT(
+            state = OPT_(
                 atoms=atoms,
                 calculator_name=calculator_name,
                 calculator_kwargs=calculator_kwargs,

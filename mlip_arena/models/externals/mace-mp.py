@@ -11,7 +11,7 @@ from mlip_arena.models.utils import get_freer_device
 class MACE_MP_Medium(MACECalculator):
     def __init__(
         self,
-        checkpoint="http://tinyurl.com/5yyxdm76",
+        checkpoint="https://github.com/ACEsuit/mace-mp/releases/download/mace_mp_0/2023-12-03-mace-128-L1_epoch-199.model",
         device: str | None = None,
         default_dtype="float32",
         **kwargs,
