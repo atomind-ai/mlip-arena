@@ -90,7 +90,7 @@ def run(
     normal_strains: list[float] | np.ndarray | None = np.linspace(-0.01, 0.01, 4),
     shear_strains: list[float] | np.ndarray | None = np.linspace(-0.06, 0.06, 4),
     persist_opt: bool = True,
-    cache_opt: bool = True,
+    cache_opt: bool = False,
 ) -> dict[str, Any] | State:
     """
     Compute the elastic tensor for the given structure and calculator.
