@@ -6,7 +6,17 @@ from huggingface_hub import HfApi, HfFileSystem, hf_hub_download
 from mlip_arena.models import MLIP
 from mlip_arena.models import REGISTRY as MODEL_REGISTRY
 
-with open(Path(__file__).parent / "registry.yaml") as f:
+
+from .elasticity import run as ELASTICITY
+from .eos import run as EOS
+from .md import run as MD
+from .neb import run as NEB
+from .neb import run_from_endpoints as NEB_FROM_ENDPOINTS
+from .optimize import run as OPT
+
+__all__ = ["OPT", "EOS", "MD", "NEB", "NEB_FROM_ENDPOINTS", "ELASTICITY"]
+
+with open(Path(__file__).parent / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
 
 

@@ -167,11 +167,11 @@ def run(
 
 
 @task(
-    name="NEB from end points",
+    name="NEB from endpoints",
     task_run_name=_generate_task_run_name,
     cache_policy=TASK_SOURCE + INPUTS,
 )
-def run_from_end_points(
+def run_from_endpoints(
     start: Atoms,
     end: Atoms,
     n_images: int,
