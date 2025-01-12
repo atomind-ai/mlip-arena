@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
 
 from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
@@ -54,12 +54,8 @@ from ase.optimize.optimize import Optimizer
 from ase.utils.forcecurve import fit_images
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import get_calculator
+from mlip_arena.tasks.utils import get_calculator, logger, pformat
 from pymatgen.io.ase import AseAtomsAdaptor
-
-
-if TYPE_CHECKING:
-    pass
 
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
@@ -86,7 +82,7 @@ def _generate_task_run_name():
         atoms = parameters["start"]
     else:
         raise ValueError("No images or start atoms found in parameters")
-    
+
     calculator_name = parameters["calculator_name"]
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
@@ -156,20 +152,17 @@ def run(
     criterion = criterion or {}
 
     optimizer_instance = optimizer(neb, trajectory=traj_file, **optimizer_kwargs)  # type: ignore
-
+    logger.info(f"Using optimizer: {optimizer_instance}")
+    logger.info(pformat(optimizer_kwargs))
+    logger.info(f"Criterion: {pformat(criterion)}")
     optimizer_instance.run(**criterion)
 
     neb_tool = NEBTools(neb.images)
-    barrier = neb_tool.get_barrier()
-
-    forcefit = fit_images(neb.images)
-
-    images = neb.images
 
     return {
-        "barrier": barrier,
-        "images": images,
-        "forcefit": forcefit,
+        "barrier": neb_tool.get_barrier(),
+        "images": neb.images,
+        "forcefit": fit_images(neb.images),
     }
 
 
@@ -261,7 +254,7 @@ def run_from_end_points(
         )
     )
 
-    images = [s.to_ase_atoms() for s in path]
+    images = [s.to_ase_atoms(msonable=False) for s in path]
 
     return run.with_options(
         refresh_cache=not cache_subtasks,
