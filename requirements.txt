@@ -3,10 +3,11 @@ plotly
 numpy
 scipy
 ase==3.23.0
-torch==2.2.1
-pymatgen==2024.4.13
+torch==2.2.0
+pymatgen==2025.1.9
 bokeh
 bokeh_sampledata
 statsmodels==0.14.2
+prefect==3.1.11
 # py3Dmol==2.0.0.post2
 # stmol==0.0.9
