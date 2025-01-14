@@ -28,11 +28,13 @@ def get_calculator(
     device: str | None = None,
 ) -> Calculator | SumCalculator:
     """Get a calculator with optional dispersion correction."""
+
     device = device or str(get_freer_device())
 
-    logger.info(f"Using device: {device}")
-
     calculator_kwargs = calculator_kwargs or {}
+    calculator_kwargs.update({"device": device})
+
+    logger.info(f"Using device: {device}")
 
     if isinstance(calculator_name, MLIPEnum) and calculator_name in MLIPEnum:
         calc = calculator_name.value(**calculator_kwargs)
