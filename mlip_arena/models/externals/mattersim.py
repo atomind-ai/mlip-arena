@@ -24,13 +24,21 @@ class MatterSim(MatterSimCalculator):
             load_path=checkpoint, device=str(device or get_freer_device()), **kwargs
         )
 
-    def calculate(
-        self,
-        atoms: Atoms | None = None,
-        properties: list | None = None,
-        system_changes: list | None = None,
-    ):
-        super().calculate(atoms, properties, system_changes)
+    def __getstate__(self):
+        state = self.__dict__.copy()
+
+        # BUG: remove unpicklizable potential
+        state.pop("potential", None)
+
+        return state
+
+    # def calculate(
+    #     self,
+    #     atoms: Atoms | None = None,
+    #     properties: list | None = None,
+    #     system_changes: list | None = None,
+    # ):
+    #     super().calculate(atoms, properties, system_changes)
 
         # # convert unpicklizable atoms back to picklizable atoms to avoid prefect pickling error
         # if isinstance(self.atoms, MSONAtoms):
