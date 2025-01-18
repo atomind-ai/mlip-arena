@@ -113,4 +113,5 @@ def run(
 
     return {
         "atoms": atoms,
+        "nsteps": optimizer_instance.nsteps
     }
