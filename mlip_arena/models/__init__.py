@@ -11,6 +11,13 @@ from ase.calculators.calculator import Calculator, all_changes
 from huggingface_hub import PyTorchModelHubMixin
 from torch import nn
 
+try:
+    from prefect.logging import get_run_logger
+
+    logger = get_run_logger()
+except (ImportError, RuntimeError):
+    from loguru import logger
+
 # from torch_geometric.data import Data
 
 with open(Path(__file__).parent / "registry.yaml", encoding="utf-8") as f:
@@ -23,7 +30,7 @@ for model, metadata in REGISTRY.items():
         module = importlib.import_module(f"{__package__}.{metadata['module']}.{metadata['family']}")
         MLIPMap[model] = getattr(module, metadata["class"])
     except (ModuleNotFoundError, AttributeError, ValueError) as e:
-        print(e)
+        logger.warning(e)
         continue
 
 MLIPEnum = Enum("MLIPEnum", MLIPMap)
@@ -35,7 +42,7 @@ class MLIP(
 ):
     def __init__(self, model: nn.Module) -> None:
         super().__init__()
-        self.model = model
+        self.model = torch.compile(model)
 
     def forward(self, x):
         return self.model(x)
@@ -47,7 +54,7 @@ class MLIPCalculator(MLIP, Calculator):
 
     def __init__(
         self,
-        model,
+        model: nn.Module,
         # ASE Calculator
         restart=None,
         atoms=None,
@@ -65,6 +72,15 @@ class MLIPCalculator(MLIP, Calculator):
         # )
         # self.model: MLIP = MLIP.from_pretrained(model_path, map_location=self.device)
         # self.implemented_properties = ["energy", "forces", "stress"]
+    
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state["_modules"]["model"] = state["_modules"]["model"]._orig_mod
+        return state
+    
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.model = torch.compile(state["_modules"]["model"])
 
     def calculate(
         self,
@@ -75,7 +91,11 @@ class MLIPCalculator(MLIP, Calculator):
         """Calculate energies and forces for the given Atoms object"""
         super().calculate(atoms, properties, system_changes)
 
+        # TODO: move collate_fn to here in MLIPCalculator
+
         output = self.forward(atoms)
+
+        # TODO: decollate_fn
 
         self.results = {}
         if "energy" in properties:
@@ -85,13 +105,14 @@ class MLIPCalculator(MLIP, Calculator):
         if "stress" in properties:
             self.results["stress"] = output["stress"].squeeze().cpu().detach().numpy()
 
-    def forward(self, x: Atoms) -> dict[str, torch.Tensor]:
-        """Implement data conversion, graph creation, and model forward pass
+    # def forward(self, x: Atoms) -> dict[str, torch.Tensor]:
+    #     """Implement data conversion, graph creation, and model forward pass
 
-        Example implementation:
-        1. Use `ase.neighborlist.NeighborList` to get neighbor list
-        2. Create `torch_geometric.data.Data` object and copy the data
-        3. Pass the `Data` object to the model and return the output
+    #     Example implementation:
+    #     1. Use `ase.neighborlist.NeighborList` to get neighbor list
+    #     2. Create `torch_geometric.data.Data` object and copy the data
+    #     3. Pass the `Data` object to the model and return the output
 
-        """
-        raise NotImplementedError
+    #     """
+
+    #     raise NotImplementedError

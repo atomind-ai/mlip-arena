@@ -84,6 +84,7 @@ MatterSim:
     - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
+    - stability
   github: https://github.com/microsoft/mattersim
   doi: https://arxiv.org/abs/2405.04967
   date: 2024-12-05
@@ -264,6 +265,7 @@ ALIGNN:
     - MP22
   gpu-tasks:
     - homonuclear-diatomics
+    - stability
     # - combustion
   prediction: EFS
   nvt: true
@@ -309,6 +311,7 @@ ORBv2:
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
+    - stability
   github: https://github.com/orbital-materials/orb-models
   doi: 
   date: 2024-10-15
