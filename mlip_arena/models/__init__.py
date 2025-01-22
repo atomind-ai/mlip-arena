@@ -5,11 +5,15 @@ from enum import Enum
 from pathlib import Path
 
 import torch
+import torch._dynamo.config
 import yaml
 from ase import Atoms
 from ase.calculators.calculator import Calculator, all_changes
 from huggingface_hub import PyTorchModelHubMixin
 from torch import nn
+
+from mlip_arena.models.utils import get_freer_device
+from mlip_arena.data.collate import collate_fn
 
 try:
     from prefect.logging import get_run_logger
@@ -35,6 +39,9 @@ for model, metadata in REGISTRY.items():
 
 MLIPEnum = Enum("MLIPEnum", MLIPMap)
 
+# https://github.com/pytorch/pytorch/blob/3cbc8c54fd37eb590e2a9206aecf3ab568b3e63c/torch/_dynamo/config.py#L534
+# torch._dynamo.config.compiled_autograd = True
+
 class MLIP(
     nn.Module,
     PyTorchModelHubMixin,
@@ -42,7 +49,8 @@ class MLIP(
 ):
     def __init__(self, model: nn.Module) -> None:
         super().__init__()
-        self.model = torch.compile(model)
+        # self.model = torch.compile(model)
+        self.model = model
 
     def forward(self, x):
         return self.model(x)
@@ -55,6 +63,8 @@ class MLIPCalculator(MLIP, Calculator):
     def __init__(
         self,
         model: nn.Module,
+        device: torch.device | None = None,
+        cutoff: float = 6.0,
         # ASE Calculator
         restart=None,
         atoms=None,
@@ -67,20 +77,23 @@ class MLIPCalculator(MLIP, Calculator):
         )  # Initialize ASE Calculator part
         # Additional initialization if needed
         # self.name: str = self.__class__.__name__
+        self.device = device or get_freer_device()
+        self.cutoff = cutoff
+        self.model.to(self.device)
         # self.device = device or torch.device(
         #     "cuda" if torch.cuda.is_available() else "cpu"
         # )
         # self.model: MLIP = MLIP.from_pretrained(model_path, map_location=self.device)
         # self.implemented_properties = ["energy", "forces", "stress"]
     
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        state["_modules"]["model"] = state["_modules"]["model"]._orig_mod
-        return state
+    # def __getstate__(self):
+    #     state = self.__dict__.copy()
+    #     state["_modules"]["model"] = state["_modules"]["model"]._orig_mod
+    #     return state
     
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-        self.model = torch.compile(state["_modules"]["model"])
+    # def __setstate__(self, state):
+    #     self.__dict__.update(state)
+    #     self.model = torch.compile(state["_modules"]["model"])
 
     def calculate(
         self,
@@ -92,8 +105,8 @@ class MLIPCalculator(MLIP, Calculator):
         super().calculate(atoms, properties, system_changes)
 
         # TODO: move collate_fn to here in MLIPCalculator
-
-        output = self.forward(atoms)
+        data = collate_fn([atoms], cutoff=self.cutoff).to(self.device)
+        output = self.forward(data)
 
         # TODO: decollate_fn
 

@@ -126,6 +126,7 @@ def collate_fn(batch: list[Atoms], cutoff: float) -> Data:
         "magmoms": magmoms_batch,
         # "ec": ec_batch,
         "natoms": natoms_batch,
+        "cutoff": torch.tensor(cutoff),
     }
 
     # TODO: custom fields
