@@ -38,6 +38,7 @@ dependencies=[
     "dask",
     "dask_jobqueue",
     "tables",
+    "matscipy",
 ]
 
 [project.optional-dependencies]
