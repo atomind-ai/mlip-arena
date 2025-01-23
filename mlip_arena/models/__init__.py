@@ -11,7 +11,6 @@ from torch import nn
 
 from ase import Atoms
 from ase.calculators.calculator import Calculator, all_changes
-from mlip_arena.models.utils import get_freer_device
 
 try:
     from prefect.logging import get_run_logger
@@ -19,8 +18,6 @@ try:
     logger = get_run_logger()
 except (ImportError, RuntimeError):
     from loguru import logger
-
-# from torch_geometric.data import Data
 
 with open(Path(__file__).parent / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
@@ -77,6 +74,7 @@ class MLIPCalculator(MLIP, Calculator):
         )  # Initialize ASE Calculator part
         # Additional initialization if needed
         # self.name: str = self.__class__.__name__
+        from mlip_arena.models.utils import get_freer_device
         self.device = device or get_freer_device()
         self.cutoff = cutoff
         self.model.to(self.device)
