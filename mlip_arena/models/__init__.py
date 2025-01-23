@@ -5,15 +5,14 @@ from enum import Enum
 from pathlib import Path
 
 import torch
-import torch._dynamo.config
 import yaml
-from ase import Atoms
-from ase.calculators.calculator import Calculator, all_changes
 from huggingface_hub import PyTorchModelHubMixin
 from torch import nn
 
-from mlip_arena.models.utils import get_freer_device
+from ase import Atoms
+from ase.calculators.calculator import Calculator, all_changes
 from mlip_arena.data.collate import collate_fn
+from mlip_arena.models.utils import get_freer_device
 
 try:
     from prefect.logging import get_run_logger
@@ -31,13 +30,16 @@ MLIPMap = {}
 
 for model, metadata in REGISTRY.items():
     try:
-        module = importlib.import_module(f"{__package__}.{metadata['module']}.{metadata['family']}")
+        module = importlib.import_module(
+            f"{__package__}.{metadata['module']}.{metadata['family']}"
+        )
         MLIPMap[model] = getattr(module, metadata["class"])
     except (ModuleNotFoundError, AttributeError, ValueError) as e:
         logger.warning(e)
         continue
 
 MLIPEnum = Enum("MLIPEnum", MLIPMap)
+
 
 class MLIP(
     nn.Module,
@@ -84,12 +86,12 @@ class MLIPCalculator(MLIP, Calculator):
         # )
         # self.model: MLIP = MLIP.from_pretrained(model_path, map_location=self.device)
         # self.implemented_properties = ["energy", "forces", "stress"]
-    
+
     # def __getstate__(self):
     #     state = self.__dict__.copy()
     #     state["_modules"]["model"] = state["_modules"]["model"]._orig_mod
     #     return state
-    
+
     # def __setstate__(self, state):
     #     self.__dict__.update(state)
     #     self.model = torch.compile(state["_modules"]["model"])
