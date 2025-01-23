@@ -6,10 +6,20 @@ from pathlib import Path
 
 import torch
 import yaml
-from ase import Atoms
-from ase.calculators.calculator import Calculator, all_changes
 from huggingface_hub import PyTorchModelHubMixin
 from torch import nn
+
+from ase import Atoms
+from ase.calculators.calculator import Calculator, all_changes
+from mlip_arena.data.collate import collate_fn
+from mlip_arena.models.utils import get_freer_device
+
+try:
+    from prefect.logging import get_run_logger
+
+    logger = get_run_logger()
+except (ImportError, RuntimeError):
+    from loguru import logger
 
 # from torch_geometric.data import Data
 
@@ -20,13 +30,16 @@ MLIPMap = {}
 
 for model, metadata in REGISTRY.items():
     try:
-        module = importlib.import_module(f"{__package__}.{metadata['module']}.{metadata['family']}")
+        module = importlib.import_module(
+            f"{__package__}.{metadata['module']}.{metadata['family']}"
+        )
         MLIPMap[model] = getattr(module, metadata["class"])
     except (ModuleNotFoundError, AttributeError, ValueError) as e:
-        print(e)
+        logger.warning(e)
         continue
 
 MLIPEnum = Enum("MLIPEnum", MLIPMap)
+
 
 class MLIP(
     nn.Module,
@@ -35,6 +48,9 @@ class MLIP(
 ):
     def __init__(self, model: nn.Module) -> None:
         super().__init__()
+        # https://github.com/pytorch/pytorch/blob/3cbc8c54fd37eb590e2a9206aecf3ab568b3e63c/torch/_dynamo/config.py#L534
+        # torch._dynamo.config.compiled_autograd = True
+        # self.model = torch.compile(model)
         self.model = model
 
     def forward(self, x):
@@ -47,7 +63,9 @@ class MLIPCalculator(MLIP, Calculator):
 
     def __init__(
         self,
-        model,
+        model: nn.Module,
+        device: torch.device | None = None,
+        cutoff: float = 6.0,
         # ASE Calculator
         restart=None,
         atoms=None,
@@ -60,11 +78,23 @@ class MLIPCalculator(MLIP, Calculator):
         )  # Initialize ASE Calculator part
         # Additional initialization if needed
         # self.name: str = self.__class__.__name__
+        self.device = device or get_freer_device()
+        self.cutoff = cutoff
+        self.model.to(self.device)
         # self.device = device or torch.device(
         #     "cuda" if torch.cuda.is_available() else "cpu"
         # )
         # self.model: MLIP = MLIP.from_pretrained(model_path, map_location=self.device)
         # self.implemented_properties = ["energy", "forces", "stress"]
+
+    # def __getstate__(self):
+    #     state = self.__dict__.copy()
+    #     state["_modules"]["model"] = state["_modules"]["model"]._orig_mod
+    #     return state
+
+    # def __setstate__(self, state):
+    #     self.__dict__.update(state)
+    #     self.model = torch.compile(state["_modules"]["model"])
 
     def calculate(
         self,
@@ -75,7 +105,11 @@ class MLIPCalculator(MLIP, Calculator):
         """Calculate energies and forces for the given Atoms object"""
         super().calculate(atoms, properties, system_changes)
 
-        output = self.forward(atoms)
+        # TODO: move collate_fn to here in MLIPCalculator
+        data = collate_fn([atoms], cutoff=self.cutoff).to(self.device)
+        output = self.forward(data)
+
+        # TODO: decollate_fn
 
         self.results = {}
         if "energy" in properties:
@@ -85,13 +119,14 @@ class MLIPCalculator(MLIP, Calculator):
         if "stress" in properties:
             self.results["stress"] = output["stress"].squeeze().cpu().detach().numpy()
 
-    def forward(self, x: Atoms) -> dict[str, torch.Tensor]:
-        """Implement data conversion, graph creation, and model forward pass
+    # def forward(self, x: Atoms) -> dict[str, torch.Tensor]:
+    #     """Implement data conversion, graph creation, and model forward pass
 
-        Example implementation:
-        1. Use `ase.neighborlist.NeighborList` to get neighbor list
-        2. Create `torch_geometric.data.Data` object and copy the data
-        3. Pass the `Data` object to the model and return the output
+    #     Example implementation:
+    #     1. Use `ase.neighborlist.NeighborList` to get neighbor list
+    #     2. Create `torch_geometric.data.Data` object and copy the data
+    #     3. Pass the `Data` object to the model and return the output
 
-        """
-        raise NotImplementedError
+    #     """
+
+    #     raise NotImplementedError
