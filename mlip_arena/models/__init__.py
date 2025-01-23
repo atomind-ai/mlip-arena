@@ -11,7 +11,6 @@ from torch import nn
 
 from ase import Atoms
 from ase.calculators.calculator import Calculator, all_changes
-from mlip_arena.data.collate import collate_fn
 from mlip_arena.models.utils import get_freer_device
 
 try:
@@ -104,6 +103,7 @@ class MLIPCalculator(MLIP, Calculator):
     ):
         """Calculate energies and forces for the given Atoms object"""
         super().calculate(atoms, properties, system_changes)
+        from mlip_arena.data.collate import collate_fn
 
         # TODO: move collate_fn to here in MLIPCalculator
         data = collate_fn([atoms], cutoff=self.cutoff).to(self.device)
