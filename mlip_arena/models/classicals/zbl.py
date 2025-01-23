@@ -13,22 +13,14 @@ from e3nn.util.jit import compile_mode # TODO: e3nn allows autograd in compiled 
 class ZBL(nn.Module):
     """Ziegler-Biersack-Littmark (ZBL) screened nuclear repulsion"""
 
-    # name: str
-    # implemented_properties: list[str] = ["energy", "forces", "stress"]
-
     def __init__(
         self,
         trianable: bool = False,
         **kwargs,
     ) -> None:
         nn.Module.__init__(self, **kwargs)
-        # Calculator.__init__(
-        #     self, restart=restart, atoms=atoms, directory=directory, **calculator_kwargs
-        # )
-
+        
         torch.set_default_dtype(torch.double)
-
-        # self.cutoff = torch.tensor(cutoff, dtype=torch.get_default_dtype())
 
         self.a = torch.nn.parameter.Parameter(
             torch.tensor(
@@ -142,7 +134,7 @@ class ZBL(nn.Module):
         return y
 
     def _get_derivatives(self, energy: torch.Tensor, data: Data):
-        egrad, fij = torch.autograd.grad(
+        egradi, egradij = torch.autograd.grad(
             outputs=[energy],  # TODO: generalized derivatives
             inputs=[data.positions, data.vij],  # TODO: generalized derivatives
             grad_outputs=[torch.ones_like(energy)],
@@ -152,7 +144,7 @@ class ZBL(nn.Module):
         )
 
         volume = torch.det(data.cell)  # (batch,)
-        rfaxy = torch.einsum("ax,ay->axy", data.vij, fij)
+        rfaxy = torch.einsum("ax,ay->axy", data.vij, -egradij)
 
         edge_batch = data.batch[data.edge_index[0]]
 
@@ -162,7 +154,7 @@ class ZBL(nn.Module):
             / volume.view(-1, 1)
         )
 
-        return -egrad, stress
+        return -egradi, stress
 
     def forward(
         self,

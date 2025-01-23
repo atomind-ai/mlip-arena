@@ -39,9 +39,6 @@ for model, metadata in REGISTRY.items():
 
 MLIPEnum = Enum("MLIPEnum", MLIPMap)
 
-# https://github.com/pytorch/pytorch/blob/3cbc8c54fd37eb590e2a9206aecf3ab568b3e63c/torch/_dynamo/config.py#L534
-# torch._dynamo.config.compiled_autograd = True
-
 class MLIP(
     nn.Module,
     PyTorchModelHubMixin,
@@ -49,6 +46,8 @@ class MLIP(
 ):
     def __init__(self, model: nn.Module) -> None:
         super().__init__()
+        # https://github.com/pytorch/pytorch/blob/3cbc8c54fd37eb590e2a9206aecf3ab568b3e63c/torch/_dynamo/config.py#L534
+        # torch._dynamo.config.compiled_autograd = True
         # self.model = torch.compile(model)
         self.model = model
 
