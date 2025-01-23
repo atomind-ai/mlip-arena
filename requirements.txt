@@ -9,6 +9,6 @@ bokeh
 bokeh_sampledata
 statsmodels==0.14.2
 prefect==3.1.11
-matscipy==1.1.1
+loguru==0.7.3
 # py3Dmol==2.0.0.post2
 # stmol==0.0.9
