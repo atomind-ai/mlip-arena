@@ -51,7 +51,7 @@ test = [
     "nvidia-ml-py==12.560.30",
     "e3nn==0.5.0",
     "matgl==1.1.2",
-    "dgl==2.4.0",
+    # "dgl==2.4.0",
     "chgnet==0.3.8",
     "fairchem-core==1.2.0",
     "sevenn==0.9.3.post1",
