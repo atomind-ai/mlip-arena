@@ -50,21 +50,11 @@ source $HOME/.local/bin/env
 bash scripts/install-macosx.sh
 ```
 
-## Contribute
-
-MLIP Arena is now in pre-alpha. If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). 
-
-### Development
-
-```
-streamlit run serve/app.py
-```
-
 ## Quickstart
 
 ### Molecular dynamics (MD)
 
-Run all the compiled MLIPs by looping thorugh `MLIPEnum`:
+Arena provides a unified interface to run all the compiled MLIPs. This can be achieved simply by looping through `MLIPEnum`:
 
 ```python
 from mlip_arena.tasks.md import run as MD 
@@ -89,6 +79,16 @@ for model in MLIPEnum:
     )
     results.append(result)
 
+```
+
+## Contribute
+
+MLIP Arena is now in pre-alpha. If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). 
+
+### Development
+
+```
+streamlit run serve/app.py
 ```
 
 ### Add new benchmark tasks (WIP)
