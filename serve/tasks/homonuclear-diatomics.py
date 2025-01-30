@@ -30,7 +30,7 @@ valid_models = [
 mlip_methods = container.multiselect(
     "MLIPs",
     valid_models,
-    ["MACE-MP(M)", "CHGNet", "M3GNet", "MatterSim", "SevenNet", "ORBv2", "eqV2(OMat)"],
+    ["MACE-MP(M)", "CHGNet", "M3GNet", "MatterSim", "SevenNet", "ORBv2", "eqV2(OMat)", "ANI2x"],
 )
 dft_methods = container.multiselect("DFT Methods", ["PBE"], ["PBE"])
 
@@ -228,15 +228,15 @@ def get_plots(df, energy_plot: bool, force_plot: bool, method_color_mapping: dic
         fig.update_layout(
             showlegend=True,
             legend=dict(
-                orientation="v",
-                x=0.95,
+                orientation="h",
+                x=1.0,
                 xanchor="right",
                 y=1,
                 yanchor="top",
                 bgcolor="rgba(0, 0, 0, 0)",
                 # traceorder='reversed',
-                # entrywidth=0.3,
-                # entrywidthmode='fraction',
+                entrywidth=0.4,
+                entrywidthmode="fraction",
             ),
             title_text=f"{name}",
             title_x=0.5,
