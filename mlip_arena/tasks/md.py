@@ -60,14 +60,8 @@ from pathlib import Path
 from typing import Literal
 
 import numpy as np
-from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
-from prefect.runtime import task_run
-from scipy.interpolate import interp1d
-from scipy.linalg import schur
-from tqdm.auto import tqdm
-
 from ase import Atoms, units
+from ase.calculators.calculator import BaseCalculator
 from ase.io import read
 from ase.io.trajectory import Trajectory
 from ase.md.andersen import Andersen
@@ -82,8 +76,12 @@ from ase.md.velocitydistribution import (
     ZeroRotation,
 )
 from ase.md.verlet import VelocityVerlet
-from mlip_arena.models import MLIPEnum
-from mlip_arena.tasks.utils import get_calculator
+from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.runtime import task_run
+from scipy.interpolate import interp1d
+from scipy.linalg import schur
+from tqdm.auto import tqdm
 
 _valid_dynamics: dict[str, tuple[str, ...]] = {
     "nve": ("velocityverlet",),
@@ -201,11 +199,7 @@ def _generate_task_run_name():
 )
 def run(
     atoms: Atoms,
-    calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None = None,
-    dispersion: bool = False,
-    dispersion_kwargs: dict | None = None,
-    device: str | None = None,
+    calculator: BaseCalculator,
     ensemble: Literal["nve", "nvt", "npt"] = "nvt",
     dynamics: str | MolecularDynamics = "langevin",
     time_step: float | None = None,  # fs
@@ -221,13 +215,9 @@ def run(
     restart: bool = True,
 ):
     
-    atoms.calc = get_calculator(
-        calculator_name=calculator_name,
-        calculator_kwargs=calculator_kwargs,
-        dispersion=dispersion,
-        dispersion_kwargs=dispersion_kwargs,
-        device=device,
-    )
+    atoms = atoms.copy()
+
+    atoms.calc = calculator
 
     if time_step is None:
         # If a structure contains an isotope of hydrogen, set default `time_step`

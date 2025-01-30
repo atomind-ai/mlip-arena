@@ -124,7 +124,7 @@ def run(
     outdir: str | None = None,
 ):
     phonon = get_phonopy(
-        atoms=atoms,
+        atoms=atoms.copy(),
         supercell_matrix=supercell_matrix,
         min_lengths=min_lengths,
         symprec=symprec,

@@ -1,7 +1,7 @@
 """
 Defines the tasks for computing the elastic tensor.
 
-This module has been modified from MatCalc 
+This module has been modified from MatCalc
 https://github.com/materialsvirtuallab/matcalc/blob/main/src/matcalc/elasticity.py
 
 https://github.com/materialsvirtuallab/matcalc/blob/main/LICENSE
@@ -41,15 +41,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+from ase import Atoms
+from ase.calculators.calculator import BaseCalculator
+from ase.optimize.optimize import Optimizer
 from numpy.typing import ArrayLike
 from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 from prefect.states import State
 
-from ase import Atoms
-from ase.optimize.optimize import Optimizer
-from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
 from pymatgen.analysis.elasticity import DeformedStructureSet, ElasticTensor, Strain
 from pymatgen.analysis.elasticity.elastic import get_strain_state_dict
@@ -77,11 +77,7 @@ def _generate_task_run_name():
 )
 def run(
     atoms: Atoms,
-    calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None = None,
-    dispersion: bool = False,
-    dispersion_kwargs: dict | None = None,
-    device: str | None = None,
+    calculator: BaseCalculator,
     optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = "FrechetCell",  # type: ignore
@@ -97,9 +93,7 @@ def run(
 
     Args:
         atoms (Atoms): The input structure.
-        calculator_name (str | MLIPEnum): The calculator name.
-        calculator_kwargs (dict, optional): The calculator kwargs. Defaults to None.
-        device (str, optional): The device. Defaults to None.
+        calculator (BaseCalculator): The calculator.
         optimizer (Optimizer | str, optional): The optimizer. Defaults to "BFGSLineSearch".
         optimizer_kwargs (dict, optional): The optimizer kwargs. Defaults to None.
         filter (Filter | str, optional): The filter. Defaults to "FrechetCell".
@@ -115,6 +109,8 @@ def run(
         dict[str, Any] | State: The elastic tensor.
     """
 
+    atoms = atoms.copy()
+
     OPT_ = OPT.with_options(
         refresh_cache=not cache_opt,
         persist_result=persist_opt,
@@ -122,11 +118,7 @@ def run(
 
     first_relax = OPT_(
         atoms=atoms,
-        calculator_name=calculator_name,
-        calculator_kwargs=calculator_kwargs,
-        dispersion=dispersion,
-        dispersion_kwargs=dispersion_kwargs,
-        device=device,
+        calculator=calculator,
         optimizer=optimizer,
         optimizer_kwargs=optimizer_kwargs,
         filter=filter,
@@ -172,9 +164,7 @@ def run(
     ]
 
     fit = fit_elastic_tensor(
-        strains,
-        stresses,
-        eq_stress=relaxed.get_stress(voigt=False)
+        strains, stresses, eq_stress=relaxed.get_stress(voigt=False)
     )
 
     return {
