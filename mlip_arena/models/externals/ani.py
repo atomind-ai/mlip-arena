@@ -3,6 +3,7 @@ from __future__ import annotations
 import yaml
 from pathlib import Path
 
+from ase.calculators.calculator import all_changes
 from torchani.ase import Calculator as ANICalculator
 from torchani.models import BuiltinEnsemble
 
@@ -30,3 +31,9 @@ class ANI2x(ANICalculator):
         # TODO: ANICalculator does not offer API to change device
         # ensemble.species.device = self.device
         super().__init__(ensemble.species, ensemble, **kwargs)
+    
+    
+    def calculate(
+        self, atoms=None, properties=['energy', 'forces', 'stress'], system_changes=all_changes
+    ):
+        super().calculate(atoms, properties, system_changes)
