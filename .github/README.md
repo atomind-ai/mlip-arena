@@ -88,6 +88,8 @@ MLIP Arena is now in pre-alpha. If you're interested in joining the effort, plea
 ### Development
 
 ```
+git lfs fetch --all
+git lfs pull
 streamlit run serve/app.py
 ```
 
