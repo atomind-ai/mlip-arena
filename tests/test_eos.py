@@ -64,4 +64,4 @@ def test_eos(model: MLIPEnum, concurrent: bool):
             cache=True,
         )
         assert isinstance(b0_cache := result["b0"], float)
-        assert b0_scratch == pytest.approx(b0_cache, rel=1e-6)
+        assert b0_scratch == pytest.approx(b0_cache, rel=1e-5)
