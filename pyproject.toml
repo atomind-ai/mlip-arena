@@ -38,6 +38,7 @@ dependencies=[
     "dask",
     "dask_jobqueue",
     "tables",
+    "MDAnalysis", # mof
 ]
 
 [project.optional-dependencies]
@@ -63,7 +64,8 @@ test = [
     "pytest",
     "pytest-xdist",
     "prefect==3.1.11",
-    "pymatgen>=2025.1.9"
+    "pymatgen>=2025.1.9",
+    "MDAnalysis", # mof
 ]
 mace = [
     "mace-torch==0.3.9",

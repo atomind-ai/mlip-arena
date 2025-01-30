@@ -110,7 +110,6 @@ ORBv2:
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
-    - stability
   github: https://github.com/orbital-materials/orb-models
   doi: 
   date: 2024-10-15
@@ -118,6 +117,28 @@ ORBv2:
   nvt: true
   npt: true
   license: Apache-2.0
+
+MACE-MPA:
+  module: externals
+  class: MACE_MPA
+  family: mace-mp
+  package: mace-torch==0.3.9
+  checkpoint: mace-mpa-0-medium.model
+  username: cyrusyc
+  last-update: 2025-11-19T00:00:00
+  datetime: 2024-12-09T00:00:00 # TODO: Fake datetime
+  datasets:
+    - MPTrj # TODO: fake HF dataset repo
+    - Alexandria
+  gpu-tasks:
+    - stability
+  github: https://github.com/ACEsuit/mace
+  doi: 
+  date: 2024-12-09
+  prediction: EFS
+  nvt: true
+  npt: true
+  license: MIT
 
 SevenNet:
   module: externals
