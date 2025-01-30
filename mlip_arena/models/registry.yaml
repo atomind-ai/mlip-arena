@@ -93,25 +93,27 @@ MatterSim:
   npt: true
   license: MIT
 
-ORB:
+ORBv2:
   module: externals
-  class: ORB
+  class: ORBv2
   family: orb
-  package: orb-models==0.3.1
-  checkpoint: orbff-v1-20240827.ckpt
-  username: cyrusyc
-  last-update: 2024-03-25T14:30:00
-  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  package: orb-models==0.4.0
+  checkpoint: orb-v2-20241011.ckpt
+  username: 
+  last-update: 2024-10-29T00:00:00
+  datetime: 2024-10-29T00:00:00 # TODO: Fake datetime
   datasets:
-    - MPTrj # TODO: fake HF dataset repo
+    - MPTrj
     - Alexandria
+  cpu-tasks:
+    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
     - stability
   github: https://github.com/orbital-materials/orb-models
   doi: 
-  date: 2024-09-03
+  date: 2024-10-15
   prediction: EFS
   nvt: true
   npt: true
@@ -252,6 +254,27 @@ MACE-OFF(M):
   npt: true
   license: ASL
 
+ANI2x:
+  module: externals
+  class: ANI2x
+  family: ani
+  package: torchani==2.2.4
+  checkpoint: ani-2x_8x.info
+  username: cyrusyc
+  last-update: 2024-12-11T16:00:00
+  datetime: 2024-12-11T16:00:00 # TODO: Fake datetime
+  datasets:
+  cpu-tasks:
+  gpu-tasks:
+    - homonuclear-diatomics
+  github: https://github.com/aiqm/torchani
+  doi: https://www.nature.com/articles/s41598-024-62242-5
+  date: 2024-05-23
+  prediction: EFS
+  nvt: true
+  npt: false
+  license: MIT
+
 ALIGNN:
   module: externals
   class: ALIGNN
@@ -294,27 +317,25 @@ DeepMD:
   npt: true
   license:
 
-ORBv2:
+ORB:
   module: externals
-  class: ORBv2
+  class: ORB
   family: orb
-  package: orb-models==0.4.0
-  checkpoint: orb-v2-20241011.ckpt
-  username: 
-  last-update: 2024-10-29T00:00:00
-  datetime: 2024-10-29T00:00:00 # TODO: Fake datetime
+  package: orb-models==0.3.1
+  checkpoint: orbff-v1-20240827.ckpt
+  username: cyrusyc
+  last-update: 2024-03-25T14:30:00
+  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
   datasets:
-    - MPTrj
+    - MPTrj # TODO: fake HF dataset repo
     - Alexandria
-  cpu-tasks:
-    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
     - stability
   github: https://github.com/orbital-materials/orb-models
   doi: 
-  date: 2024-10-15
+  date: 2024-09-03
   prediction: EFS
   nvt: true
   npt: true
