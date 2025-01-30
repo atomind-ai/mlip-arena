@@ -62,6 +62,7 @@ from mlip_arena.tasks.md import run as MD
 # from mlip_arena.tasks import MD # for convenient import
 from mlip_arena.tasks.utils import get_calculator
 
+from ase import units
 from ase.build import bulk
 
 atoms = bulk("Cu", "fcc", a=3.6)
@@ -71,7 +72,12 @@ results = []
 for model in MLIPEnum:
     result = MD(
         atoms=atoms,
-        calculator=get_calculator(model),
+        calculator=get_calculator(
+            model,
+            calculator_kwargs=dict(), # passing into calculator
+            dispersion=True,
+            dispersion_kwargs=dict(damping='bj', xc='pbe', cutoff=40.0 * units.Bohr), # passing into TorchDFTD3Calculator
+        ),
         ensemble="nve",
         dynamics="velocityverlet",
         total_time=1e3, # 1 ps = 1e3 fs
