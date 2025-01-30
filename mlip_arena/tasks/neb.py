@@ -83,7 +83,7 @@ def _generate_task_run_name():
     else:
         raise ValueError("No images or start atoms found in parameters")
 
-    calculator_name = parameters["calculator_name"]
+    calculator_name = parameters["calculator"]
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
