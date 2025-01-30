@@ -12,9 +12,9 @@
 > [!NOTE]
 > Contributions of new tasks are very welcome! If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks, or propose new one in [Discussion](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
 
-MLIP Arena is a unified platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional error metrics. It focuses on revealing the underlying physics and chemistry learned by these models and assessing their utilitarian performance agnostic to underlying model architecture. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
+MLIP Arena is a unified platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional error metrics. It focuses on revealing the physics and chemistry learned by these models and assessing their utilitarian performance agnostic to underlying model architecture. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
 
-MLIP Arena leverages modern pythonic workflow orchestractor [Prefect](https://www.prefect.io/) to enable advanced task/flow chaining and caching.
+MLIP Arena leverages modern pythonic workflow orchestrator [Prefect](https://www.prefect.io/) to enable advanced task/flow chaining and caching.
 
 ## Installation
 
@@ -46,7 +46,7 @@ DP_ENABLE_TENSORFLOW=0 pip install -e .[deepmd]
 # (Optional) Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
-# One script installation
+# One script uv pip installation
 bash scripts/install-macosx.sh
 ```
 
@@ -57,9 +57,10 @@ bash scripts/install-macosx.sh
 Arena provides a unified interface to run all the compiled MLIPs. This can be achieved simply by looping through `MLIPEnum`:
 
 ```python
-from mlip_arena.tasks.md import run as MD 
-# from mlip_arena.tasks import MD # convenient loading
 from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks.md import run as MD 
+# from mlip_arena.tasks import MD # for convenient import
+from mlip_arena.tasks.utils import get_calculator
 
 from ase.build import bulk
 
@@ -70,15 +71,13 @@ results = []
 for model in MLIPEnum:
     result = MD(
         atoms=atoms,
-        calculator_name=model,
-        calculator_kwargs={},
+        calculator=get_calculator(model),
         ensemble="nve",
         dynamics="velocityverlet",
         total_time=1e3, # 1 ps = 1e3 fs
         time_step=2, # fs
     )
     results.append(result)
-
 ```
 
 ## Contribute
