@@ -5,11 +5,11 @@ from __future__ import annotations
 from pprint import pformat
 
 import torch
-from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
-
 from ase import units
 from ase.calculators.calculator import BaseCalculator
 from ase.calculators.mixing import SumCalculator
+from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
+
 from mlip_arena.models import MLIPEnum
 
 try:
@@ -72,6 +72,7 @@ def get_calculator(
 
     if isinstance(calculator_name, MLIPEnum) and calculator_name in MLIPEnum:
         calc = calculator_name.value(**calculator_kwargs)
+        calc.__str__ = lambda: calculator_name.name
     elif isinstance(calculator_name, str) and hasattr(MLIPEnum, calculator_name):
         calc = MLIPEnum[calculator_name].value(**calculator_kwargs)
     elif isinstance(calculator_name, type) and issubclass(
@@ -79,11 +80,13 @@ def get_calculator(
     ):
         logger.warning(f"Using custom calculator class: {calculator_name}")
         calc = calculator_name(**calculator_kwargs)
+        calc.__str__ = lambda: f"{calc.__class__.__name__}"
     elif isinstance(calculator_name, BaseCalculator):
         logger.warning(
             f"Using custom calculator object (kwargs are ignored): {calculator_name}"
         )
         calc = calculator_name
+        calc.__str__ = lambda: f"{calc.__class__.__name__}"
     else:
         raise ValueError(f"Invalid calculator: {calculator_name}")
 
@@ -107,5 +110,5 @@ def get_calculator(
         if dispersion_kwargs:
             logger.info(pformat(dispersion_kwargs))
 
-    assert isinstance(calc, BaseCalculator)
+    assert isinstance(calc, BaseCalculator)    
     return calc
