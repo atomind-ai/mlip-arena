@@ -9,6 +9,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+from ase import Atoms
+from ase.calculators.calculator import BaseCalculator
+from ase.optimize.optimize import Optimizer
 from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
@@ -16,9 +19,6 @@ from prefect.results import ResultRecord
 from prefect.runtime import task_run
 from prefect.states import State
 
-from ase import Atoms
-from ase.optimize.optimize import Optimizer
-from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
 from pymatgen.analysis.eos import BirchMurnaghan
 
@@ -31,7 +31,7 @@ def _generate_task_run_name():
     parameters = task_run.parameters
 
     atoms = parameters["atoms"]
-    calculator_name = parameters["calculator_name"]
+    calculator_name = parameters["calculator"]
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
@@ -41,9 +41,7 @@ def _generate_task_run_name():
 )
 def run(
     atoms: Atoms,
-    calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None = None,
-    device: str | None = None,
+    calculator: BaseCalculator,
     optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = "FrechetCell",  # type: ignore
@@ -77,6 +75,8 @@ def run(
         A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy if successful. Otherwise, a prefect state object.
     """
 
+    atoms = atoms.copy()
+
     OPT_ = OPT.with_options(
         refresh_cache=not cache_opt,
         persist_result=cache_opt,
@@ -84,9 +84,7 @@ def run(
 
     state = OPT_(
         atoms=atoms,
-        calculator_name=calculator_name,
-        calculator_kwargs=calculator_kwargs,
-        device=device,
+        calculator=calculator,
         optimizer=optimizer,
         optimizer_kwargs=optimizer_kwargs,
         filter=filter,
@@ -118,9 +116,7 @@ def run(
 
             future = OPT_.submit(
                 atoms=atoms,
-                calculator_name=calculator_name,
-                calculator_kwargs=calculator_kwargs,
-                device=device,
+                calculator=calculator,
                 optimizer=optimizer,
                 optimizer_kwargs=optimizer_kwargs,
                 filter=None,
@@ -144,9 +140,7 @@ def run(
 
             state = OPT_(
                 atoms=atoms,
-                calculator_name=calculator_name,
-                calculator_kwargs=calculator_kwargs,
-                device=device,
+                calculator=calculator,
                 optimizer=optimizer,
                 optimizer_kwargs=optimizer_kwargs,
                 filter=None,
@@ -176,7 +170,6 @@ def run(
 
     return {
         "atoms": relaxed,
-        "calculator_name": calculator_name,
         "eos": {"volumes": volumes, "energies": energies},
         "K": bm.b0_GPa,
         "b0": bm.b0,

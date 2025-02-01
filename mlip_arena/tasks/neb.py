@@ -41,20 +41,20 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Literal
 
-from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
-from prefect.runtime import task_run
-from prefect.states import State
-
 from ase import Atoms
+from ase.calculators.calculator import BaseCalculator
 from ase.filters import *  # type: ignore
 from ase.mep.neb import NEB, NEBTools
 from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
 from ase.utils.forcecurve import fit_images
-from mlip_arena.models import MLIPEnum
+from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.runtime import task_run
+from prefect.states import State
+
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import get_calculator, logger, pformat
+from mlip_arena.tasks.utils import logger, pformat
 from pymatgen.io.ase import AseAtomsAdaptor
 
 _valid_optimizers: dict[str, Optimizer] = {
@@ -83,7 +83,7 @@ def _generate_task_run_name():
     else:
         raise ValueError("No images or start atoms found in parameters")
 
-    calculator_name = parameters["calculator_name"]
+    calculator_name = parameters["calculator"]
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
@@ -95,11 +95,7 @@ def _generate_task_run_name():
 )
 def run(
     images: list[Atoms],
-    calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None = None,
-    dispersion: bool = False,
-    dispersion_kwargs: dict | None = None,
-    device: str | None = None,
+    calculator: BaseCalculator,
     optimizer: Optimizer | str = "MDMin",  # type: ignore
     optimizer_kwargs: dict | None = None,
     criterion: dict | None = None,
@@ -127,17 +123,11 @@ def run(
         dict[str, Any] | State: The energy barrier.
     """
 
-    calc = get_calculator(
-        calculator_name,
-        calculator_kwargs,
-        dispersion=dispersion,
-        dispersion_kwargs=dispersion_kwargs,
-        device=device,
-    )
+    images = [image.copy() for image in images]
 
     for image in images:
         assert isinstance(image, Atoms)
-        image.calc = calc
+        image.calc = calculator
 
     neb = NEB(images, climb=climb, allow_shared_calculator=True)
 
@@ -175,11 +165,7 @@ def run_from_endpoints(
     start: Atoms,
     end: Atoms,
     n_images: int,
-    calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None = None,
-    dispersion: str | None = None,
-    dispersion_kwargs: dict | None = None,
-    device: str | None = None,
+    calculator: BaseCalculator,
     optimizer: Optimizer | str = "BFGS",  # type: ignore
     optimizer_kwargs: dict | None = None,
     criterion: dict | None = None,
@@ -216,11 +202,7 @@ def run_from_endpoints(
             refresh_cache=not cache_subtasks,
         )(
             atoms=start.copy(),
-            calculator_name=calculator_name,
-            calculator_kwargs=calculator_kwargs,
-            dispersion=dispersion,
-            dispersion_kwargs=dispersion_kwargs,
-            device=device,
+            calculator=calculator,
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             criterion=criterion,
@@ -231,11 +213,7 @@ def run_from_endpoints(
             refresh_cache=not cache_subtasks,
         )(
             atoms=end.copy(),
-            calculator_name=calculator_name,
-            calculator_kwargs=calculator_kwargs,
-            dispersion=dispersion,
-            dispersion_kwargs=dispersion_kwargs,
-            device=device,
+            calculator=calculator,
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             criterion=criterion,
@@ -260,11 +238,7 @@ def run_from_endpoints(
         refresh_cache=not cache_subtasks,
     )(
         images,
-        calculator_name,
-        calculator_kwargs=calculator_kwargs,
-        dispersion=dispersion,
-        dispersion_kwargs=dispersion_kwargs,
-        device=device,
+        calculator=calculator,
         optimizer=optimizer,
         optimizer_kwargs=optimizer_kwargs,
         criterion=criterion,
