@@ -4,6 +4,7 @@ import pytest
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.mof.flow import widom_insertion
 from mlip_arena.tasks.mof.input import get_atoms_from_db
+from mlip_arena.tasks.utils import get_calculator
 from prefect.testing.utilities import prefect_test_harness
 
 from ase.build import molecule
@@ -21,7 +22,10 @@ def test_widom_insertion(model: MLIPEnum):
             )(
                 structure=atoms,
                 gas=molecule("CO2"),
-                calculator_name=model.name,
+                calculator=get_calculator(
+                    model,
+                    dispersion=True,
+                ),
                 num_insertions=10,
             )
             assert isinstance(result, dict)

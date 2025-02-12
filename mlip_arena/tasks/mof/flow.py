@@ -28,6 +28,7 @@ from ase.build import molecule
 from ase.filters import Filter
 from ase.io.trajectory import Trajectory, TrajectoryWriter
 from ase.optimize.optimize import Optimizer
+from ase.calculators.calculator import BaseCalculator
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
 from mlip_arena.tasks.utils import get_calculator
@@ -116,11 +117,7 @@ def widom_insertion(
     # init
     structure: Atoms,
     gas: Atoms,
-    calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None = None,
-    device: str | None = None,
-    dispersion: str | None = None,
-    dispersion_kwargs: dict | None = None,
+    calculator: BaseCalculator,
     optimizer: Optimizer | str = "FIRE2",
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = "FrechetCell",
@@ -129,8 +126,6 @@ def widom_insertion(
     init_structure_optimize: bool = True,
     init_gas_optimize: bool = True,
     traj_file: str | Path | None = None,
-    log_file: str | Path | IO | None = None,
-    restart: bool = True,
     # run
     num_insertions: int = 5000,
     grid_spacing: float = 0.15,
@@ -170,13 +165,9 @@ def widom_insertion(
     # Optimize structure and gas molecule
     if init_structure_optimize:
         logger.info("Optimizing structure")
-        state = OPT(
+        state = OPT.submit(
             atoms=structure,
-            calculator_name=calculator_name,
-            calculator_kwargs=calculator_kwargs,
-            dispersion=dispersion,
-            dispersion_kwargs=dispersion_kwargs,
-            device=device,
+            calculator=calculator,
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             filter=filter,
@@ -191,13 +182,9 @@ def widom_insertion(
 
     if init_gas_optimize:
         logger.info("Optimizing gas molecule")
-        state = OPT(
+        state = OPT.submit(
             atoms=gas,
-            calculator_name=calculator_name,
-            calculator_kwargs=calculator_kwargs,
-            dispersion=dispersion,
-            dispersion_kwargs=dispersion_kwargs,
-            device=device,
+            calculator=calculator,
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             filter=None,
@@ -224,13 +211,7 @@ def widom_insertion(
         f"Number of accessible positions: {len(idx_accessible_pos)} out of total {len(pos_grid)}"
     )
 
-    calc = get_calculator(
-        calculator_name=calculator_name,
-        calculator_kwargs=calculator_kwargs,
-        dispersion=dispersion,
-        dispersion_kwargs=dispersion_kwargs,
-        device=device,
-    )
+    calc = calculator
     # Calculate energies for structure and gas
     energy_structure = calc.get_potential_energy(structure)
     energy_gas = calc.get_potential_energy(gas)
@@ -345,7 +326,10 @@ def run(
             state = widom_insertion.submit(
                 atoms,
                 molecule("CO2"),
-                calculator_name=model.name,
+                calculator=get_calculator(
+                    model,
+                    dispersion=True,
+                ),
                 return_state=True,
             )
             states.append(state)
