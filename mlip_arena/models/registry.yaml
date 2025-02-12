@@ -2,7 +2,7 @@ MACE-MP(M):
   module: externals
   class: MACE_MP_Medium
   family: mace-mp
-  package: mace-torch==0.3.4
+  package: mace-torch==0.3.9
   checkpoint: 2023-12-03-mace-128-L1_epoch-199.model
   username: cyrusyc
   last-update: 2024-03-25T14:30:00
@@ -257,7 +257,7 @@ MACE-OFF(M):
   module: externals
   class: MACE_OFF_Medium
   family: mace-off
-  package: mace-torch==0.3.4
+  package: mace-torch==0.3.9
   checkpoint: MACE-OFF23_medium.model
   username: cyrusyc
   last-update: 2024-03-25T14:30:00
