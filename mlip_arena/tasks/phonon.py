@@ -97,11 +97,9 @@ def _generate_task_run_name():
     parameters = task_run.parameters
 
     atoms = parameters["atoms"]
-    calculator = parameters["calculator"]
+    calculator_name = parameters["calculator"]
 
-    return (
-        f"{task_name}: {atoms.get_chemical_formula()} - {calculator.__class__.__name__}"
-    )
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
 
 @task(
@@ -124,7 +122,7 @@ def run(
     outdir: str | None = None,
 ):
     phonon = get_phonopy(
-        atoms=atoms,
+        atoms=atoms.copy(),
         supercell_matrix=supercell_matrix,
         min_lengths=min_lengths,
         symprec=symprec,

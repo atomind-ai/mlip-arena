@@ -20,6 +20,7 @@ class EquiformerV2(OCPCalculator):
         seed=0,
         **kwargs,
     ) -> None:
+        kwargs.pop("device", None)
         super().__init__(
             model_name=checkpoint,
             local_cache=local_cache,

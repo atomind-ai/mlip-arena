@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.elasticity import run as ELASTICITY
+from mlip_arena.tasks.utils import get_calculator
 from prefect.testing.utilities import prefect_test_harness
 
 from ase.build import bulk
@@ -22,9 +23,9 @@ def test_elasticity(model: MLIPEnum):
     with prefect_test_harness():
         result = ELASTICITY(
             atoms=bulk("Cu", "fcc", a=3.6),
-            calculator_name=model.name,
-            calculator_kwargs={},
-            device=None,
+            calculator=get_calculator(
+                calculator_name=model.name,
+            ),
             optimizer="BFGSLineSearch",
             optimizer_kwargs=None,
             filter="FrechetCell",

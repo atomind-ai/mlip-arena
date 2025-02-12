@@ -4,19 +4,18 @@ Define structure optimization tasks.
 
 from __future__ import annotations
 
-from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
-from prefect.runtime import task_run
-
 from ase import Atoms
+from ase.calculators.calculator import BaseCalculator
 from ase.constraints import FixSymmetry
 from ase.filters import *  # type: ignore
 from ase.filters import Filter
 from ase.optimize import *  # type: ignore
 from ase.optimize.optimize import Optimizer
-from mlip_arena.models import MLIPEnum
-from mlip_arena.tasks.utils import get_calculator, logger, pformat
+from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.runtime import task_run
 
+from mlip_arena.tasks.utils import logger, pformat
 
 _valid_filters: dict[str, Filter] = {
     "Filter": Filter,
@@ -46,7 +45,7 @@ def _generate_task_run_name():
     parameters = task_run.parameters
 
     atoms = parameters["atoms"]
-    calculator_name = parameters["calculator_name"]
+    calculator_name = parameters["calculator"]
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
@@ -56,11 +55,7 @@ def _generate_task_run_name():
 )
 def run(
     atoms: Atoms,
-    calculator_name: str | MLIPEnum,
-    calculator_kwargs: dict | None = None,
-    dispersion: bool = False,
-    dispersion_kwargs: dict | None = None,
-    device: str | None = None,
+    calculator: BaseCalculator,
     optimizer: Optimizer | str = BFGSLineSearch,
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = None,
@@ -68,13 +63,8 @@ def run(
     criterion: dict | None = None,
     symmetry: bool = False,
 ):
-    atoms.calc = get_calculator(
-        calculator_name=calculator_name,
-        calculator_kwargs=calculator_kwargs,
-        dispersion=dispersion,
-        dispersion_kwargs=dispersion_kwargs,
-        device=device,
-    )
+    atoms = atoms.copy()
+    atoms.calc = calculator
 
     if isinstance(filter, str):
         if filter not in _valid_filters:
@@ -111,6 +101,9 @@ def run(
         logger.info(f"Criterion: {pformat(criterion)}")
         optimizer_instance.run(**criterion)
 
+
     return {
         "atoms": atoms,
+        "steps": optimizer_instance.nsteps,
+        "converged": optimizer_instance.converged(),
     }

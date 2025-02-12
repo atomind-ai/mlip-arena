@@ -84,6 +84,7 @@ MatterSim:
     - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
+    - stability
   github: https://github.com/microsoft/mattersim
   doi: https://arxiv.org/abs/2405.04967
   date: 2024-12-05
@@ -274,6 +275,27 @@ MACE-OFF(M):
   npt: true
   license: ASL
 
+ANI2x:
+  module: externals
+  class: ANI2x
+  family: ani
+  package: torchani==2.2.4
+  checkpoint: ani-2x_8x.info
+  username: cyrusyc
+  last-update: 2024-12-11T16:00:00
+  datetime: 2024-12-11T16:00:00 # TODO: Fake datetime
+  datasets:
+  cpu-tasks:
+  gpu-tasks:
+    - homonuclear-diatomics
+  github: https://github.com/aiqm/torchani
+  doi: https://www.nature.com/articles/s41598-024-62242-5
+  date: 2024-05-23
+  prediction: EFS
+  nvt: true
+  npt: false
+  license: MIT
+
 ALIGNN:
   module: externals
   class: ALIGNN
@@ -287,6 +309,7 @@ ALIGNN:
     - MP22
   gpu-tasks:
     - homonuclear-diatomics
+    - stability
     # - combustion
   prediction: EFS
   nvt: true

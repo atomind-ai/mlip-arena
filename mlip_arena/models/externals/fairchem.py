@@ -47,6 +47,7 @@ class eqV2(OCPCalculator):
             revision="bf92f9671cb9d5b5c77ecb4aa8b317ff10b882ce",
             cache_dir=cache_dir
         )
+        kwargs.pop("device", None)
         super().__init__(
             checkpoint_path=checkpoint_path,
             cpu=cpu,
@@ -64,6 +65,7 @@ class EquiformerV2(OCPCalculator):
         seed=0,
         **kwargs,
     ) -> None:
+        kwargs.pop("device", None)
         super().__init__(
             model_name=checkpoint,
             local_cache=local_cache,
@@ -90,6 +92,7 @@ class EquiformerV2OC20(OCPCalculator):
         seed=0,
         **kwargs,
     ) -> None:
+        kwargs.pop("device", None)
         super().__init__(
             model_name=checkpoint,
             local_cache=local_cache,
@@ -108,6 +111,7 @@ class eSCN(OCPCalculator):
         seed=0,
         **kwargs,
     ) -> None:
+        kwargs.pop("device", None)
         super().__init__(
             model_name=checkpoint,
             local_cache=local_cache,

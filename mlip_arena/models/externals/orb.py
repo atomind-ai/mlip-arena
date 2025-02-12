@@ -55,7 +55,8 @@ class ORBv2(ORBCalculator):
         cache_dir.mkdir(parents=True, exist_ok=True)
         ckpt_path = cache_dir / checkpoint
 
-        url = f"https://storage.googleapis.com/orbitalmaterials-public-models/forcefields/{checkpoint}"
+        # url = f"https://storage.googleapis.com/orbitalmaterials-public-models/forcefields/{checkpoint}"
+        url = f"https://orbitalmaterials-public-models.s3.us-west-1.amazonaws.com/forcefields/{checkpoint}"
 
         if not ckpt_path.exists():
             print(f"Downloading ORB model from {url} to {ckpt_path}...")

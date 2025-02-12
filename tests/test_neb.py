@@ -3,6 +3,7 @@ import sys
 import pytest
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks import NEB_FROM_ENDPOINTS
+from mlip_arena.tasks.utils import get_calculator
 from prefect.testing.utilities import prefect_test_harness
 
 from ase.spacegroup import crystal
@@ -35,7 +36,9 @@ def test_neb(model: MLIPEnum):
             start=start.copy(),
             end=end.copy(),
             n_images=5,
-            calculator_name=model.name,
+            calculator=get_calculator(
+                calculator_name=model.name,
+            ),
             optimizer="FIRE2",
         )
 
