@@ -75,6 +75,7 @@ def get_calculator(
         calc.__str__ = lambda: calculator_name.name
     elif isinstance(calculator_name, str) and hasattr(MLIPEnum, calculator_name):
         calc = MLIPEnum[calculator_name].value(**calculator_kwargs)
+        calc.__str__ = lambda: calculator_name
     elif isinstance(calculator_name, type) and issubclass(
         calculator_name, BaseCalculator
     ):

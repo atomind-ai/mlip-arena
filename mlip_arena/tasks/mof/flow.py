@@ -103,9 +103,9 @@ def _generate_task_run_name():
 
     structure = parameters["structure"]
     gas = parameters["gas"]
-    calculator_name = parameters["calculator_name"]
+    calculator = parameters["calculator"]
 
-    return f"{task_name}: {structure.get_chemical_formula()} + {gas.get_chemical_formula()} - {calculator_name}"
+    return f"{task_name}: {structure.get_chemical_formula()} + {gas.get_chemical_formula()} - {calculator}"
 
 
 @task(
