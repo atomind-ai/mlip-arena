@@ -165,7 +165,7 @@ def widom_insertion(
     # Optimize structure and gas molecule
     if init_structure_optimize:
         logger.info("Optimizing structure")
-        state = OPT.submit(
+        state = OPT(
             atoms=structure,
             calculator=calculator,
             optimizer=optimizer,
@@ -182,7 +182,7 @@ def widom_insertion(
 
     if init_gas_optimize:
         logger.info("Optimizing gas molecule")
-        state = OPT.submit(
+        state = OPT(
             atoms=gas,
             calculator=calculator,
             optimizer=optimizer,
