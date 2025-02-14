@@ -27,6 +27,7 @@ def test_widom_insertion(model: MLIPEnum):
                     dispersion=True,
                 ),
                 num_insertions=10,
+                fold=2,
             )
             assert isinstance(result, dict)
             assert isinstance(result["henry_coefficient"][0], float)

@@ -31,7 +31,7 @@ from ase.optimize.optimize import Optimizer
 from ase.calculators.calculator import BaseCalculator
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import get_calculator
+from mlip_arena.tasks.utils import get_calculator, logger
 
 from .grid import get_accessible_positions
 from .input import get_atoms_from_db
@@ -122,6 +122,7 @@ def widom_insertion(
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = "FrechetCell",
     filter_kwargs: dict | None = None,
+    criterion: dict | None = None,
     temperature: float = 300,
     init_structure_optimize: bool = True,
     init_gas_optimize: bool = True,
@@ -157,7 +158,6 @@ def widom_insertion(
     Dict[str, Any]
         Dictionary containing the calculated Henry coefficient (mol/kg Pa), averaged interaction energy (eV), and heat of adsorption (kJ/mol) over the number of folds.
     """
-    logger = get_run_logger()
 
     structure = structure.copy()
     gas = gas.copy()
@@ -172,6 +172,7 @@ def widom_insertion(
             optimizer_kwargs=optimizer_kwargs,
             filter=filter,
             filter_kwargs=filter_kwargs,
+            criterion=criterion,
             return_state=True,
         )
 
@@ -188,6 +189,7 @@ def widom_insertion(
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             filter=None,
+            criterion=criterion,
             return_state=True,
         )
 
@@ -207,7 +209,7 @@ def widom_insertion(
     idx_accessible_pos = ret["idx_accessible_pos"]
     structure = ret["structure"]  # supercell structure if necessary
 
-    print(
+    logger.info(
         f"Number of accessible positions: {len(idx_accessible_pos)} out of total {len(pos_grid)}"
     )
 
@@ -219,9 +221,7 @@ def widom_insertion(
     # Set random seed if provided
     if random_seed is not None:
         np.random.seed(random_seed)
-        print(f"Setting random seed: {random_seed}")
-
-    nsteps = 0
+        logger.info(f"Setting random seed: {random_seed}")
 
     if traj_file is not None:
         traj_file = Path(traj_file)
@@ -232,26 +232,21 @@ def widom_insertion(
         traj = None
 
     # Run Widom insertion algorithm
+    
     results = defaultdict(list)
     for ifold in range(fold):
-        random_indices = np.random.choice(
-            len(pos_grid), size=num_insertions, replace=True
-        )
+
+        nsteps = 0
+
+        np.random.shuffle(idx_accessible_pos)
         interaction_energies = np.zeros(num_insertions)
-        for i, rand_idx in enumerate(
-            tqdm(random_indices, desc=f"Fold {ifold + 1}/{fold}")
-        ):
-            if rand_idx not in idx_accessible_pos:
-                # TODO: Log results
-                # self.log(
-                #     float("nan"),
-                #     float("nan"),
-                #     float("nan"),
-                #     float("nan"),
-                #     float("nan"),
-                # )
-                nsteps += 1
-                continue
+
+        pbar = tqdm(total=num_insertions, desc=f"Fold {ifold + 1}/{fold}")
+        for rand_idx in idx_accessible_pos:
+            # assert rand_idx in idx_accessible_pos
+
+            if nsteps >= num_insertions:
+                break
 
             # Add gas molecule to the accessible position
             pos = pos_grid[rand_idx]
@@ -264,39 +259,41 @@ def widom_insertion(
             total_energy = structure_with_gas.get_potential_energy()  # [eV]
             interaction_energy = total_energy - energy_structure - energy_gas  # [eV]
 
-            # Handle invalid interaction energy
-            # if interaction_energy < -1.25:
-            #    interaction_energy = 100.0  # lead to zero boltzmann factor
-
-            interaction_energies[i] = interaction_energy
             boltzmann_factor = np.exp(
                 -interaction_energy / (temperature * units._k / units._e)
             )
 
-            # TODO: Log results
-            # self.log(
-            #     interaction_energy,
-            #     total_energy,
-            #     energy_structure,
-            #     energy_gas,
-            #     boltzmann_factor,
-            # )
+            # Handle exponential overflow that can cause numerical instability
+
+            max_exp_arg = 700  # np.exp(700) is close to the max float64
+            if boltzmann_factor > np.exp(max_exp_arg):
+                logger.warning(
+                    f"Exponential overflow detected. Rejecting this step and retrying."
+                )
+                continue
+
+            interaction_energies[nsteps] = interaction_energy
             nsteps += 1
+            pbar.update(1)
 
             # Write trajectory
             if isinstance(traj, TrajectoryWriter):
                 traj.write(structure_with_gas)
 
+        pbar.close()
+
+        assert nsteps == num_insertions, "Cannot reach the number of insertions due to too many invalid steps."
+
         # Calculate ensemble averages properties
         # units._e [J/eV], units._k [J/K], units._k / units._e # [eV/K]
-        boltzmann_factor = np.exp(
+        boltzmann_factors = np.exp(
             -interaction_energies / (temperature * units._k / units._e)
         )
 
         # KH = <exp(-E/RT)> / (R * T)
         atomic_density = get_atomic_density(structure)  # [kg / m^3]
         kh = (
-            boltzmann_factor.sum()
+            boltzmann_factors.sum()
             / num_insertions
             / (units._k * units._Nav)  # R = [J / mol K] = [Pa m^3 / mol K]
             / temperature  # T = [K] -> [mol/ m^3 Pa]
@@ -304,7 +301,7 @@ def widom_insertion(
         )  # [mol/kg Pa]
 
         # U = < E * exp(-E/RT) > / <exp(-E/RT)> # [eV]
-        u = (interaction_energies * boltzmann_factor).sum() / boltzmann_factor.sum()
+        u = (interaction_energies * boltzmann_factors).sum() / boltzmann_factors.sum()
 
         # Qst = U - RT # [kJ/mol]
         qst = (u * units._e - units._k * temperature) * units._Nav * 1e-3
@@ -312,7 +309,7 @@ def widom_insertion(
         results["henry_coefficient"].append(kh)
         results["averaged_interaction_energy"].append(u)
         results["heat_of_adsorption"].append(qst)
-        # self.log_results(results)
+        
     return results
 
 
