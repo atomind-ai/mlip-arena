@@ -118,13 +118,13 @@ def widom_insertion(
     structure: Atoms,
     gas: Atoms,
     calculator: BaseCalculator,
-    optimizer: Optimizer | str = "FIRE2",
+    optimizer: Optimizer | str = "FIRE",
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = "FrechetCell",
     filter_kwargs: dict | None = None,
-    criterion: dict | None = None,
+    criterion: dict | None = dict(fmax=0.05, steps=50),
     temperature: float = 300,
-    init_structure_optimize: bool = True,
+    init_structure_optimize_loops: int = 10,
     init_gas_optimize: bool = True,
     traj_file: str | Path | None = None,
     # run
@@ -163,8 +163,8 @@ def widom_insertion(
     gas = gas.copy()
 
     # Optimize structure and gas molecule
-    if init_structure_optimize:
-        logger.info("Optimizing structure")
+    while init_structure_optimize_loops > 0:
+        logger.info("Optimizing cell")
         state = OPT(
             atoms=structure,
             calculator=calculator,
@@ -179,7 +179,32 @@ def widom_insertion(
         if state.is_failed():
             return state
 
-        structure = state.result(raise_on_failure=False)["atoms"]
+        result = state.result(raise_on_failure=False)
+        structure = result["atoms"]
+        if result["converged"]:
+            break
+
+        logger.info("Optimizing atoms with fixed cell")
+        state = OPT(
+            atoms=structure,
+            calculator=calculator,
+            optimizer=optimizer,
+            optimizer_kwargs=optimizer_kwargs,
+            filter=None,
+            filter_kwargs=None,
+            criterion=criterion,
+            return_state=True,
+        )
+
+        if state.is_failed():
+            return state
+        
+        result = state.result(raise_on_failure=False)
+        structure = result["atoms"]
+        if result["converged"]:
+            break
+
+        init_structure_optimize_loops -= 1
 
     if init_gas_optimize:
         logger.info("Optimizing gas molecule")
