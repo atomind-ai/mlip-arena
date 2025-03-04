@@ -60,6 +60,7 @@ M3GNet:
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
+    - stability
   github: https://github.com/materialsvirtuallab/matgl
   doi: https://doi.org/10.1038/s43588-022-00349-3
   date: 2022-02-05
@@ -110,6 +111,7 @@ ORBv2:
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
+    - stability
   github: https://github.com/orbital-materials/orb-models
   doi: 
   date: 2024-10-15

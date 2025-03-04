@@ -106,6 +106,7 @@ def get_calculator(
             **dispersion_kwargs,
         )
         calc = SumCalculator([calc, disp_calc])
+        # TODO: rename the SumCalculator
 
         logger.info(f"Using dispersion: {disp_calc}")
         if dispersion_kwargs:
