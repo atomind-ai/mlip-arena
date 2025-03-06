@@ -3,6 +3,7 @@ name: Sync to Hugging Face hub
 on:
   workflow_run:
     workflows: [Python Test]
+    branches: [main]
     types: [completed]
   workflow_dispatch:
 
