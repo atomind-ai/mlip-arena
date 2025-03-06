@@ -5,11 +5,10 @@ import pandas as pd
 import plotly.colors as pcolors
 import plotly.graph_objects as go
 import streamlit as st
-from ase.data import chemical_symbols
-from plotly.subplots import make_subplots
-from scipy.interpolate import CubicSpline
-
 from mlip_arena.models import REGISTRY
+from plotly.subplots import make_subplots
+
+from ase.data import chemical_symbols
 
 st.markdown(
     """
@@ -30,9 +29,23 @@ valid_models = [
 mlip_methods = container.multiselect(
     "MLIPs",
     valid_models,
-    ["MACE-MP(M)", "CHGNet", "M3GNet", "MatterSim", "SevenNet", "ORBv2", "eqV2(OMat)", "ANI2x"],
+    [
+        "MACE-MP(M)",
+        "CHGNet",
+        "M3GNet",
+        "MatterSim",
+        "SevenNet",
+        "ORBv2",
+        "eqV2(OMat)",
+        "ANI2x",
+    ],
 )
 dft_methods = container.multiselect("DFT Methods", ["PBE"], ["PBE"])
+
+container.info(
+    "PBE energies and forces are provided __only__ for reference. Due to the known convergence issue of plane-wave DFT with diatomic molecules and different dataset the models might be trained on, comparing models with PBE is not rigorous and thus these metrics are excluded from rank aggregation.",
+    icon=":material/warning:",
+)
 
 st.markdown("### Settings")
 vis = st.container(border=True)
@@ -119,10 +132,9 @@ def get_plots(df, energy_plot: bool, force_plot: bool, method_color_mapping: dic
             rs = rs[ind]
             es = es[ind]
             fs = fs[ind]
-            
+
             # if method not in ["PBE"]:
             es = es - es[-1]
-
 
             # if method in ["PBE"]:
             #     xs = np.linspace(rs.min() * 0.99, rs.max() * 1.01, int(5e2))

@@ -119,16 +119,15 @@ for task in TASKS:
 
     #  Call the function from the imported module
     if hasattr(task_module, "render"):
+        st.page_link(
+            f"tasks/{TASKS[task]['task-page']}.py",
+            label="Go to the associated task page",
+            icon=":material/link:",
+        )
         task_module.render()
         # if st.button(f"Go to task page"):
         #     st.switch_page(f"tasks/{TASKS[task]['task-page']}.py")
     else:
         st.write(
-            "Rank metrics are not available yet but the task has been implemented. Please see the following task page for more information."
+            "Rank metrics are not available yet but the task has been implemented. Please see the task page for more information."
         )
-
-    st.page_link(
-        f"tasks/{TASKS[task]['task-page']}.py",
-        label="Go to the associated task page",
-        icon=":material/link:",
-    )

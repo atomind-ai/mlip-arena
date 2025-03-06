@@ -1,11 +1,11 @@
 *.out
-*.ipynb
 *.extxyz
 *.traj
 mlip_arena/tasks/*/
 examples/
 lab/
 manuscripts/
+datasets/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
