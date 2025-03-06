@@ -6,7 +6,6 @@ import plotly.colors as pcolors
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-
 from mlip_arena.models import REGISTRY as MODELS
 
 DATA_DIR = Path("mlip_arena/tasks/combustion")
@@ -36,6 +35,7 @@ models = container.multiselect(
         "ORBv2",
         "EquiformerV2(OC20)",
         "eSCN(OC20)",
+        "MatterSim",
     ],
 )
 
@@ -64,7 +64,9 @@ if not models:
 def get_data(models):
     # List comprehension for concise looping and filtering
     dfs = [
-        pd.read_json(DATA_DIR / MODELS[str(model)]["family"].lower() / "hydrogen.json")[lambda df: df["method"] == model]
+        pd.read_json(DATA_DIR / MODELS[str(model)]["family"].lower() / "hydrogen.json")[
+            lambda df: df["method"] == model
+        ]
         for model in models
     ]
     # Concatenate all filtered DataFrames
@@ -177,8 +179,8 @@ st.plotly_chart(fig)
 
 # Energy
 
-exp_ref = -68.3078 # kcal/mol
-factor = 23.0609 
+exp_ref = -68.3078  # kcal/mol
+factor = 23.0609
 nh2os = 128
 
 fig = go.Figure()
@@ -205,10 +207,12 @@ target_steps = df["target_steps"].iloc[0]
 fig.add_shape(
     go.layout.Shape(
         type="line",
-        x0=0, x1=target_steps,
-        y0=exp_ref, y1=exp_ref,  # y-values for the horizontal line
+        x0=0,
+        x1=target_steps,
+        y0=exp_ref,
+        y1=exp_ref,  # y-values for the horizontal line
         line=dict(color="Red", width=2, dash="dash"),
-        layer="below"
+        layer="below",
     )
 )
 
@@ -281,28 +285,36 @@ st.plotly_chart(fig)
 fig = go.Figure()
 
 
-df["reaction_energy"] = df["energies"].apply(lambda x: x[-1] - x[0]) / nh2os * factor # kcal/mol
+df["reaction_energy"] = (
+    df["energies"].apply(lambda x: x[-1] - x[0]) / nh2os * factor
+)  # kcal/mol
 
 df["reaction_energy_abs_err"] = np.abs(df["reaction_energy"] - exp_ref)
 
 df.sort_values("reaction_energy_abs_err", inplace=True)
 
-fig.add_traces([
-    go.Bar(
-        x=df["method"],
-        y=df["reaction_energy"],
-        marker=dict(color=[method_color_mapping[method] for method in df["method"]]),
-        text=[f"{y:.2f}" for y in df["reaction_energy"]],
-    ),
-])
+fig.add_traces(
+    [
+        go.Bar(
+            x=df["method"],
+            y=df["reaction_energy"],
+            marker=dict(
+                color=[method_color_mapping[method] for method in df["method"]]
+            ),
+            text=[f"{y:.2f}" for y in df["reaction_energy"]],
+        ),
+    ]
+)
 
 fig.add_shape(
     go.layout.Shape(
         type="line",
-        x0=-0.5, x1=len(df["method"]) - 0.5,  # range covering the bars
-        y0=exp_ref, y1=exp_ref,  # y-values for the horizontal line
+        x0=-0.5,
+        x1=len(df["method"]) - 0.5,  # range covering the bars
+        y0=exp_ref,
+        y1=exp_ref,  # y-values for the horizontal line
         line=dict(color="Red", width=2, dash="dash"),
-        layer="below"
+        layer="below",
     )
 )
 
@@ -356,7 +368,7 @@ fig.add_trace(
 fig.update_layout(
     title="Reaction yield (2H2 + O2 -> 2H2O, 64 units)",
     xaxis_title="Yield (%)",
-    yaxis_title="Method"
+    yaxis_title="Method",
 )
 
 st.plotly_chart(fig)
@@ -433,7 +445,6 @@ for method in df_exploded["method"].unique():
             ),
             marker=dict(color=method_color_mapping[method], size=3),
             showlegend=True,
-            
         ),
     )
 
@@ -564,5 +575,4 @@ st.markdown("""
 [1] Hasche, A., Navid, A., Krause, H., & Eckart, S. (2023). Experimental and numerical assessment of the effects of hydrogen admixtures on premixed methane-oxygen flames. Fuel, 352, 128964.
             
 [2] Lide, D. R. (Ed.). (2004). CRC handbook of chemistry and physics (Vol. 85). CRC press.
-"""
-)
+""")

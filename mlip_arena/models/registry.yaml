@@ -2,7 +2,7 @@ MACE-MP(M):
   module: externals
   class: MACE_MP_Medium
   family: mace-mp
-  package: mace-torch==0.3.4
+  package: mace-torch==0.3.9
   checkpoint: 2023-12-03-mace-128-L1_epoch-199.model
   username: cyrusyc
   last-update: 2024-03-25T14:30:00
@@ -60,6 +60,7 @@ M3GNet:
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
+    - stability
   github: https://github.com/materialsvirtuallab/matgl
   doi: https://doi.org/10.1038/s43588-022-00349-3
   date: 2022-02-05
@@ -85,6 +86,7 @@ MatterSim:
   gpu-tasks:
     - homonuclear-diatomics
     - stability
+    - combustion
   github: https://github.com/microsoft/mattersim
   doi: https://arxiv.org/abs/2405.04967
   date: 2024-12-05
@@ -167,6 +169,28 @@ eqV2(OMat):
   doi: https://arxiv.org/abs/2410.12771
   license: Modified Apache-2.0 (Meta)
 
+MACE-MPA:
+  module: externals
+  class: MACE_MPA
+  family: mace-mp
+  package: mace-torch==0.3.9
+  checkpoint: mace-mpa-0-medium.model
+  username: 
+  last-update: 2025-11-19T00:00:00
+  datetime: 2024-12-09T00:00:00 # TODO: Fake datetime
+  datasets:
+    - MPTrj # TODO: fake HF dataset repo
+    - Alexandria
+  gpu-tasks:
+    - homonuclear-diatomics
+    - stability
+  github: https://github.com/ACEsuit/mace
+  doi: 
+  date: 2024-12-09
+  prediction: EFS
+  nvt: true
+  npt: true
+  license: MIT
 
 EquiformerV2(OC22):
   module: externals
@@ -237,7 +261,7 @@ MACE-OFF(M):
   module: externals
   class: MACE_OFF_Medium
   family: mace-off
-  package: mace-torch==0.3.4
+  package: mace-torch==0.3.9
   checkpoint: MACE-OFF23_medium.model
   username: cyrusyc
   last-update: 2024-03-25T14:30:00
@@ -272,7 +296,7 @@ ANI2x:
   date: 2024-05-23
   prediction: EFS
   nvt: true
-  npt: false
+  npt: true
   license: MIT
 
 ALIGNN:
