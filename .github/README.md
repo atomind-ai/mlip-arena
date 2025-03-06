@@ -1,7 +1,8 @@
 <div align="center">
     <h1>MLIP Arena</h1>
+    <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/test.yaml"></a>
     <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>
-    <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo-with-title.svg" style="height: 20px; background-color: white;" alt="Hugging Face"></a>
+    <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
     <!-- <a href="https://discord.gg/W8WvdQtT8T"><img alt="Discord" src="https://img.shields.io/discord/1299613474820984832?logo=discord"> -->
 </a>
 </div>
@@ -107,8 +108,8 @@ streamlit run serve/app.py
 > - [Prefect molecular dynamics (MD)](../mlip_arena/tasks/md.py)
 > - [Prefect equation of states (EOS)](../mlip_arena/tasks/eos.py)
 
-1. Follow the task template to implement the task class and upload the script along with metadata to the MLIP Arena [here](../mlip_arena/tasks/README.md).
-2. Code a benchmark script to evaluate the performance of your model on the task. The script should be able to load the model and the dataset, and output the evaluation metrics.
+<!-- 1. Follow the task template to implement the task class and upload the script along with metadata to the MLIP Arena [here](../mlip_arena/tasks/README.md).
+2. Code a benchmark script to evaluate the performance of your model on the task. The script should be able to load the model and the dataset, and output the evaluation metrics. -->
 
 ### Add new MLIP models 
 
@@ -129,12 +130,10 @@ If you have pretrained MLIP models that you would like to contribute to the MLIP
 2. Follow the template to code the I/O interface for your model [here](../mlip_arena/models/README.md). 
 3. Update model [registry](../mlip_arena/models/registry.yaml) with metadata
 
-> [!NOTE] 
-> CPU benchmarking will be performed automatically. Due to the limited amount GPU compute, if you would like to be considered for GPU benchmarking, please create a pull request to demonstrate the offline performance of your model (published paper or preprint). We will review and select the models to be benchmarked on GPU.
+<!-- > [!NOTE] 
+> CPU benchmarking will be performed automatically. Due to the limited amount GPU compute, if you would like to be considered for GPU benchmarking, please create a pull request to demonstrate the offline performance of your model (published paper or preprint). We will review and select the models to be benchmarked on GPU. -->
 
-
-
-### Add new datasets
+<!-- ### Add new datasets
 
 The "ultimate" goal is to compile the copies of all the open data in a unified format for lifelong learning with [Hugging Face Auto-Train](https://huggingface.co/docs/hub/webhooks-guide-auto-retrain). 
 
@@ -150,4 +149,4 @@ The "ultimate" goal is to compile the copies of all the open data in a unified f
 #### Molecular dynamics calculations
 
 - [ ] [MD17](http://www.sgdml.org/#datasets)
-- [ ] [MD22](http://www.sgdml.org/#datasets)
+- [ ] [MD22](http://www.sgdml.org/#datasets) -->
