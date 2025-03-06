@@ -1,0 +1,79 @@
+data_CALF20
+_audit_creation_date              2025-01-03
+_audit_creation_method            'Materials Studio'
+_symmetry_space_group_name_H-M    'P21/C'
+_symmetry_Int_Tables_number       14
+_symmetry_cell_setting            monoclinic
+loop_
+_symmetry_equiv_pos_as_xyz
+  x,y,z
+  -x,y+1/2,-z+1/2
+  -x,-y,-z
+  x,-y+1/2,z+1/2
+_cell_length_a                    8.9138
+_cell_length_b                    9.6935
+_cell_length_c                    9.4836
+_cell_angle_alpha                 90.0000
+_cell_angle_beta                  115.8950
+_cell_angle_gamma                 90.0000
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+Zn1    Zn    0.17588   0.05771   0.43679   0.01878  Uani   1.00
+N1     N     0.03080  -0.11080   0.36830   0.02235  Uani   1.00
+N2     N    -0.09220  -0.14750   0.41000   0.02454  Uani   1.00
+N3     N    -0.09920  -0.29140   0.22590   0.02563  Uani   1.00
+O1     O     0.40980   0.07610   0.61020   0.03235  Uani   1.00
+O2     O     0.67530   0.03070   0.67320   0.02972  Uani   1.00
+C1     C     0.02150  -0.19830   0.25880   0.02987  Uani   1.00
+H1A    H     0.09320  -0.19550   0.20860   0.03600  Uiso   1.00
+C2     C    -0.16550  -0.25540   0.32320   0.02964  Uani   1.00
+H2A    H    -0.25590  -0.30290   0.32890   0.03600  Uiso   1.00
+C3     C     0.52480   0.03080   0.58150   0.02323  Uani   1.00
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_12
+_atom_site_aniso_U_13
+_atom_site_aniso_U_23
+Zn1       0.01910   0.01960   0.02120  -0.00037   0.01210   0.00021
+N1        0.02510   0.02230   0.02770  -0.00420   0.01900  -0.00430
+N2        0.02610   0.02640   0.02940  -0.00570   0.01980  -0.00540
+N3        0.02870   0.02630   0.02900  -0.00580   0.01920  -0.00810
+O1        0.01990   0.04770   0.03200   0.00370   0.01370  -0.00870
+O2        0.02170   0.03940   0.02870   0.00180   0.01160  -0.00580
+C1        0.03180   0.03110   0.03860  -0.01080   0.02640  -0.01070
+C2        0.03200   0.03190   0.03800  -0.01230   0.02730  -0.01110
+C3        0.01980   0.02350   0.02720   0.00070   0.01100   0.00160
+loop_
+_geom_bond_atom_site_label_1
+_geom_bond_atom_site_label_2
+_geom_bond_distance
+_geom_bond_site_symmetry_2
+_ccdc_geom_bond_type
+Zn1    N1      2.007   .     S
+Zn1    O1      2.022   .     S
+Zn1    N3      2.016   2     S
+Zn1    N2      2.091   3_556 S
+Zn1    O2      2.189   3_656 S
+N1     C1      1.315   .     S
+N1     N2      1.365   .     S
+N2     C2      1.315   .     S
+N2     Zn1     2.091   3_556 S
+N3     C1      1.333   .     S
+N3     C2      1.341   .     S
+N3     Zn1     2.016   2_545 S
+O1     C3      1.250   .     S
+O2     C3      1.240   .     S
+O2     Zn1     2.189   3_656 S
+C1     H1A     0.950   .     S
+C2     H2A     0.950   .     S
+C3     C3      1.531   3_656 S

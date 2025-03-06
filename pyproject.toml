@@ -38,6 +38,7 @@ dependencies=[
     "dask",
     "dask_jobqueue",
     "tables",
+    "MDAnalysis", # mof
 ]
 
 [project.optional-dependencies]
@@ -64,6 +65,7 @@ test = [
     "pytest-xdist",
     "prefect==3.1.11",
     "pymatgen>=2025.1.9",
+    "MDAnalysis", # mof,
     "streamlit==1.38.0"
 ]
 mace = [
@@ -163,7 +165,7 @@ ignore = [
     "FBT003",  # boolean positional variable in function call
     "PERF203",  # `try`-`except` within a loop incurs performance overhead (no overhead in Py 3.11+)
     "F405",  # 'module' may be undefined, or defined from star imports
-    "C0301",  # Line too long
+    "PD901",
 ]
 fixable = ["ALL"]
 pydocstyle.convention = "google"
