@@ -157,29 +157,29 @@ def _get_ensemble_defaults(
     dynamics: str | MolecularDynamics,
     t_schedule: np.ndarray,
     p_schedule: np.ndarray,
-    ase_md_kwargs: dict | None = None,
+    dynamics_kwargs: dict | None = None,
 ) -> dict:
     """Update ASE MD kwargs"""
-    ase_md_kwargs = ase_md_kwargs or {}
+    dynamics_kwargs = dynamics_kwargs or {}
 
     if ensemble == "nve":
-        ase_md_kwargs.pop("temperature", None)
-        ase_md_kwargs.pop("temperature_K", None)
-        ase_md_kwargs.pop("externalstress", None)
+        dynamics_kwargs.pop("temperature", None)
+        dynamics_kwargs.pop("temperature_K", None)
+        dynamics_kwargs.pop("externalstress", None)
     elif ensemble == "nvt":
-        ase_md_kwargs["temperature_K"] = t_schedule[0]
-        ase_md_kwargs.pop("externalstress", None)
+        dynamics_kwargs["temperature_K"] = t_schedule[0]
+        dynamics_kwargs.pop("externalstress", None)
     elif ensemble == "npt":
-        ase_md_kwargs["temperature_K"] = t_schedule[0]
-        ase_md_kwargs["externalstress"] = p_schedule[0]  # * 1e3 * units.bar
+        dynamics_kwargs["temperature_K"] = t_schedule[0]
+        dynamics_kwargs["externalstress"] = p_schedule[0]  # * 1e3 * units.bar
 
     if isinstance(dynamics, str) and dynamics.lower() == "langevin":
-        ase_md_kwargs["friction"] = ase_md_kwargs.get(
+        dynamics_kwargs["friction"] = dynamics_kwargs.get(
             "friction",
             10.0 * 1e-3 / units.fs,  # Same default as in VASP: 10 ps^-1
         )
 
-    return ase_md_kwargs
+    return dynamics_kwargs
 
 
 def _generate_task_run_name():
@@ -206,8 +206,8 @@ def run(
     total_time: float = 1000,  # fs
     temperature: float | Sequence | np.ndarray | None = 300.0,  # K
     pressure: float | Sequence | np.ndarray | None = None,  # eV/A^3
-    ase_md_kwargs: dict | None = None,
-    md_velocity_seed: int | None = None,
+    dynamics_kwargs: dict | None = None,
+    velocity_seed: int | None = None,
     zero_linear_momentum: bool = True,
     zero_angular_momentum: bool = True,
     traj_file: str | Path | None = None,
@@ -235,12 +235,12 @@ def run(
         pressure=pressure,
     )
 
-    ase_md_kwargs = _get_ensemble_defaults(
+    dynamics_kwargs = _get_ensemble_defaults(
         ensemble=ensemble,
         dynamics=dynamics,
         t_schedule=t_schedule,
         p_schedule=p_schedule,
-        ase_md_kwargs=ase_md_kwargs,
+        dynamics_kwargs=dynamics_kwargs,
     )
 
     if isinstance(dynamics, str):
@@ -289,7 +289,7 @@ def run(
                     MaxwellBoltzmannDistribution(
                         atoms=atoms,
                         temperature_K=t_schedule[last_step],
-                        rng=np.random.default_rng(seed=md_velocity_seed),
+                        rng=np.random.default_rng(seed=velocity_seed),
                     )
 
                 if zero_linear_momentum:
@@ -303,7 +303,7 @@ def run(
                 MaxwellBoltzmannDistribution(
                     atoms=atoms,
                     temperature_K=t_schedule[last_step],
-                    rng=np.random.default_rng(seed=md_velocity_seed),
+                    rng=np.random.default_rng(seed=velocity_seed),
                 )
 
             if zero_linear_momentum:
@@ -314,7 +314,7 @@ def run(
     md_runner = md_class(
         atoms=atoms,
         timestep=time_step * units.fs,
-        **ase_md_kwargs,
+        **dynamics_kwargs,
     )
 
     if traj_file is not None:

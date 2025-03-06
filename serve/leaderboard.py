@@ -117,13 +117,14 @@ for task in TASKS:
 
     task_module = importlib.import_module(f"ranks.{TASKS[task]['rank-page']}")
 
+    st.page_link(
+        f"tasks/{TASKS[task]['task-page']}.py",
+        label="Go to the associated task page",
+        icon=":material/link:",
+    )
+
     #  Call the function from the imported module
     if hasattr(task_module, "render"):
-        st.page_link(
-            f"tasks/{TASKS[task]['task-page']}.py",
-            label="Go to the associated task page",
-            icon=":material/link:",
-        )
         task_module.render()
         # if st.button(f"Go to task page"):
         #     st.switch_page(f"tasks/{TASKS[task]['task-page']}.py")
