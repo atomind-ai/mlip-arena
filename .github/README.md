@@ -108,8 +108,8 @@ streamlit run serve/app.py
 > - [Prefect molecular dynamics (MD)](../mlip_arena/tasks/md.py)
 > - [Prefect equation of states (EOS)](../mlip_arena/tasks/eos.py)
 
-1. Follow the task template to implement the task class and upload the script along with metadata to the MLIP Arena [here](../mlip_arena/tasks/README.md).
-2. Code a benchmark script to evaluate the performance of your model on the task. The script should be able to load the model and the dataset, and output the evaluation metrics.
+<!-- 1. Follow the task template to implement the task class and upload the script along with metadata to the MLIP Arena [here](../mlip_arena/tasks/README.md).
+2. Code a benchmark script to evaluate the performance of your model on the task. The script should be able to load the model and the dataset, and output the evaluation metrics. -->
 
 ### Add new MLIP models 
 
@@ -130,12 +130,10 @@ If you have pretrained MLIP models that you would like to contribute to the MLIP
 2. Follow the template to code the I/O interface for your model [here](../mlip_arena/models/README.md). 
 3. Update model [registry](../mlip_arena/models/registry.yaml) with metadata
 
-> [!NOTE] 
-> CPU benchmarking will be performed automatically. Due to the limited amount GPU compute, if you would like to be considered for GPU benchmarking, please create a pull request to demonstrate the offline performance of your model (published paper or preprint). We will review and select the models to be benchmarked on GPU.
+<!-- > [!NOTE] 
+> CPU benchmarking will be performed automatically. Due to the limited amount GPU compute, if you would like to be considered for GPU benchmarking, please create a pull request to demonstrate the offline performance of your model (published paper or preprint). We will review and select the models to be benchmarked on GPU. -->
 
-
-
-### Add new datasets
+<!-- ### Add new datasets
 
 The "ultimate" goal is to compile the copies of all the open data in a unified format for lifelong learning with [Hugging Face Auto-Train](https://huggingface.co/docs/hub/webhooks-guide-auto-retrain). 
 
@@ -151,4 +149,4 @@ The "ultimate" goal is to compile the copies of all the open data in a unified f
 #### Molecular dynamics calculations
 
 - [ ] [MD17](http://www.sgdml.org/#datasets)
-- [ ] [MD22](http://www.sgdml.org/#datasets)
+- [ ] [MD22](http://www.sgdml.org/#datasets) -->
