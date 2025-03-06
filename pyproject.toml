@@ -65,7 +65,8 @@ test = [
     "pytest-xdist",
     "prefect==3.1.11",
     "pymatgen>=2025.1.9",
-    "MDAnalysis", # mof
+    "MDAnalysis", # mof,
+    "streamlit==1.38.0"
 ]
 mace = [
     "mace-torch==0.3.9",

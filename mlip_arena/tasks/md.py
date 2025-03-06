@@ -143,7 +143,7 @@ def _get_ensemble_schedule(
         isinstance(pressure, np.ndarray) and pressure.ndim == 1
     ):
         p_schedule = _interpolate_quantity(pressure, n_steps)
-    elif isinstance(pressure, np.ndarray) and pressure.ndim == 4:
+    elif isinstance(pressure, np.ndarray) and pressure.ndim == 3:
         p_schedule = interp1d(np.arange(n_steps + 1), pressure, kind="linear")
         assert isinstance(p_schedule, np.ndarray)
     else:

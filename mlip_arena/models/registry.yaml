@@ -86,6 +86,7 @@ MatterSim:
   gpu-tasks:
     - homonuclear-diatomics
     - stability
+    - combustion
   github: https://github.com/microsoft/mattersim
   doi: https://arxiv.org/abs/2405.04967
   date: 2024-12-05
@@ -190,6 +191,28 @@ eqV2(OMat):
   doi: https://arxiv.org/abs/2410.12771
   license: Modified Apache-2.0 (Meta)
 
+MACE-MPA:
+  module: externals
+  class: MACE_MPA
+  family: mace-mp
+  package: mace-torch==0.3.9
+  checkpoint: mace-mpa-0-medium.model
+  username: 
+  last-update: 2025-11-19T00:00:00
+  datetime: 2024-12-09T00:00:00 # TODO: Fake datetime
+  datasets:
+    - MPTrj # TODO: fake HF dataset repo
+    - Alexandria
+  gpu-tasks:
+    - homonuclear-diatomics
+    - stability
+  github: https://github.com/ACEsuit/mace
+  doi: 
+  date: 2024-12-09
+  prediction: EFS
+  nvt: true
+  npt: true
+  license: MIT
 
 EquiformerV2(OC22):
   module: externals
@@ -295,7 +318,7 @@ ANI2x:
   date: 2024-05-23
   prediction: EFS
   nvt: true
-  npt: false
+  npt: true
   license: MIT
 
 ALIGNN:

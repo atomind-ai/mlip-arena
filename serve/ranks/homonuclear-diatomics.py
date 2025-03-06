@@ -173,3 +173,4 @@ def render():
             - **Force flips**: The number of force direction changes.
             """
         )
+        st.info('PBE energies and forces are provided __only__ for reference. Due to the known convergence issue of plane-wave DFT with diatomic molecules and different dataset the models might be trained on, comparing models with PBE is not rigorous and thus these metrics are excluded from rank aggregation.', icon=":material/warning:")
