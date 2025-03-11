@@ -97,6 +97,19 @@ for model in MLIPEnum:
     results.append(result)
 ```
 
+### List of implemented tasks
+
+The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `from mlip_arena.tasks import *` for convenient imports (currently doesn't work if [phonopy](https://phonopy.github.io/phonopy/install.html) is not installed).
+
+- [OPT](../mlip_arena/tasks/optimize.py#L56): Structure optimization
+- [EOS](../mlip_arena/tasks/eos.py#L42): Equation of state (energy-volume scan)
+- [MD](../mlip_arena/tasks/md.py#L200): Molecular dynamics with flexible dynamics (NVE, NVT, NPT) and temperature/pressure scheduling (annealing, shearing, *etc*)
+- [PHONON](../mlip_arena/tasks/phonon.py#L110): Phonon calculation driven by [phonopy](https://phonopy.github.io/phonopy/install.html)
+- [NEB](../mlip_arena/tasks/neb.py#L96): Nudged elastic band
+- [NEB_FROM_ENDPOINTS](../mlip_arena/tasks/neb.py#L164): Nudge elastic band with convenient image interpolation (linear or IDPP)
+- [ELASTICITY](../mlip_arena/tasks/elasticity.py#L78): Elastic tensor calculation
+
+
 ## Contribute
 
 MLIP Arena is now in pre-alpha. If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). 
