@@ -31,6 +31,15 @@ pip install mlip-arena
 **Linux**
 
 ```bash
+# (Optional) Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+# One script uv pip installation
+bash scripts/install-linux.sh
+```
+
+```bash
+# Or from command line
 git clone https://github.com/atomind-ai/mlip-arena.git
 cd mlip-arena
 pip install torch==2.2.0
