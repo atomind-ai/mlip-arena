@@ -1,6 +1,7 @@
 <div align="center">
     <h1>MLIP Arena</h1>
     <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/test.yaml"></a>
+    <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/mlip-arena"></a>
     <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>
     <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
     <!-- <a href="https://discord.gg/W8WvdQtT8T"><img alt="Discord" src="https://img.shields.io/discord/1299613474820984832?logo=discord"> -->
@@ -30,6 +31,15 @@ pip install mlip-arena
 **Linux**
 
 ```bash
+# (Optional) Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+# One script uv pip installation
+bash scripts/install-linux.sh
+```
+
+```bash
+# Or from command line
 git clone https://github.com/atomind-ai/mlip-arena.git
 cd mlip-arena
 pip install torch==2.2.0
@@ -86,6 +96,19 @@ for model in MLIPEnum:
     )
     results.append(result)
 ```
+
+### List of implemented tasks
+
+The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `from mlip_arena.tasks import *` for convenient imports (currently doesn't work if [phonopy](https://phonopy.github.io/phonopy/install.html) is not installed).
+
+- [OPT](../mlip_arena/tasks/optimize.py#L56): Structure optimization
+- [EOS](../mlip_arena/tasks/eos.py#L42): Equation of state (energy-volume scan)
+- [MD](../mlip_arena/tasks/md.py#L200): Molecular dynamics with flexible dynamics (NVE, NVT, NPT) and temperature/pressure scheduling (annealing, shearing, *etc*)
+- [PHONON](../mlip_arena/tasks/phonon.py#L110): Phonon calculation driven by [phonopy](https://phonopy.github.io/phonopy/install.html)
+- [NEB](../mlip_arena/tasks/neb.py#L96): Nudged elastic band
+- [NEB_FROM_ENDPOINTS](../mlip_arena/tasks/neb.py#L164): Nudge elastic band with convenient image interpolation (linear or IDPP)
+- [ELASTICITY](../mlip_arena/tasks/elasticity.py#L78): Elastic tensor calculation
+
 
 ## Contribute
 

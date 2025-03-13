@@ -23,6 +23,7 @@ def test_nve(model: MLIPEnum):
         dynamics="velocityverlet",
         total_time=10,
         time_step=2,
+        dynamics_kwargs={},
     )
 
     assert isinstance(result["atoms"].get_potential_energy(), float)
