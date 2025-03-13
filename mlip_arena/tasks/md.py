@@ -187,9 +187,9 @@ def _generate_task_run_name():
     parameters = task_run.parameters
 
     atoms = parameters["atoms"]
-    calculator_name = parameters["calculator"]
+    calculator = parameters["calculator"]
 
-    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator}"
 
 
 @task(
