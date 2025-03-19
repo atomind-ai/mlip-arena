@@ -14,8 +14,8 @@ High pressure stability:
   task-page: stability
   task-layout: centered
   rank-page: 
-Thermal conductivity:
-  category: Material Properties
+Lattice thermal conductivity:
+  category: Properties and Physical Behaviors
   task-page: thermal-conductivity
   task-layout: centered
   rank-page: thermal-conductivity
