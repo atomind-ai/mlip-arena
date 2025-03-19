@@ -159,17 +159,21 @@ def render():
     )
     with st.expander("Explanation", icon=":material/info:"):
         st.caption(
-            """
+            r"""
             - **Conservation deviation**: The average deviation of force from negative energy gradient along the diatomic curves. 
             
             $$
-            \\text{Conservation deviation} = \\left\\langle\\left| \\mathbf{F}(\\mathbf{r})\\cdot\\frac{\\mathbf{r}}{\\|\\mathbf{r}\\|} +  \\nabla_rE\\right|\\right\\rangle_{r = \\|\\mathbf{r}\\|}
+            \text{Conservation deviation} = \left\langle\left| \mathbf{F}(\mathbf{r})\cdot\frac{\mathbf{r}}{\|\mathbf{r}\|} +  \nabla_rE\right|\right\rangle_{r = \|\mathbf{r}\|}
             $$
 
-            - **Spearman's coeff. (E: repulsion)**: Spearman's correlation coefficient of energy prediction within equilibrium distance $r \\in (r_{min}, r_o = \\argmin_{r} E(r))$.
-            - **Spearman's coeff. (F: descending)**: Spearman's correlation coefficient of force prediction within equilibrium distance $r \\in (r_{min}, r_o = \\argmin_{r} E(r))$.
+            - **Spearman's coeff. (E: repulsion)**: Spearman's correlation coefficient of energy prediction within equilibrium distance $r \in (r_{min}, r_o = \argmin_{r} E(r))$.
+            - **Spearman's coeff. (F: descending)**: Spearman's correlation coefficient of force prediction before maximum attraction $r \in (r_{min}, r_a = \argmin_{r} F(r))$.
             - **Tortuosity**: The ratio between total variation in energy and sum of absolute energy differences between $r_{min}$, $r_o$, and $r_{max}$.
-            - **Energy jump**: The sum of energy discontinuity.
+            - **Energy jump**: The sum of energy discontinuity between sampled points. 
+
+            $$
+            \text{Energy jump} = \sum_{r_i \in [r_\text{min}, r_\text{max}]} \left| \text{sign}{\left[ E(r_{i+1}) - E(r_i)\right]} - \text{sign}{\left[E(r_i) - E(r_{i-1})\right]}\right| \times \\ \left( \left|E(r_{i+1}) - E(r_i)\right| + \left|E(r_i) - E(r_{i-1})\right|\right)
+            $$
             - **Force flips**: The number of force direction changes.
             """
         )

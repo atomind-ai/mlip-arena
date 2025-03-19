@@ -72,16 +72,11 @@ st.toast(
 
 st.sidebar.markdown(
 """
-**Crystal Stability Classification**
+Complementary Benchmarks
 """
 )
 st.sidebar.page_link(
     "https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/link:"
-)
-st.sidebar.markdown(
-"""
-**Classical Potentials**
-"""
 )
 st.sidebar.page_link(
     "https://openkim.org/", label="OpenKIM", icon=":material/link:"
