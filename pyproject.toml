@@ -42,7 +42,7 @@ dependencies=[
 
 [project.optional-dependencies]
 app = [
-    "streamlit==1.38.0",
+    "streamlit==1.43.2",
     "plotly",
 ]
 test = [
@@ -64,7 +64,7 @@ test = [
     "pytest-xdist",
     "prefect==3.1.11",
     "pymatgen>=2025.1.9",
-    "streamlit==1.38.0"
+    "streamlit==1.43.2"
 ]
 mace = [
     "mace-torch==0.3.9",

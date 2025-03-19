@@ -39,20 +39,7 @@ for task in TASKS:
     else:
         centered_pages.append(page)
 
-# mbd = st.sidebar.page_link(page="https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/extension:")
-# nav["Crystal stability"].append(mbd)
-
-# nav[""].append(st.Page(page="https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/extension:"))
-
-nav["Crystal Stability"].append(
-    st.Page(
-        "tasks/discovery.py",
-        title="Matbench Discovery",
-        icon=":material/extension:",
-    )
-)
-
-pg = st.navigation(nav)
+pg = st.navigation(nav, expanded=True)
 
 if pg in centered_pages:
     st.set_page_config(
@@ -83,13 +70,21 @@ st.toast(
     icon="🍞",
 )
 
-# st.sidebar.markdown(
-# """
-# Other benchmarks
-# """
-# )
-# st.sidebar.page_link(
-#     "https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/extension:"
-# )
+st.sidebar.markdown(
+"""
+**Crystal Stability Classification**
+"""
+)
+st.sidebar.page_link(
+    "https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/link:"
+)
+st.sidebar.markdown(
+"""
+**Classical Potentials**
+"""
+)
+st.sidebar.page_link(
+    "https://openkim.org/", label="OpenKIM", icon=":material/link:"
+)
 
 pg.run()
