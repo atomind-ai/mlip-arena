@@ -125,14 +125,10 @@ streamlit run serve/app.py
 ### Add new benchmark tasks (WIP)
 
 > [!NOTE]
-> Please reuse or extend the general tasks defined as Prefect / [Atomate2](https://github.com/materialsproject/atomate2) / [Quacc](https://github.com/Quantum-Accelerators/quacc) workflow. 
-> The following are some tasks implemented:
-> - [Prefect structure optimization (OPT)](../mlip_arena/tasks/optimize.py)
-> - [Prefect molecular dynamics (MD)](../mlip_arena/tasks/md.py)
-> - [Prefect equation of states (EOS)](../mlip_arena/tasks/eos.py)
+> Please reuse, extend, or chain the general tasks defined [above](#list-of-implemented-tasks)
 
 <!-- 1. Follow the task template to implement the task class and upload the script along with metadata to the MLIP Arena [here](../mlip_arena/tasks/README.md).
-2. Code a benchmark script to evaluate the performance of your model on the task. The script should be able to load the model and the dataset, and output the evaluation metrics. -->
+1. Code a benchmark script to evaluate the performance of your model on the task. The script should be able to load the model and the dataset, and output the evaluation metrics. -->
 
 ### Add new MLIP models 
 
