@@ -39,8 +39,18 @@ for task in TASKS:
     else:
         centered_pages.append(page)
 
-# mbd = st.page_link(page="https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/extension:")
-# nav["Other benchmarks"].append(mbd)
+# mbd = st.sidebar.page_link(page="https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/extension:")
+# nav["Crystal stability"].append(mbd)
+
+# nav[""].append(st.Page(page="https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/extension:"))
+
+nav["Crystal Stability"].append(
+    st.Page(
+        "tasks/discovery.py",
+        title="Matbench Discovery",
+        icon=":material/extension:",
+    )
+)
 
 pg = st.navigation(nav)
 
@@ -66,6 +76,7 @@ else:
             "Report a bug": "https://github.com/atomind-ai/mlip-arena/issues/new",
         },
     )
+
 
 st.toast(
     "MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care. Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
