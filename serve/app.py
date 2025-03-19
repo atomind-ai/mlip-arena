@@ -39,10 +39,7 @@ for task in TASKS:
     else:
         centered_pages.append(page)
 
-# mbd = st.page_link(page="https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/extension:")
-# nav["Other benchmarks"].append(mbd)
-
-pg = st.navigation(nav)
+pg = st.navigation(nav, expanded=True)
 
 if pg in centered_pages:
     st.set_page_config(
@@ -67,18 +64,26 @@ else:
         },
     )
 
+
 st.toast(
     "MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care. Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
     icon="🍞",
 )
 
-# st.sidebar.markdown(
-# """
-# Other benchmarks
-# """
-# )
-# st.sidebar.page_link(
-#     "https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/extension:"
-# )
+st.sidebar.page_link(
+    "https://github.com/atomind-ai/mlip-arena", label="GitHub Repository", icon=":material/code:"
+)
+
+st.sidebar.markdown(
+"""
+Complementary Benchmarks
+"""
+)
+st.sidebar.page_link(
+    "https://matbench-discovery.materialsproject.org/", label="Matbench Discovery", icon=":material/link:"
+)
+st.sidebar.page_link(
+    "https://openkim.org/", label="OpenKIM", icon=":material/link:"
+)
 
 pg.run()

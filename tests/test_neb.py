@@ -39,7 +39,7 @@ def test_neb(model: MLIPEnum):
             calculator=get_calculator(
                 calculator_name=model.name,
             ),
-            optimizer="FIRE2",
+            optimizer="BFGS",
         )
 
         assert isinstance(result, dict)

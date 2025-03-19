@@ -3,6 +3,9 @@ from __future__ import annotations
 import importlib
 from enum import Enum
 from pathlib import Path
+from typing import Dict, Optional, Type, TypeVar, Union
+
+T = TypeVar("T", bound="MLIP")
 
 import torch
 import yaml
@@ -11,6 +14,7 @@ from torch import nn
 
 from ase import Atoms
 from ase.calculators.calculator import Calculator, all_changes
+from mlip_arena.data.collate import collate_fn
 
 try:
     from prefect.logging import get_run_logger
@@ -48,6 +52,35 @@ class MLIP(
         # torch._dynamo.config.compiled_autograd = True
         # self.model = torch.compile(model)
         self.model = model
+
+    def _save_pretrained(self, save_directory: Path) -> None:
+        return super()._save_pretrained(save_directory)
+
+    @classmethod
+    def from_pretrained(
+        cls: Type[T],
+        pretrained_model_name_or_path: Union[str, Path],
+        *,
+        force_download: bool = False,
+        resume_download: Optional[bool] = None,
+        proxies: Optional[Dict] = None,
+        token: Optional[Union[str, bool]] = None,
+        cache_dir: Optional[Union[str, Path]] = None,
+        local_files_only: bool = False,
+        revision: Optional[str] = None,
+        **model_kwargs,
+    ) -> T:
+        return super().from_pretrained(
+            pretrained_model_name_or_path,
+            force_download=force_download,
+            resume_download=resume_download,
+            proxies=proxies,
+            token=token,
+            cache_dir=cache_dir,
+            local_files_only=local_files_only,
+            revision=revision,
+            **model_kwargs,
+        )
 
     def forward(self, x):
         return self.model(x)
@@ -101,7 +134,6 @@ class MLIPCalculator(MLIP, Calculator):
     ):
         """Calculate energies and forces for the given Atoms object"""
         super().calculate(atoms, properties, system_changes)
-        from mlip_arena.data.collate import collate_fn
 
         # TODO: move collate_fn to here in MLIPCalculator
         data = collate_fn([atoms], cutoff=self.cutoff).to(self.device)
