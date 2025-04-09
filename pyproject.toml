@@ -33,7 +33,7 @@ dependencies=[
     "huggingface_hub",
     "datasets",
     "safetensors",
-    "prefect>3.1.0",
+    "prefect>3.2.0",
     "prefect-dask",
     "dask",
     "dask_jobqueue",
@@ -63,10 +63,10 @@ test = [
     "torchani==2.2.4",
     "pytest",
     "pytest-xdist",
-    "prefect==3.1.11",
+    "prefect==3.2.13",
     "pymatgen>=2025.1.9",
     "MDAnalysis", # mof,
-    "streamlit==1.38.0"
+    "streamlit==1.43.2"
 ]
 mace = [
     "mace-torch==0.3.9",
