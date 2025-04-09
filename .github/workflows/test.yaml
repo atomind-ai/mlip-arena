@@ -61,4 +61,4 @@ jobs:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
       run: |
-        pytest -vra -n 5 tests 
+        pytest -vra -n 5 --dist=loadscope tests 

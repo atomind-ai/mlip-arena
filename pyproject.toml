@@ -43,7 +43,7 @@ dependencies=[
 
 [project.optional-dependencies]
 app = [
-    "streamlit==1.38.0",
+    "streamlit==1.43.2",
     "plotly",
 ]
 test = [
