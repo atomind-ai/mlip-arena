@@ -1,0 +1,95 @@
+data_1517365
+_audit_creation_date              2024-01-26
+_audit_creation_method            'Materials Studio'
+_symmetry_space_group_name_H-M    'P1'
+_symmetry_Int_Tables_number       1
+_symmetry_cell_setting            triclinic
+loop_
+_symmetry_equiv_pos_as_xyz
+  x,y,z
+_cell_length_a                    7.0012
+_cell_length_b                    7.0012
+_cell_length_c                    7.4979
+_cell_angle_alpha                 90.0000
+_cell_angle_beta                  90.0000
+_cell_angle_gamma                 90.0000
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+C1     C     0.90026   0.49844   0.65431   0.03390  Uiso   1.00
+H2     H     0.81423   0.49723   0.77818   0.04060  Uiso   1.00
+C3     C     0.50124   0.90015   0.65433   0.03390  Uiso   1.00
+H4     H     0.50222   0.81403   0.77815   0.04060  Uiso   1.00
+C5     C     0.90056   0.50154   0.34578   0.03390  Uiso   1.00
+H6     H     0.81477   0.50278   0.22176   0.04060  Uiso   1.00
+C7     C     0.49876   0.90067   0.34580   0.03390  Uiso   1.00
+H8     H     0.49779   0.81497   0.22172   0.04060  Uiso   1.00
+C9     C     0.09955   0.50035   0.34574   0.03390  Uiso   1.00
+H10    H     0.18543   0.50060   0.22177   0.04060  Uiso   1.00
+C11    C     0.49897   0.09954   0.34575   0.03390  Uiso   1.00
+H12    H     0.49795   0.18541   0.22177   0.04060  Uiso   1.00
+C13    C     0.09963   0.49965   0.65428   0.03390  Uiso   1.00
+H14    H     0.18557   0.49940   0.77821   0.04060  Uiso   1.00
+C15    C     0.50118   0.09964   0.65428   0.03390  Uiso   1.00
+H16    H     0.50190   0.18559   0.77820   0.04060  Uiso   1.00
+Ni17   Ni    0.50000   0.50000   0.50000   0.01300  Uiso   1.00
+Ti18   Ti    0.50000   0.50000   0.00000   0.03680  Uiso   1.00
+F19    F     0.50000   0.50000   0.76510   0.02310  Uiso   1.00
+F20    F     0.50000   0.50000   0.23490   0.02310  Uiso   1.00
+F21    F     0.66555   0.66555   0.00000   0.05180  Uiso   1.00
+F22    F     0.33445   0.33445   0.00000   0.05180  Uiso   1.00
+F23    F     0.33445   0.66555   0.00000   0.05180  Uiso   1.00
+F24    F     0.66555   0.33445   0.00000   0.05180  Uiso   1.00
+N25    N     0.80390   0.50001   0.49996   0.01620  Uiso   1.00
+N26    N     0.19610   0.50000   0.50000   0.01620  Uiso   1.00
+N27    N     0.50000   0.80390   0.50000   0.01620  Uiso   1.00
+N28    N     0.50000   0.19610   0.50000   0.01620  Uiso   1.00
+loop_
+_geom_bond_atom_site_label_1
+_geom_bond_atom_site_label_2
+_geom_bond_distance
+_geom_bond_site_symmetry_2
+_ccdc_geom_bond_type
+C1     N25     1.340   .     S
+C1     H2      1.107   .     S
+C1     C13     1.396   1_655 S
+C3     N27     1.339   .     S
+C3     H4      1.107   .     S
+C3     C15     1.397   1_565 S
+C5     N25     1.340   .     S
+C5     H6      1.107   .     S
+C5     C9      1.393   1_655 S
+C7     N27     1.340   .     S
+C7     H8      1.107   .     S
+C7     C11     1.392   1_565 S
+C9     N26     1.340   .     S
+C9     H10     1.107   .     S
+C9     C5      1.393   1_455 S
+C11    N28     1.340   .     S
+C11    H12     1.107   .     S
+C11    C7      1.392   1_545 S
+C13    N26     1.340   .     S
+C13    H14     1.107   .     S
+C13    C1      1.396   1_455 S
+C15    N28     1.339   .     S
+C15    H16     1.107   .     S
+C15    C3      1.397   1_545 S
+Ni17   F19     1.988   .     S
+Ni17   F20     1.988   .     S
+Ni17   N25     2.128   .     S
+Ni17   N26     2.128   .     S
+Ni17   N27     2.128   .     S
+Ni17   N28     2.128   .     S
+Ti18   F19     1.761   1_554 S
+Ti18   F20     1.761   .     S
+Ti18   F21     1.639   .     S
+Ti18   F22     1.639   .     S
+Ti18   F23     1.639   .     S
+Ti18   F24     1.639   .     S
+F19    Si18    1.761   1_556 S

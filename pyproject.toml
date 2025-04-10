@@ -33,11 +33,12 @@ dependencies=[
     "huggingface_hub",
     "datasets",
     "safetensors",
-    "prefect>3.1.0",
+    "prefect>3.2.0",
     "prefect-dask",
     "dask",
     "dask_jobqueue",
     "tables",
+    "MDAnalysis", # mof
 ]
 
 [project.optional-dependencies]
@@ -62,8 +63,9 @@ test = [
     "torchani==2.2.4",
     "pytest",
     "pytest-xdist",
-    "prefect==3.1.11",
+    "prefect==3.2.13",
     "pymatgen>=2025.1.9",
+    "MDAnalysis", # mof,
     "streamlit==1.43.2"
 ]
 mace = [
@@ -163,7 +165,7 @@ ignore = [
     "FBT003",  # boolean positional variable in function call
     "PERF203",  # `try`-`except` within a loop incurs performance overhead (no overhead in Py 3.11+)
     "F405",  # 'module' may be undefined, or defined from star imports
-    "C0301",  # Line too long
+    "PD901",
 ]
 fixable = ["ALL"]
 pydocstyle.convention = "google"
