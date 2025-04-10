@@ -70,6 +70,10 @@ st.toast(
     icon="🍞",
 )
 
+st.sidebar.page_link(
+    "https://github.com/atomind-ai/mlip-arena", label="GitHub Repository", icon=":material/code:"
+)
+
 st.sidebar.markdown(
 """
 Complementary Benchmarks
