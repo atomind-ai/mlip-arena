@@ -1,22 +1,25 @@
 <div align="center">
     <h1>MLIP Arena</h1>
+    <img alt="Static Badge" src="https://img.shields.io/badge/ICLR-AI4Mat-blue?link=https%3A%2F%2Fopenreview.net%2Fforum%3Fid%3DysKfIavYQE">
+    <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
     <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/test.yaml"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/mlip-arena"></a>
     <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>
-    <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
     <!-- <a href="https://discord.gg/W8WvdQtT8T"><img alt="Discord" src="https://img.shields.io/discord/1299613474820984832?logo=discord"> -->
 </a>
 </div>
 
-> [!CAUTION]
-> MLIP Arena is currently in pre-alpha. The results are not stable. Please intepret them with care. 
+MLIP Arena is a unified platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional error metrics. It focuses on revealing the physical soundness learned by MLIPs and assessing their utilitarian performance agnostic to underlying model architecture. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
+
+MLIP Arena leverages modern pythonic workflow orchestrator [Prefect](https://www.prefect.io/) to enable advanced task/flow chaining and caching.
 
 > [!NOTE]
 > Contributions of new tasks are very welcome! If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks, or propose new one in [Discussion](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
 
-MLIP Arena is a unified platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional error metrics. It focuses on revealing the physics and chemistry learned by these models and assessing their utilitarian performance agnostic to underlying model architecture. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
+## Announcement
 
-MLIP Arena leverages modern pythonic workflow orchestrator [Prefect](https://www.prefect.io/) to enable advanced task/flow chaining and caching.
+- **[April 8, 2025]** [🎉 MLIP Arena accepted as an ICLR AI4Mat Spotlight! 🎉](https://openreview.net/forum?id=ysKfIavYQE#discussion) Huge thanks to all co-authors for their contributions!
+
 
 ## Installation
 
@@ -27,6 +30,8 @@ pip install mlip-arena
 ```
 
 ### From source
+
+> [!Caution] We recommand to start from clean virtual environment due to the compatibility issues between multiple popular MLIPs. We provide one script installation script using uv for minimal package conflicts and fast installation!
 
 **Linux**
 
@@ -63,7 +68,7 @@ bash scripts/install-macosx.sh
 
 ## Quickstart
 
-### Molecular dynamics (MD)
+### First example: Molecular dynamics
 
 Arena provides a unified interface to run all the compiled MLIPs. This can be achieved simply by looping through `MLIPEnum`:
 
@@ -109,6 +114,29 @@ The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `fr
 - [NEB_FROM_ENDPOINTS](../mlip_arena/tasks/neb.py#L164): Nudge elastic band with convenient image interpolation (linear or IDPP)
 - [ELASTICITY](../mlip_arena/tasks/elasticity.py#L78): Elastic tensor calculation
 
+### 🚀 Parallelize Benchmark at Scale
+
+To run multiple benchmarks in parallel, add `.submit` before the task function and wrap all the tasks into a flow to concurrently dispatch the tasks to worker. (see Prefect Doc on [tasks](https://docs.prefect.io/v3/develop/write-tasks) and [flow](https://docs.prefect.io/v3/develop/write-flows) for details)
+
+```python
+...
+from prefect import flow
+
+@flow
+def run_all_tasks:
+
+    futures = []
+    for model in MLIPEnum:
+        future = MD.submit(
+            atoms=atoms,
+            ...
+        )
+        future.append(future)
+
+    return [f.result(raise_on_failure=False) for f in futures]
+```
+
+For a more practical example, please now refer to [MOF classification](../examples/mof/classification/classification.py).
 
 ## Contribute
 
