@@ -1,6 +1,6 @@
 <div align="center">
     <h1>MLIP Arena</h1>
-    <img alt="Static Badge" src="https://img.shields.io/badge/ICLR-AI4Mat-blue?link=https%3A%2F%2Fopenreview.net%2Fforum%3Fid%3DysKfIavYQE">
+    <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR-AI4Mat-blue"></a>
     <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
     <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/test.yaml"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/mlip-arena"></a>
@@ -18,7 +18,7 @@ MLIP Arena leverages modern pythonic workflow orchestrator [Prefect](https://www
 
 ## Announcement
 
-- **[April 8, 2025]** [🎉 MLIP Arena accepted as an ICLR AI4Mat Spotlight! 🎉](https://openreview.net/forum?id=ysKfIavYQE#discussion) Huge thanks to all co-authors for their contributions!
+- **[April 8, 2025]** [🎉 **MLIP Arena accepted as an ICLR AI4Mat Spotlight!** 🎉](https://openreview.net/forum?id=ysKfIavYQE#discussion) Huge thanks to all co-authors for their contributions!
 
 
 ## Installation
@@ -31,7 +31,8 @@ pip install mlip-arena
 
 ### From source
 
-> [!Caution] We recommand to start from clean virtual environment due to the compatibility issues between multiple popular MLIPs. We provide one script installation script using uv for minimal package conflicts and fast installation!
+> [!CAUTION] 
+> We recommand to start from clean virtual environment due to the compatibility issues between multiple popular MLIPs. We provide one script installation script using uv for minimal package conflicts and fast installation!
 
 **Linux**
 
@@ -68,7 +69,7 @@ bash scripts/install-macosx.sh
 
 ## Quickstart
 
-### First example: Molecular dynamics
+### The first example: Molecular Dynamics
 
 Arena provides a unified interface to run all the compiled MLIPs. This can be achieved simply by looping through `MLIPEnum`:
 
@@ -102,21 +103,9 @@ for model in MLIPEnum:
     results.append(result)
 ```
 
-### List of implemented tasks
+### 🚀 Parallelize Benchmarks at Scale
 
-The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `from mlip_arena.tasks import *` for convenient imports (currently doesn't work if [phonopy](https://phonopy.github.io/phonopy/install.html) is not installed).
-
-- [OPT](../mlip_arena/tasks/optimize.py#L56): Structure optimization
-- [EOS](../mlip_arena/tasks/eos.py#L42): Equation of state (energy-volume scan)
-- [MD](../mlip_arena/tasks/md.py#L200): Molecular dynamics with flexible dynamics (NVE, NVT, NPT) and temperature/pressure scheduling (annealing, shearing, *etc*)
-- [PHONON](../mlip_arena/tasks/phonon.py#L110): Phonon calculation driven by [phonopy](https://phonopy.github.io/phonopy/install.html)
-- [NEB](../mlip_arena/tasks/neb.py#L96): Nudged elastic band
-- [NEB_FROM_ENDPOINTS](../mlip_arena/tasks/neb.py#L164): Nudge elastic band with convenient image interpolation (linear or IDPP)
-- [ELASTICITY](../mlip_arena/tasks/elasticity.py#L78): Elastic tensor calculation
-
-### 🚀 Parallelize Benchmark at Scale
-
-To run multiple benchmarks in parallel, add `.submit` before the task function and wrap all the tasks into a flow to concurrently dispatch the tasks to worker. (see Prefect Doc on [tasks](https://docs.prefect.io/v3/develop/write-tasks) and [flow](https://docs.prefect.io/v3/develop/write-flows) for details)
+To run multiple benchmarks in parallel, add `.submit` before the task function and wrap all the tasks into a flow to dispatch the tasks to worker for concurrent execution. See Prefect Doc on [tasks](https://docs.prefect.io/v3/develop/write-tasks) and [flow](https://docs.prefect.io/v3/develop/write-flows) for more details.
 
 ```python
 ...
@@ -137,6 +126,18 @@ def run_all_tasks:
 ```
 
 For a more practical example, please now refer to [MOF classification](../examples/mof/classification/classification.py).
+
+### List of implemented tasks
+
+The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `from mlip_arena.tasks import *` for convenient imports (currently doesn't work if [phonopy](https://phonopy.github.io/phonopy/install.html) is not installed).
+
+- [OPT](../mlip_arena/tasks/optimize.py#L56): Structure optimization
+- [EOS](../mlip_arena/tasks/eos.py#L42): Equation of state (energy-volume scan)
+- [MD](../mlip_arena/tasks/md.py#L200): Molecular dynamics with flexible dynamics (NVE, NVT, NPT) and temperature/pressure scheduling (annealing, shearing, *etc*)
+- [PHONON](../mlip_arena/tasks/phonon.py#L110): Phonon calculation driven by [phonopy](https://phonopy.github.io/phonopy/install.html)
+- [NEB](../mlip_arena/tasks/neb.py#L96): Nudged elastic band
+- [NEB_FROM_ENDPOINTS](../mlip_arena/tasks/neb.py#L164): Nudge elastic band with convenient image interpolation (linear or IDPP)
+- [ELASTICITY](../mlip_arena/tasks/elasticity.py#L78): Elastic tensor calculation
 
 ## Contribute
 
@@ -197,3 +198,19 @@ The "ultimate" goal is to compile the copies of all the open data in a unified f
 
 - [ ] [MD17](http://www.sgdml.org/#datasets)
 - [ ] [MD22](http://www.sgdml.org/#datasets) -->
+
+
+## Citation
+
+If you find the work useful, please consider citing the following:
+
+```bibtex
+@inproceedings{
+    chiang2025mlip,
+    title={{MLIP} Arena: Advancing Fairness and Transparency in Machine Learning Interatomic Potentials through an Open and Accessible Benchmark Platform},
+    author={Yuan Chiang and Tobias Kreiman and Elizabeth Weaver and Ishan Amin and Matthew Kuner and Christine Zhang and Aaron Kaplan and Daryl Chrzan and Samuel M Blau and Aditi S. Krishnapriyan and Mark Asta},
+    booktitle={AI for Accelerated Materials Design - ICLR 2025},
+    year={2025},
+    url={https://openreview.net/forum?id=ysKfIavYQE}
+}
+```
