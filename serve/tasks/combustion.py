@@ -250,36 +250,6 @@ fig.update_layout(
 
 st.plotly_chart(fig)
 
-# Total Energy
-
-# fig = go.Figure()
-
-# for method in df["method"].unique():
-#     row = df[df["method"] == method].iloc[0]
-#     fig.add_trace(
-#         go.Scatter(
-#             x=row["timestep"],
-#             y=np.array(row["energies"]) - row["energies"][0] + np.array(row["kinetic_energies"]),
-#             mode="lines",
-#             name=method,
-#             line=dict(
-#                 color=method_color_mapping[method],
-#                 # width=1
-#             ),
-#             marker=dict(color=method_color_mapping[method], size=3),
-#             showlegend=True,
-#         ),
-#     )
-
-# fig.update_layout(
-#     # title="Hydrogen Combustion (2H2 + O2 -> 2H2O, 64 units)",
-#     xaxis_title="Timestep",
-#     yaxis_title="Total Energy 𝚫 (eV)",
-#     # template="plotly_dark",
-# )
-
-# st.plotly_chart(fig)
-
 # Reaction energy
 
 fig = go.Figure()
@@ -334,16 +304,8 @@ fig.add_annotation(
 )
 
 fig.update_layout(
-    # title="Reaction energy 𝚫H (kcal/mol)",
     xaxis_title="Method <br> <span style='font-size: 10px;'>[1] Lide, D. R. (Ed.). (2004). CRC handbook of chemistry and physics (Vol. 85). CRC press.</span>",
     yaxis_title="Reaction energy 𝚫H (kcal/mol)",
-    # annotations = [
-    #     dict(
-    #         x=0.5, xref="paper", xanchor="center",
-    #         y=-0.5, yref="paper", yanchor="bottom",
-    #         text="Caption",
-    #     )
-    # ]
 )
 
 st.plotly_chart(fig)
