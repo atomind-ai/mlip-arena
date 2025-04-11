@@ -32,7 +32,7 @@ pip install mlip-arena
 ### From source
 
 > [!CAUTION] 
-> We recommand to start from clean virtual environment due to the compatibility issues between multiple popular MLIPs. We provide one script installation script using uv for minimal package conflicts and fast installation!
+> We recommend clean build in a new virtual environment due to the compatibility issues between multiple popular MLIPs. We provide a single installation script using `uv` for minimal package conflicts and fast installation!
 
 **Linux**
 

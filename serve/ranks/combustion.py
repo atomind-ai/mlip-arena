@@ -48,13 +48,13 @@ def get_com_drifts(df):
 
 df_exploded = get_com_drifts(df)
 
+exp_ref = -68.3078 # kcal/mol
+
 for method, row in df_exploded.groupby("method"):
 #     # row = df[df["method"] == method].iloc[0]
     energies = np.array(row["energies"])
-    df_exploded.loc[df_exploded["method"] == method,"reaction_enthlapy_diff"] = (energies[-1] - energies[0]) / 128 * 23.
+    df_exploded.loc[df_exploded["method"] == method,"reaction_enthlapy_diff"] = ((energies[-1] - energies[0]) / 128 * 23.) - exp_ref
     df_exploded.loc[df_exploded["method"] == method, "final_com_drift"] = np.array(row["total_com_drift"])[-1]
-
-exp_ref = -68.3078 # kcal/mol
 
 
 df_exploded.drop(columns=["temperatures", "pressures", "total_steps", "energies", "kinetic_energies", "timestep", "nproducts", "total_com_drift", "target_steps", "reaction", "formula", "natoms", "seconds_per_step", "seconds_per_step_per_atom", "final_step", "total_time_seconds"], axis=1, inplace=True)
