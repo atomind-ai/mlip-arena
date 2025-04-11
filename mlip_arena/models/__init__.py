@@ -9,12 +9,20 @@ T = TypeVar("T", bound="MLIP")
 
 import torch
 import yaml
-from huggingface_hub import PyTorchModelHubMixin
-from torch import nn
-
 from ase import Atoms
 from ase.calculators.calculator import Calculator, all_changes
-from mlip_arena.data.collate import collate_fn
+from huggingface_hub import PyTorchModelHubMixin
+from torch import nn
+from typing_extensions import Self
+
+try:
+    from mlip_arena.data.collate import collate_fn
+except ImportError:
+    # Fallback to a dummy function if the import fails
+    def collate_fn(batch: list[Atoms], cutoff: float) -> None:
+        raise ImportError(
+            "collate_fn import failed. Please install the required dependencies."
+        )
 
 try:
     from prefect.logging import get_run_logger
@@ -58,18 +66,18 @@ class MLIP(
 
     @classmethod
     def from_pretrained(
-        cls: Type[T],
-        pretrained_model_name_or_path: Union[str, Path],
+        cls,
+        pretrained_model_name_or_path: str | Path,
         *,
         force_download: bool = False,
-        resume_download: Optional[bool] = None,
-        proxies: Optional[Dict] = None,
-        token: Optional[Union[str, bool]] = None,
-        cache_dir: Optional[Union[str, Path]] = None,
+        resume_download: bool | None = None,
+        proxies: dict | None = None,
+        token: str | bool | None = None,
+        cache_dir: str | Path | None = None,
         local_files_only: bool = False,
-        revision: Optional[str] = None,
+        revision: str | None = None,
         **model_kwargs,
-    ) -> T:
+    ) -> Self:
         return super().from_pretrained(
             pretrained_model_name_or_path,
             force_download=force_download,
@@ -108,6 +116,7 @@ class MLIPCalculator(MLIP, Calculator):
         # Additional initialization if needed
         # self.name: str = self.__class__.__name__
         from mlip_arena.models.utils import get_freer_device
+
         self.device = device or get_freer_device()
         self.cutoff = cutoff
         self.model.to(self.device)
