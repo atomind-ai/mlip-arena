@@ -15,6 +15,7 @@ MACE-MP(M):
     - homonuclear-diatomics
     - stability
     - combustion
+    - eos-bulk
   github: https://github.com/ACEsuit/mace
   doi: https://arxiv.org/abs/2401.00096
   date: 2023-12-29
@@ -38,6 +39,7 @@ CHGNet:
     - homonuclear-diatomics
     - stability
     - combustion
+    - eos-bulk
   github: https://github.com/CederGroupHub/chgnet
   doi: https://doi.org/10.1038/s42256-023-00716-3
   date: 2023-02-28
@@ -61,6 +63,7 @@ M3GNet:
     - homonuclear-diatomics
     - combustion
     - stability
+    - eos-bulk
   github: https://github.com/materialsvirtuallab/matgl
   doi: https://doi.org/10.1038/s43588-022-00349-3
   date: 2022-02-05
@@ -87,6 +90,7 @@ MatterSim:
     - homonuclear-diatomics
     - stability
     - combustion
+    - eos-bulk
   github: https://github.com/microsoft/mattersim
   doi: https://arxiv.org/abs/2405.04967
   date: 2024-12-05
@@ -113,6 +117,7 @@ ORBv2:
     - homonuclear-diatomics
     - combustion
     - stability
+    - eos-bulk
   github: https://github.com/orbital-materials/orb-models
   doi: https://arxiv.org/abs/2410.22570
   date: 2024-10-15
@@ -136,6 +141,7 @@ SevenNet:
     - homonuclear-diatomics
     - stability
     - combustion
+    - eos-bulk
   github: https://github.com/MDIL-SNU/SevenNet
   doi: https://doi.org/10.1021/acs.jctc.4c00190
   date: 2024-07-11
@@ -184,6 +190,7 @@ MACE-MPA:
   gpu-tasks:
     - homonuclear-diatomics
     - stability
+    - eos-bulk
   github: https://github.com/ACEsuit/mace
   doi: https://arxiv.org/abs/2401.00096
   date: 2024-12-09
