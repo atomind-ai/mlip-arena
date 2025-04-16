@@ -19,9 +19,9 @@ from mlip_arena.tasks.utils import get_calculator
 @task
 def load_wbm_structures():
     """
-    Load the WBM structures from a JSON file.
+    Load the WBM structures from a ASE DB file.
     """
-    with connect("wbm_structures.db") as db:
+    with connect("../wbm_structures.db") as db:
         for row in db.select():
             yield row.toatoms(add_additional_information=True)
 
@@ -41,7 +41,6 @@ def save_result(
     result["id"] = id
     result.pop("atoms", None)
 
-    # fpath = Path(f"{model_name}.parquet")
     fpath = Path(f"{model_name}")
     fpath.mkdir(exist_ok=True)
 
@@ -49,15 +48,6 @@ def save_result(
 
     df = pd.DataFrame([result])
     df.to_pickle(fpath)
-
-    # if fpath.exists():
-    #     df = pd.read_parquet(fpath)
-    #     df = pd.concat([df, pd.DataFrame([result])], ignore_index=True)
-    # else:
-    #     df = pd.DataFrame([result])
-
-    # df.drop_duplicates(subset=["id", "method"], keep="last", inplace=True)
-    # df.to_parquet(fpath)
 
 
 @task
@@ -100,7 +90,7 @@ def run_all():
     futures = []
     for atoms in load_wbm_structures():
         for model in MLIPEnum:
-            if "eos-bulk" not in REGISTRY[model.name].get("gpu-tasks", []):
+            if "eos_bulk" not in REGISTRY[model.name].get("gpu-tasks", []):
                 continue
             result = eos_bulk.submit(atoms, model)
             futures.append(result)
@@ -125,7 +115,7 @@ cluster_kwargs = dict(
     ],
     job_directives_skip=["-n", "--cpus-per-task", "-J"],
     job_extra_directives=[
-        "-J eos-bulk",
+        "-J eos_bulk",
         "-q regular",
         f"-N {nodes_per_alloc}",
         "-C gpu",
