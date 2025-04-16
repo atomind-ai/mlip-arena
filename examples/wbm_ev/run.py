@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 import numpy as np
@@ -6,9 +5,8 @@ import pandas as pd
 from ase.db import connect
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
-from prefect import Task, flow, task
-from prefect.client.schemas.objects import TaskRun
-from prefect.states import State
+from prefect import flow, task
+from prefect.runtime import task_run
 from prefect_dask import DaskTaskRunner
 
 from mlip_arena.models import REGISTRY, MLIPEnum
@@ -31,49 +29,10 @@ def load_wbm_structures():
         for row in db.select():
             yield row.toatoms(add_additional_information=True)
 
-
-def save_result(
-    tsk: Task,
-    run: TaskRun,
-    state: State,
-    model_name: str,
-    id: str,
-):
-    """
-    Save calculation results to a pickle file in a model-specific directory.
-    
-    This function handles the persistence of calculation results from tasks,
-    organizing outputs by model name and structure ID.
-    
-    Args:
-        tsk: The Prefect Task object that produced the result.
-        run: The TaskRun object containing execution information.
-        state: The State object representing the task's execution state.
-        model_name: Name of the model used for the calculation.
-        id: Structure identifier for the calculation.
-    
-    Note:
-        Creates a directory named after the model if it doesn't exist.
-        Saves results as a pandas DataFrame in pickle format.
-    """
-    result = run.state.result()
-
-    assert isinstance(result, dict)
-
-    result["method"] = model_name
-    result["id"] = id
-    result.pop("atoms", None)
-
-    fpath = Path(f"{model_name}")
-    fpath.mkdir(exist_ok=True)
-
-    fpath = fpath / f"{result['id']}.pkl"
-
-    df = pd.DataFrame([result])
-    df.to_pickle(fpath)
-
-
-@task
+@task(
+    name="E-V Scan",
+    task_run_name=lambda: f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['model'].name}",
+)
 def ev_scan(atoms, model):
     """
     Perform an energy-volume scan for a given model and atomic structure.
@@ -114,8 +73,8 @@ def ev_scan(atoms, model):
         scale_factor = uniaxial_strain + 1
         cloned.set_cell(c0 * scale_factor, scale_atoms=True)
         cloned.calc = calculator
-        volumes.append(cloned.get_volume())
-        energies.append(cloned.get_potential_energy())
+        volumes.append(float(cloned.get_volume()))
+        energies.append(float(cloned.get_potential_energy()))
 
     data = {
         "method": model.name,
@@ -128,10 +87,10 @@ def ev_scan(atoms, model):
     fpath = Path(f"{model.name}") / f"{wbm_id}.json"
     fpath.parent.mkdir(exist_ok=True)
 
-    with open(fpath, "w", encoding="utf-8") as f:
-        json.dump(data, f)
+    df = pd.DataFrame([data])
+    df.to_json(fpath)
 
-    return data
+    return df
 
 
 @flow
@@ -154,7 +113,11 @@ def submit_tasks():
         for model in MLIPEnum:
             if "wbm_ev" not in REGISTRY[model.name].get("gpu-tasks", []):
                 continue
-            result = ev_scan.submit(atoms, model)
+            try:
+                result = ev_scan.submit(atoms, model)
+            except Exception as e:
+                print(f"Failed to submit task for {model.name}: {e}")
+                continue
             futures.append(result)
     return [f.result(raise_on_failure=False) for f in futures]
 

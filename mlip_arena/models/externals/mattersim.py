@@ -5,9 +5,7 @@ from pathlib import Path
 import yaml
 from mattersim.forcefield import MatterSimCalculator
 
-from ase import Atoms
 from mlip_arena.models.utils import get_freer_device
-# from pymatgen.io.ase import AseAtomsAdaptor, MSONAtoms
 
 with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
@@ -23,6 +21,16 @@ class MatterSim(MatterSimCalculator):
         super().__init__(
             load_path=checkpoint, device=str(device or get_freer_device()), **kwargs
         )
+
+    def get_potential_energy(
+        self, force_consistent=False,
+        apply_constraint=True
+    ) -> float:
+        return float(
+            super().get_potential_energy(
+                force_consistent=force_consistent, apply_constraint=apply_constraint
+            )
+        ) # mattersim return numpy float instead of python float
 
     def __getstate__(self):
         state = self.__dict__.copy()
