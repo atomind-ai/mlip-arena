@@ -125,7 +125,10 @@ def ev_scan(atoms, model):
         }
     }
 
-    with open(f"{model.name}/{wbm_id}.json", "w", encoding="utf-8") as f:
+    fpath = Path(f"{model.name}") / f"{wbm_id}.json"
+    fpath.parent.mkdir(exist_ok=True)
+
+    with open(fpath, "w", encoding="utf-8") as f:
         json.dump(data, f)
 
     return data
