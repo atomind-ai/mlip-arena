@@ -8,6 +8,7 @@ from dask_jobqueue import SLURMCluster
 from prefect import flow, task
 from prefect.runtime import task_run
 from prefect_dask import DaskTaskRunner
+from prefect.cache_policies import INPUTS, TASK_SOURCE
 
 from mlip_arena.models import REGISTRY, MLIPEnum
 from mlip_arena.tasks.utils import get_calculator
@@ -32,6 +33,7 @@ def load_wbm_structures():
 @task(
     name="E-V Scan",
     task_run_name=lambda: f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['model'].name}",
+    cache_policy=TASK_SOURCE + INPUTS,
 )
 def ev_scan(atoms, model):
     """
@@ -73,8 +75,8 @@ def ev_scan(atoms, model):
         scale_factor = uniaxial_strain + 1
         cloned.set_cell(c0 * scale_factor, scale_atoms=True)
         cloned.calc = calculator
-        volumes.append(float(cloned.get_volume()))
-        energies.append(float(cloned.get_potential_energy()))
+        volumes.append(cloned.get_volume())
+        energies.append(cloned.get_potential_energy())
 
     data = {
         "method": model.name,
@@ -132,8 +134,8 @@ cluster_kwargs = dict(
     processes=1,
     shebang="#!/bin/bash",
     account="m3828",
-    walltime="00:50:00",
-    job_mem="0",
+    walltime="00:30:00",
+    # job_mem="0",
     job_script_prologue=[
         "source ~/.bashrc",
         "module load python",
@@ -142,7 +144,7 @@ cluster_kwargs = dict(
     job_directives_skip=["-n", "--cpus-per-task", "-J"],
     job_extra_directives=[
         "-J wbm_ev",
-        "-q regular",
+        "-q debug",
         f"-N {nodes_per_alloc}",
         "-C gpu",
         f"-G {gpus_per_alloc}",
@@ -152,7 +154,7 @@ cluster_kwargs = dict(
 
 cluster = SLURMCluster(**cluster_kwargs)
 print(cluster.job_script())
-cluster.adapt(minimum_jobs=20, maximum_jobs=40)
+cluster.adapt(minimum_jobs=2, maximum_jobs=2)
 client = Client(cluster)
 
 submit_tasks.with_options(

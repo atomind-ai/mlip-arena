@@ -22,13 +22,11 @@ class MatterSim(MatterSimCalculator):
             load_path=checkpoint, device=str(device or get_freer_device()), **kwargs
         )
 
-    def get_potential_energy(
-        self, force_consistent=False,
-        apply_constraint=True
-    ) -> float:
+    def get_potential_energy(self, atoms=None, force_consistent=False):
         return float(
             super().get_potential_energy(
-                force_consistent=force_consistent, apply_constraint=apply_constraint
+                atoms=atoms,
+                force_consistent=force_consistent,
             )
         ) # mattersim return numpy float instead of python float
 
