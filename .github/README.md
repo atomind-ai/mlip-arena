@@ -34,6 +34,9 @@ pip install mlip-arena
 > [!CAUTION] 
 > We recommend clean build in a new virtual environment due to the compatibility issues between multiple popular MLIPs. We provide a single installation script using `uv` for minimal package conflicts and fast installation!
 
+> [!CAUTION]
+> To automatically download farichem OMat24 checkpoint, please make sure you have gained downloading access to their HuggingFace [***model repo***](https://huggingface.co/facebook/OMAT24) (not dataset repo), and login locally on your machine through `huggginface-cli login` (see [HF hub authentication](https://huggingface.co/docs/huggingface_hub/en/quick-start#authentication))
+
 **Linux**
 
 ```bash

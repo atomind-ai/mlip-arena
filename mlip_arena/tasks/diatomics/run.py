@@ -14,7 +14,7 @@ from mlip_arena.tasks.utils import get_calculator
 
 
 @task
-def homonuclear_diatomics(symbol: str, calculator: BaseCalculator):
+def homonuclear_diatomics(symbol: str, calculator: BaseCalculator, out_dir: Path):
     """
     Calculate potential energy curves for homonuclear diatomic molecules.
 
@@ -54,12 +54,11 @@ def homonuclear_diatomics(symbol: str, calculator: BaseCalculator):
 
     da = symbol + symbol
 
-    out_dir = Path(REGISTRY[model.name]["family"]) / str(da)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     skip = 0
 
-    a = 2 * rmax
+    a = 5 * rmax
     r = rs[0]
 
     positions = [
@@ -67,7 +66,7 @@ def homonuclear_diatomics(symbol: str, calculator: BaseCalculator):
         [a / 2 + r / 2, a / 2, a / 2],
     ]
 
-    traj_fpath = out_dir / f"{model.name}.extxyz"
+    traj_fpath = out_dir / f"{da!s}.extxyz"
 
     if traj_fpath.exists():
         traj = read(traj_fpath, index=":")
@@ -80,7 +79,7 @@ def homonuclear_diatomics(symbol: str, calculator: BaseCalculator):
             positions=positions,
             # magmoms=magmoms,
             cell=[a, a + 0.001, a + 0.002],
-            pbc=True,
+            pbc=False,
         )
 
     atoms.calc = calculator
@@ -110,8 +109,16 @@ def submit_homonuclear_diatomics():
         if "homonuclear-diatomics" not in REGISTRY[model.name].get("gpu-tasks", []):
             continue
 
+        out_dir = Path(__file__).parent / model.name
+
         calculator = get_calculator(model)
-        future = homonuclear_diatomics.submit(symbol, calculator)
+
+        # if not (out_dir / "homonuclear-diatomics.json").exists():
+        future = homonuclear_diatomics.submit(
+            symbol,
+            calculator,
+            out_dir=out_dir,
+        )
         futures.append(future)
 
     return [f.result(raise_on_failure=False) for f in futures]

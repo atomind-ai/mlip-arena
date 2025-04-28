@@ -14,7 +14,7 @@ with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
 class eSEN(OCPCalculator):
     def __init__(
         self,
-        checkpoint=REGISTRY["eqV2(OMat)"]["checkpoint"],
+        checkpoint=REGISTRY["eSEN"]["checkpoint"],
         cache_dir=None,
         cpu=False, # TODO: cannot assign device
         seed=0,

@@ -194,7 +194,7 @@ MACE-MPA:
 
 eSEN:
   module: externals
-  class: eqV2
+  class: eSEN
   family: fairchem
   package: fairchem-core==1.9.0
   checkpoint: esen_30m_oam.pt

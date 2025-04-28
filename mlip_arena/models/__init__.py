@@ -41,8 +41,9 @@ for model, metadata in REGISTRY.items():
         module = importlib.import_module(
             f"{__package__}.{metadata['module']}.{metadata['family']}"
         )
+        module.value()
         MLIPMap[model] = getattr(module, metadata["class"])
-    except (ModuleNotFoundError, AttributeError, ValueError) as e:
+    except (ModuleNotFoundError, AttributeError, ValueError, ImportError) as e:
         logger.warning(e)
         continue
 

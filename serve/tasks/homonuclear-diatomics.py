@@ -5,10 +5,10 @@ import pandas as pd
 import plotly.colors as pcolors
 import plotly.graph_objects as go
 import streamlit as st
-from mlip_arena.models import REGISTRY
+from ase.data import chemical_symbols
 from plotly.subplots import make_subplots
 
-from ase.data import chemical_symbols
+from mlip_arena.models import REGISTRY
 
 st.markdown(
     """
@@ -29,16 +29,7 @@ valid_models = [
 mlip_methods = container.multiselect(
     "MLIPs",
     valid_models,
-    [
-        "MACE-MP(M)",
-        "CHGNet",
-        "M3GNet",
-        "MatterSim",
-        "SevenNet",
-        "ORBv2",
-        "eqV2(OMat)",
-        "ANI2x",
-    ],
+    ["MACE-MP(M)", "MatterSim", "SevenNet", "ORBv2", "eqV2(OMat)", "ANI2x", "eSEN"],
 )
 dft_methods = container.multiselect("DFT Methods", ["PBE"], ["PBE"])
 
