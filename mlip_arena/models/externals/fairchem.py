@@ -10,6 +10,33 @@ from huggingface_hub import hf_hub_download
 with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
 
+
+class eSEN(OCPCalculator):
+    def __init__(
+        self,
+        checkpoint=REGISTRY["eSEN"]["checkpoint"],
+        cache_dir=None,
+        cpu=False, # TODO: cannot assign device
+        seed=0,
+        **kwargs,
+    ) -> None:
+
+        # https://huggingface.co/facebook/OMAT24/resolve/main/esen_30m_oam.pt
+
+        checkpoint_path = hf_hub_download(
+            "fairchem/OMAT24",
+            filename=checkpoint,
+            revision="13ab5b8d71af67bd1c83fbbf53250c82cd87f506",
+            cache_dir=cache_dir
+        )
+        kwargs.pop("device", None)
+        super().__init__(
+            checkpoint_path=checkpoint_path,
+            cpu=cpu,
+            seed=seed,
+            **kwargs,
+        )
+
 class eqV2(OCPCalculator):
     def __init__(
         self,

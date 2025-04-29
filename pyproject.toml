@@ -47,19 +47,14 @@ app = [
     "plotly",
 ]
 test = [
-    "torch==2.2.0",
+    "torch==2.4.0",
     "torch_dftd==0.4.0",
-    "nvidia-ml-py==12.560.30",
     "e3nn==0.5.0",
-    "matgl==1.1.2",
-    # "dgl==2.4.0",
+    "dgl",
     "chgnet==0.3.8",
-    "fairchem-core==1.2.0",
     "sevenn==0.9.3.post1",
-    "orb-models==0.4.0",
-    "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168",
     "alignn==2024.5.27",
-    "mattersim==1.0.0rc9",
+    "mattersim==1.1.2",
     "torchani==2.2.4",
     "pytest",
     "pytest-xdist",
@@ -69,7 +64,18 @@ test = [
     "streamlit==1.43.2"
 ]
 mace = [
-    "mace-torch==0.3.9",
+    "mace-torch==0.3.12",
+]
+matgl = [
+    "matgl==1.2.6",
+]
+fairchem = [
+    "hydra-core",
+    "fairchem-core@git+https://github.com/facebookresearch/fairchem.git#subdirectory=packages/fairchem-core",
+]
+orb = [
+    "orb-models==0.4.0",
+    "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168",
 ]
 deepmd = [
     "torch==2.2.0",
