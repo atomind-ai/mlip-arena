@@ -60,7 +60,7 @@ def save_result(
 # Orchestrate your awesome dask workflow runner
 
 nodes_per_alloc = 1
-gpus_per_alloc = 4
+gpus_per_alloc = 1
 ntasks = 1
 
 cluster_kwargs = dict(
@@ -68,7 +68,7 @@ cluster_kwargs = dict(
     memory="64 GB",
     shebang="#!/bin/bash",
     account="m3828",
-    walltime="01:30:00",
+    walltime="04:00:00",
     job_mem="0",
     job_script_prologue=[
         "source ~/.bashrc",
@@ -82,7 +82,7 @@ cluster_kwargs = dict(
         f"-N {nodes_per_alloc}",
         "-C gpu",
         f"-G {gpus_per_alloc}",
-        "--exclusive",
+        # "--exclusive",
     ],
 )
 
@@ -122,7 +122,7 @@ def run_all():
 
     for model, row in tqdm(itertools.product(MLIPEnum, load_row_from_df("input.pkl"))):
 
-        if model.name not in ["MACE-MPA", "MatterSim", "SevenNet", "M3GNet", "CHGNet", "ORBv2"]:
+        if model.name not in ["MACE-MPA", "MatterSim", "SevenNet", "M3GNet", "ORBv2"]:
             continue
 
         fpath = Path(f"{model.name}.pkl")

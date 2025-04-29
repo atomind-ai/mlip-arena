@@ -34,28 +34,41 @@ pip install mlip-arena
 > [!CAUTION] 
 > We recommend clean build in a new virtual environment due to the compatibility issues between multiple popular MLIPs. We provide a single installation script using `uv` for minimal package conflicts and fast installation!
 
+> [!CAUTION]
+> To automatically download farichem OMat24 checkpoint, please make sure you have gained downloading access to their HuggingFace [***model repo***](https://huggingface.co/facebook/OMAT24) (not dataset repo), and login locally on your machine through `huggginface-cli login` (see [HF hub authentication](https://huggingface.co/docs/huggingface_hub/en/quick-start#authentication))
+
 **Linux**
 
 ```bash
 # (Optional) Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
+
+git clone https://github.com/atomind-ai/mlip-arena.git
+cd mlip-arena
+
 # One script uv pip installation
 bash scripts/install-linux.sh
 ```
 
-```bash
+<!-- ```bash
 # Or from command line
 git clone https://github.com/atomind-ai/mlip-arena.git
 cd mlip-arena
-pip install torch==2.2.0
-bash scripts/install-pyg.sh
-bash scripts/install-dgl.sh
+
+TORCH=2.4
+CUDA=cu124
+pip install torch==${TORCH}.0
+pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-${TORCH}.0+${CUDA}.html
+pip install dgl -f https://data.dgl.ai/wheels/torch-${TORCH}/${CUDA}/repo.html
+pip install -e .[fairchem] --no-deps
+pip install -e .[orb]
+pip install -e .[matgl]
 pip install -e .[test]
 pip install -e .[mace]
 # DeePMD
 DP_ENABLE_TENSORFLOW=0 pip install -e .[deepmd]
-```
+``` -->
 
 **Mac**
 

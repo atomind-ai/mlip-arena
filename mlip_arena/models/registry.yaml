@@ -207,6 +207,29 @@ MACE-MPA:
   npt: true
   license: MIT
 
+eSEN:
+  module: externals
+  class: eSEN
+  family: fairchem
+  package: fairchem-core==1.9.0
+  checkpoint: esen_30m_oam.pt
+  username: fairchem # HF handle
+  last-update: 2025-04-21
+  datetime: 2025-04-21
+  datasets:
+    - OMat
+    - MPTrj
+    - Alexandria
+  gpu-tasks:
+    - homonuclear-diatomics
+  prediction: EFS
+  nvt: true
+  npt: false # https://github.com/FAIR-Chem/fairchem/issues/888, https://github.com/atomind-ai/mlip-arena/issues/17
+  date: 2025-04-14
+  github: https://github.com/FAIR-Chem/fairchem
+  doi: https://arxiv.org/abs/2502.12147
+  license: Modified Apache-2.0 (Meta)
+
 EquiformerV2(OC22):
   module: externals
   class: EquiformerV2
