@@ -23,7 +23,7 @@ MLIP Arena leverages modern pythonic workflow orchestrator [Prefect](https://www
 
 ## Installation
 
-### From PyPI (without model running capability)
+### From PyPI (prefect workflow only, without pretrained models)
 
 ```bash
 pip install mlip-arena
