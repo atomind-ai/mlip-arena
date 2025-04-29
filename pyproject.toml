@@ -53,7 +53,6 @@ test = [
     "e3nn==0.5.0",
     # "dgl==2.4.0",
     "chgnet==0.3.8",
-    "matgl==1.2.6",
     "sevenn==0.9.3.post1",
     "alignn==2024.5.27",
     "mattersim==1.1.2",
@@ -67,6 +66,9 @@ test = [
 ]
 mace = [
     "mace-torch==0.3.12",
+]
+matgl = [
+    "matgl==1.2.6",
 ]
 fairchem = [
     "fairchem-core==1.9.0",
