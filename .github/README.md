@@ -43,22 +43,32 @@ pip install mlip-arena
 # (Optional) Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
+
+git clone https://github.com/atomind-ai/mlip-arena.git
+cd mlip-arena
+
 # One script uv pip installation
 bash scripts/install-linux.sh
 ```
 
-```bash
+<!-- ```bash
 # Or from command line
 git clone https://github.com/atomind-ai/mlip-arena.git
 cd mlip-arena
-pip install torch==2.2.0
-bash scripts/install-pyg.sh
-bash scripts/install-dgl.sh
+
+TORCH=2.4
+CUDA=cu124
+pip install torch==${TORCH}.0
+pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-${TORCH}.0+${CUDA}.html
+pip install dgl -f https://data.dgl.ai/wheels/torch-${TORCH}/${CUDA}/repo.html
+pip install -e .[fairchem] --no-deps
+pip install -e .[orb]
+pip install -e .[matgl]
 pip install -e .[test]
 pip install -e .[mace]
 # DeePMD
 DP_ENABLE_TENSORFLOW=0 pip install -e .[deepmd]
-```
+``` -->
 
 **Mac**
 
