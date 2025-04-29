@@ -1,4 +1,4 @@
-TORCH=2.5
+TORCH=2.4
 CUDA=cu121
 uv pip install torch==${TORCH}.0
 uv pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-${TORCH}.0+${CUDA}.html
