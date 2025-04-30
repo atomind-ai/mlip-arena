@@ -59,10 +59,10 @@ s = table.style.background_gradient(
     cmap="PuRd", subset=["Element Coverage"], vmin=0, vmax=120
 )
 
-st.warning(
-    "MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care.",
-    icon="⚠️",
-)
+# st.warning(
+#     "MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care.",
+#     icon="⚠️",
+# )
 st.info(
     "Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
     icon="🤗",
