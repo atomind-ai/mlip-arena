@@ -211,7 +211,7 @@ eSEN:
   module: externals
   class: eSEN
   family: fairchem
-  package: fairchem-core==1.9.0
+  package: fairchem-core==1.10.0
   checkpoint: esen_30m_oam.pt
   username: fairchem # HF handle
   last-update: 2025-04-21
@@ -222,9 +222,11 @@ eSEN:
     - Alexandria
   gpu-tasks:
     - homonuclear-diatomics
+    - wbm_ev
+    - eos_bulk
   prediction: EFS
   nvt: true
-  npt: false # https://github.com/FAIR-Chem/fairchem/issues/888, https://github.com/atomind-ai/mlip-arena/issues/17
+  npt: true
   date: 2025-04-14
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2502.12147
