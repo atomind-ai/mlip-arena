@@ -15,6 +15,8 @@ nav[""].append(leaderboard)
 wide_pages, centered_pages = [], []
 
 for task in TASKS:
+    if TASKS[task]['task-page'] is None:
+        continue
     page = st.Page(
         f"tasks/{TASKS[task]['task-page']}.py", title=task, icon=":material/target:"
     )
