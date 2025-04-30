@@ -18,12 +18,12 @@ MLIP Arena leverages modern pythonic workflow orchestrator [Prefect](https://www
 
 ## Announcement
 
-- **[April 8, 2025]** [🎉 **MLIP Arena accepted as an ICLR AI4Mat Spotlight!** 🎉](https://openreview.net/forum?id=ysKfIavYQE#discussion) Huge thanks to all co-authors for their contributions!
+- **[April 8, 2025]** [🎉 **MLIP Arena is accepted as an ICLR AI4Mat Spotlight!** 🎉](https://openreview.net/forum?id=ysKfIavYQE#discussion) Huge thanks to all co-authors for their contributions!
 
 
 ## Installation
 
-### From PyPI (without model running capability)
+### From PyPI (prefect workflow only, without pretrained models)
 
 ```bash
 pip install mlip-arena

@@ -15,6 +15,8 @@ nav[""].append(leaderboard)
 wide_pages, centered_pages = [], []
 
 for task in TASKS:
+    if TASKS[task]['task-page'] is None:
+        continue
     page = st.Page(
         f"tasks/{TASKS[task]['task-page']}.py", title=task, icon=":material/target:"
     )
@@ -50,10 +52,10 @@ else:
     )
 
 
-st.toast(
-    "MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care. Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
-    icon="🍞",
-)
+# st.toast(
+#     "MLIP Arena is currently in **pre-alpha**. The results are not stable. Please interpret them with care. Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
+#     icon="🍞",
+# )
 
 st.sidebar.page_link(
     "https://github.com/atomind-ai/mlip-arena", label="GitHub Repository", icon=":material/code:"

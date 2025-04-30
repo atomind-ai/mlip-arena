@@ -78,7 +78,7 @@ def run(
 
     filter_kwargs = filter_kwargs or {}
     optimizer_kwargs = optimizer_kwargs or {}
-    criterion = criterion or {}
+    criterion = criterion or dict(steps=1000)
 
     if symmetry:
         atoms.set_constraint(FixSymmetry(atoms))
