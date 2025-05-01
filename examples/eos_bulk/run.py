@@ -11,6 +11,8 @@ from prefect_dask import DaskTaskRunner
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 
 from mlip_arena.models import REGISTRY, MLIPEnum
+from mlip_arena.tasks.optimize import run as OPT
+from mlip_arena.tasks.eos import run as EOS
 from mlip_arena.tasks.utils import get_calculator
 
 
