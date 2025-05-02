@@ -54,4 +54,24 @@ jobs:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
       run: |
-        pytest -vra -n 5 --dist=loadscope tests
+        pytest -vra -n 5 --dist=loadscope tests 
+    
+    # - name: Set trial branch name
+    #   id: set_trial_branch
+    #   run: echo "TRIAL_BRANCH=trial-sync-${GITHUB_SHA}" >> $GITHUB_ENV
+
+    # - name: Trial push to Hugging Face (temporary branch)
+    #   id: trial_push
+    #   env:
+    #     HF_TOKEN: ${{ secrets.HF_TOKEN }}
+    #   run: |
+    #     git lfs fetch
+    #     git lfs checkout
+    #     git push -f https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena HEAD:refs/heads/$TRIAL_BRANCH
+
+    # - name: Delete trial branch from Hugging Face
+    #   if: ${{ steps.trial_push.outcome == 'success' }}
+    #   env:
+    #     HF_TOKEN: ${{ secrets.HF_TOKEN }}
+    #   run: |
+    #     git push https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena --delete $TRIAL_BRANCH
