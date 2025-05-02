@@ -1,25 +1,31 @@
+# import functools
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
+from ase import Atoms
 from ase.db import connect
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
 from prefect import flow, task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 from prefect_dask import DaskTaskRunner
-from prefect.cache_policies import INPUTS, TASK_SOURCE
 
 from mlip_arena.models import REGISTRY, MLIPEnum
-from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.eos import run as EOS
 from mlip_arena.tasks.utils import get_calculator
 
 
 @task
 def load_wbm_structures():
     """
-    Load the WBM structures from a ASE DB file.
+    Load the WBM structures from an ASE database file.
+    
+    Reads structures from 'wbm_structures.db' and yields them as ASE Atoms objects
+    with additional metadata preserved from the database.
+    
+    Yields:
+        ase.Atoms: Individual atomic structures from the WBM database with preserved
+                  metadata in the .info dictionary.
     """
     with connect("../wbm_structures.db") as db:
         for row in db.select():
@@ -55,7 +61,10 @@ def load_wbm_structures():
     task_run_name=lambda: f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['model'].name}",
     cache_policy=TASK_SOURCE + INPUTS,
 )
-def eos_bulk(atoms, model):
+def eos_bulk(atoms: Atoms, model: MLIPEnum):
+
+    from mlip_arena.tasks.eos import run as EOS
+    from mlip_arena.tasks.optimize import run as OPT
 
     calculator = get_calculator(
         model
@@ -71,8 +80,7 @@ def eos_bulk(atoms, model):
             fmax=0.1,
         ),
     )
-
-    result = EOS.with_options(
+    result =  EOS.with_options(
         refresh_cache=True,
         # on_completion=[functools.partial(
         #     save_result,
@@ -100,16 +108,25 @@ def eos_bulk(atoms, model):
     df = pd.DataFrame([result])
     df.to_pickle(fpath)
 
+    return df
+
 
 @flow
-def run_all():
+def submit_tasks():
     futures = []
     for atoms in load_wbm_structures():
-        for model in MLIPEnum:
-            if "eos_bulk" not in REGISTRY[model.name].get("gpu-tasks", []):
-                continue
-            result = eos_bulk.submit(atoms, model)
+        model = MLIPEnum["eSEN"]
+        # for model in MLIPEnum:
+        if "eos_bulk" not in REGISTRY[model.name].get("gpu-tasks", []):
+            continue
+        try:
+            result = eos_bulk.with_options(
+                refresh_cache=True
+            ).submit(atoms, model)
             futures.append(result)
+        except Exception:
+            # print(f"Failed to submit task for {model.name}: {e}")
+            continue
     return [f.result(raise_on_failure=False) for f in futures]
 
 
@@ -117,18 +134,19 @@ if __name__ == "__main__":
     nodes_per_alloc = 1
     gpus_per_alloc = 1
     ntasks = 1
-    
+
     cluster_kwargs = dict(
-        cores=4,
+        cores=1,
         memory="64 GB",
         shebang="#!/bin/bash",
         account="m3828",
-        walltime="00:50:00",
+        walltime="00:30:00",
         job_mem="0",
         job_script_prologue=[
             "source ~/.bashrc",
             "module load python",
-            "source activate /pscratch/sd/c/cyrusyc/.conda/mlip-arena",
+            "module load cudatoolkit/12.4",
+            "source activate /pscratch/sd/c/cyrusyc/.conda/dev",
         ],
         job_directives_skip=["-n", "--cpus-per-task", "-J"],
         job_extra_directives=[
@@ -137,16 +155,16 @@ if __name__ == "__main__":
             f"-N {nodes_per_alloc}",
             "-C gpu",
             f"-G {gpus_per_alloc}",
-            "--exclusive",
+            # "--exclusive",
         ],
     )
-    
+
     cluster = SLURMCluster(**cluster_kwargs)
     print(cluster.job_script())
-    cluster.adapt(minimum_jobs=20, maximum_jobs=40)
+    cluster.adapt(minimum_jobs=50, maximum_jobs=50)
     client = Client(cluster)
-    
-    run_all.with_options(
+
+    submit_tasks.with_options(
         task_runner=DaskTaskRunner(address=client.scheduler.address),
         log_prints=True,
     )()
