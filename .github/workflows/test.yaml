@@ -14,14 +14,14 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      # max-parallel: 2
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
-        
 
     steps:
-    - name: Checkout repository
+    - name: Checkout PR with full history
       uses: actions/checkout@v4
+      with:
+        lfs: true
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
@@ -36,42 +36,48 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
-      run: |
-        bash scripts/install-linux.sh
+      run: bash scripts/install-linux.sh
 
     - name: List dependencies
       run: pip list
-      
-    - name: Login huggingface
-      # if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+
+    - name: Login to Hugging Face
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN_READ_ONLY }}
-      run:
-        huggingface-cli login --token $HF_TOKEN
+      run: huggingface-cli login --token $HF_TOKEN
 
     - name: Run tests
       env:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
+      run: pytest -vra -n 5 --dist=loadscope tests
+
+    - name: Squash commits and trial push to Hugging Face
+      if: github.event_name == 'pull_request'
+      id: trial_push
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        TRIAL_BRANCH: trial-sync-${{ github.sha }}
       run: |
-        pytest -vra -n 5 --dist=loadscope tests 
-    
-    # - name: Set trial branch name
-    #   id: set_trial_branch
-    #   run: echo "TRIAL_BRANCH=trial-sync-${GITHUB_SHA}" >> $GITHUB_ENV
+        
+        # Rebase and squash all PR commits into one
+        BASE=$(git merge-base origin/main HEAD)
+        git reset --soft $BASE
+        git commit -m "Squashed commit from PR #${{ github.event.pull_request.number }}"
 
-    # - name: Trial push to Hugging Face (temporary branch)
-    #   id: trial_push
-    #   env:
-    #     HF_TOKEN: ${{ secrets.HF_TOKEN }}
-    #   run: |
-    #     git lfs fetch
-    #     git lfs checkout
-    #     git push -f https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena HEAD:refs/heads/$TRIAL_BRANCH
+        # Setup LFS
+        git lfs fetch
+        git lfs checkout
 
-    # - name: Delete trial branch from Hugging Face
-    #   if: ${{ steps.trial_push.outcome == 'success' }}
-    #   env:
-    #     HF_TOKEN: ${{ secrets.HF_TOKEN }}
-    #   run: |
-    #     git push https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena --delete $TRIAL_BRANCH
+        # Push to temporary branch on Hugging Face
+        git branch -M $TRIAL_BRANCH
+        git remote add hf https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena
+        git push -f hf HEAD:refs/heads/$TRIAL_BRANCH
+
+    - name: Delete trial branch from Hugging Face
+      if: steps.trial_push.outcome == 'success'
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        TRIAL_BRANCH: trial-sync-${{ github.sha }}
+      run: |
+        git push https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena --delete $TRIAL_BRANCH || true
