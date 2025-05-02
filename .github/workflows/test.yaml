@@ -60,7 +60,10 @@ jobs:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
         TRIAL_BRANCH: trial-sync-${{ github.sha }}
       run: |
-        
+        # Configure Git user identity
+        git config user.name "github-actions[ci]"
+        git config user.email "github-actions[ci]@users.noreply.github.com"
+
         # Rebase and squash all PR commits into one
         BASE=$(git merge-base origin/main HEAD)
         git reset --soft $BASE
