@@ -65,8 +65,6 @@ jobs:
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
-        git checkout -b $TRIAL_BRANCH
-        git config lfs.allowincompletepush true
         git push -f https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena $TRIAL_BRANCH
 
     - name: Delete trial branch from Hugging Face
