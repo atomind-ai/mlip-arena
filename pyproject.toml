@@ -8,7 +8,7 @@ version="0.1.0"
 authors=[
     {name="Yuan Chiang", email="cyrusyc@lbl.gov"},
 ]
-description="Fair and transparent benchmark of machine-learned interatomic potentials (MLIPs), beyond basic error metrics"
+description="Fair and transparent benchmark of machine learning interatomic potentials (MLIPs), beyond error-based regression metrics"
 readme=".github/README.md"
 requires-python=">=3.10"
 keywords=[
@@ -71,7 +71,7 @@ matgl = [
 ]
 fairchem = [
     "hydra-core",
-    "fairchem-core@git+https://github.com/facebookresearch/fairchem.git#subdirectory=packages/fairchem-core",
+    "fairchem-core==1.10.0",
 ]
 orb = [
     "orb-models==0.4.0",
