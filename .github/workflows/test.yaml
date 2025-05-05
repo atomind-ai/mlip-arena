@@ -80,6 +80,6 @@ jobs:
       if: steps.trial_push.outcome == 'success'
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        TRIAL_BRANCH: trial-sync-${{ github.sha }}
+        TRIAL_BRANCH: trial-sync-${{ github.sha }}-${{ matrix.python-version }}
       run: |
         git push https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena --delete $TRIAL_BRANCH || true
