@@ -58,7 +58,7 @@ jobs:
       id: trial_push
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        TRIAL_BRANCH: trial-sync-${{ github.sha }}
+        TRIAL_BRANCH: trial-sync-${{ github.sha }}-${{ matrix.python-version }}
       run: |
         # Configure Git user identity
         git config user.name "github-actions[ci]"
