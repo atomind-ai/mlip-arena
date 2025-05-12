@@ -159,14 +159,21 @@ def summarize():
         analysis_summary = {
             "model": model.name,
             "energy-diff-flip-times": valid_results["energy-diff-flip-times"].mean(),
+            "energy-diff-flip-times-std": valid_results["energy-diff-flip-times"].std(),
             "tortuosity": valid_results["tortuosity"].mean(),
+            "tortuosity-std": valid_results["tortuosity"].std(),
             "spearman-compression-energy": valid_results[
                 "spearman-compression-energy"
             ].mean(),
+            "spearman-compression-energy-std": valid_results["spearman-compression-energy"].std(),
             "spearman-compression-derivative": valid_results[
                 "spearman-compression-derivative"
             ].mean(),
+            "spearman-compression-derivative-std": valid_results[
+                "spearman-compression-derivative"
+            ].std(),
             "spearman-tension-energy": valid_results["spearman-tension-energy"].mean(),
+            "spearman-tension-energy-std": valid_results["spearman-tension-energy"].std(),
             "missing": len(df_analyzed[df_analyzed["missing"] == True]),
         }
         summary_table = pd.concat(
@@ -207,7 +214,7 @@ def summarize():
     summary_table = summary_table.reset_index(drop=True)
 
     summary_table.to_csv(DATA_DIR / "summary.csv", index=False)
-    summary_table.to_latex(DATA_DIR / "summary.tex", index=False)
+    summary_table.to_latex(DATA_DIR / "summary.tex", index=False, float_format="%.3f")
 
     return summary_table
 
