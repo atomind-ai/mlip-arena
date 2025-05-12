@@ -20,6 +20,24 @@ dfs = [
 ]
 df = pd.concat(dfs, ignore_index=True)
 
+# df = df[df["method"].isin([
+#     "SevenNet",
+#     "ORBv2",
+#     "ORB",
+#     "MatterSim",
+#     "MACE-MPA",
+#     "MACE-MP(M)",
+#     "M3GNet",
+#     "eSEN",
+#     "eSCN(OC20)",
+#     "eqV2(OMat)",
+#     "EquiformerV2(OC22)",
+#     "EquiformerV2(OC20)",
+#     "CHGNet",
+#     "ALIGNN"
+# ]
+# )]
+
 table = pd.DataFrame()
 
 for model in valid_models:
@@ -29,21 +47,13 @@ for model in valid_models:
     new_row = {
         "Model": model,
         "Conservation deviation [eV/Å]": rows["conservation-deviation"].mean(),
-        "Spearman's coeff. (E: repulsion)": rows[
-            "spearman-repulsion-energy"
-        ].mean(),
-        "Spearman's coeff. (F: descending)": rows[
-            "spearman-descending-force"
-        ].mean(),
+        "Spearman's coeff. (E: repulsion)": rows["spearman-repulsion-energy"].mean(),
+        "Spearman's coeff. (F: descending)": rows["spearman-descending-force"].mean(),
         "Tortuosity": rows["tortuosity"].mean(),
         "Energy jump [eV]": rows["energy-jump"].mean(),
         "Force flips": rows["force-flip-times"].mean(),
-        "Spearman's coeff. (E: attraction)": rows[
-            "spearman-attraction-energy"
-        ].mean(),
-        "Spearman's coeff. (F: ascending)": rows[
-            "spearman-ascending-force"
-        ].mean(),
+        "Spearman's coeff. (E: attraction)": rows["spearman-attraction-energy"].mean(),
+        "Spearman's coeff. (F: ascending)": rows["spearman-ascending-force"].mean(),
         "PBE energy MAE [eV]": rows["pbe-energy-mae"].mean(),
         "PBE force MAE [eV/Å]": rows["pbe-force-mae"].mean(),
     }
@@ -55,14 +65,10 @@ table.set_index("Model", inplace=True)
 table.sort_values("Conservation deviation [eV/Å]", ascending=True, inplace=True)
 table["Rank"] = np.argsort(table["Conservation deviation [eV/Å]"].to_numpy())
 
-table.sort_values(
-    "Spearman's coeff. (E: repulsion)", ascending=True, inplace=True
-)
+table.sort_values("Spearman's coeff. (E: repulsion)", ascending=True, inplace=True)
 table["Rank"] += np.argsort(table["Spearman's coeff. (E: repulsion)"].to_numpy())
 
-table.sort_values(
-    "Spearman's coeff. (F: descending)", ascending=True, inplace=True
-)
+table.sort_values("Spearman's coeff. (F: descending)", ascending=True, inplace=True)
 table["Rank"] += np.argsort(table["Spearman's coeff. (F: descending)"].to_numpy())
 
 # NOTE: it's not fair to models trained on different level of theory
@@ -83,27 +89,44 @@ table["Rank"] += np.argsort(np.abs(table["Force flips"].to_numpy() - 1))
 
 table["Rank"] += 1
 
-table.sort_values(["Rank", "Conservation deviation [eV/Å]"], ascending=True, inplace=True)
+table.sort_values(
+    ["Rank", "Conservation deviation [eV/Å]"], ascending=True, inplace=True
+)
 
 table["Rank aggr."] = table["Rank"]
-table["Rank"] = table["Rank aggr."].rank(method='min').astype(int)
+table["Rank"] = table["Rank aggr."].rank(method="min").astype(int)
 
 table = table.reindex(
     columns=[
         "Rank",
         "Rank aggr.",
         "Conservation deviation [eV/Å]",
-        "PBE energy MAE [eV]",
-        "PBE force MAE [eV/Å]",
         "Spearman's coeff. (E: repulsion)",
         "Spearman's coeff. (F: descending)",
         "Energy jump [eV]",
         "Force flips",
         "Tortuosity",
+        "PBE energy MAE [eV]",
+        "PBE force MAE [eV/Å]",
         "Spearman's coeff. (E: attraction)",
         "Spearman's coeff. (F: ascending)",
     ]
 )
+
+# cloned = table.copy()
+# cloned.drop(columns=[
+#     "PBE energy MAE [eV]",
+#     "PBE force MAE [eV/Å]",
+#     "Spearman's coeff. (E: attraction)",
+#     "Spearman's coeff. (F: ascending)",],
+#     inplace=True
+# )
+# cloned.to_latex(
+#     DATA_DIR / "homonuclear-diatomics.tex",
+#     float_format="%.3f",
+#     index=True,
+#     column_format="l" + "r" * (len(table.columns) - 1),
+# )
 
 s = (
     table.style.background_gradient(
@@ -135,7 +158,7 @@ s = (
         subset=["Rank", "Rank aggr."],
     )
     .format(
-        "{:.3f}", 
+        "{:.3f}",
         subset=[
             "Conservation deviation [eV/Å]",
             "Spearman's coeff. (E: repulsion)",
@@ -147,7 +170,7 @@ s = (
             "Spearman's coeff. (F: ascending)",
             "PBE energy MAE [eV]",
             "PBE force MAE [eV/Å]",
-        ]
+        ],
     )
 )
 
@@ -177,4 +200,7 @@ def render():
             - **Force flips**: The number of force direction changes.
             """
         )
-        st.info('PBE energies and forces are provided __only__ for reference. Due to the known convergence issue of plane-wave DFT with diatomic molecules and different dataset the models might be trained on, comparing models with PBE is not rigorous and thus these metrics are excluded from rank aggregation.', icon=":material/warning:")
+        st.info(
+            "PBE energies and forces are provided __only__ for reference. Due to the known convergence issue of plane-wave DFT with diatomic molecules and different dataset the models might be trained on, comparing models with PBE is not rigorous and thus these metrics are excluded from rank aggregation.",
+            icon=":material/warning:",
+        )
