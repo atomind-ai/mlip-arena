@@ -309,10 +309,9 @@ def run(
 
         if restart and traj_file.exists():
             try:
-                traj = read(traj_file, index=":")
-                last_atoms = traj[-1]
+                last_atoms = read(traj_file, index="-1")
                 assert isinstance(last_atoms, Atoms)
-                last_step = last_atoms.info.get("step", len(traj) * traj_interval)
+                last_step = last_atoms.info.get("step")
                 n_steps -= last_step
                 traj = Trajectory(traj_file, "a", atoms)
                 atoms.set_positions(last_atoms.get_positions())
