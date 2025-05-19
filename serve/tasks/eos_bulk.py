@@ -34,7 +34,7 @@ selected_models = methods_container.multiselect(
 )
 
 # Visualization settings
-st.markdown("### Visualization Settings")
+st.markdown("### Visualization settings")
 vis = st.container(border=True)
 
 # Column settings

@@ -31,3 +31,8 @@ Lattice thermal conductivity:
   task-page: thermal-conductivity
   task-layout: centered
   rank-page: thermal-conductivity
+2D materials:
+  category: Properties and Physical Behaviors
+  task-page: c2db
+  task-layout: centered
+  rank-page: 
