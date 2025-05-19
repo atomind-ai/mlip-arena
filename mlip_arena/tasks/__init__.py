@@ -7,6 +7,13 @@ from huggingface_hub import HfApi, HfFileSystem, hf_hub_download
 # from mlip_arena.models import REGISTRY as MODEL_REGISTRY
 
 try:
+    from prefect.logging import get_run_logger
+
+    logger = get_run_logger()
+except (ImportError, RuntimeError):
+    from loguru import logger
+
+try:
     from .elasticity import run as ELASTICITY
     from .eos import run as EOS
     from .md import run as MD
@@ -16,8 +23,9 @@ try:
     from .phonon import run as PHONON
 
     __all__ = ["OPT", "EOS", "MD", "NEB", "NEB_FROM_ENDPOINTS", "ELASTICITY", "PHONON"]
-except ImportError:
-    pass
+except (ImportError, TypeError) as e:
+    logger.warning(e)
+
 
 with open(Path(__file__).parent / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)

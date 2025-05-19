@@ -8,7 +8,6 @@ import torch
 from ase import units
 from ase.calculators.calculator import BaseCalculator
 from ase.calculators.mixing import SumCalculator
-from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
 
 from mlip_arena.models import MLIPEnum
 
@@ -102,6 +101,13 @@ def get_calculator(
     dispersion_kwargs.update({"device": device})
 
     if dispersion:
+        try:
+            from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
+        except ImportError as e:
+            raise ImportError(
+                "torch_dftd is required for dispersion but is not installed."
+            ) from e
+
         disp_calc = TorchDFTD3Calculator(
             **dispersion_kwargs,
         )
@@ -112,5 +118,5 @@ def get_calculator(
         if dispersion_kwargs:
             logger.info(pformat(dispersion_kwargs))
 
-    assert isinstance(calc, BaseCalculator)    
+    assert isinstance(calc, BaseCalculator)
     return calc
