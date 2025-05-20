@@ -51,7 +51,7 @@ jobs:
       env:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
-      run: pytest -vra -n 5 --dist=loadscope --basetemp=./.pytest_temp tests
+      run: pytest -vra -n 5 --basetemp=./.pytest_temp tests
 
     - name: Squash commits and trial push to Hugging Face
       if: github.event_name == 'pull_request'
@@ -72,6 +72,7 @@ jobs:
         # Setup LFS
         # git lfs fetch
         # git lfs checkout
+        git config lfs.allowincompletepush true
 
         # Push to temporary branch on Hugging Face
         git push -f https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena HEAD:refs/heads/$TRIAL_BRANCH
