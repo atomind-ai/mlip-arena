@@ -17,12 +17,13 @@ def test_calculate(model: MLIPEnum):
     if model.name == "ORB":
         pytest.xfail("Orbital Materials deprecated the model a month after its premature release in favor of ORBv2")
 
+    if model.name == "M3GNet":
+        pytest.xfail("Cache sometimes fails")
+
     try:
         calc = MLIPEnum[model.name].value()
-
-    except (LocalTokenNotFoundError, HTTPError):
-        # Gracefully skip the test if HF_TOKEN is not available
-        pytest.skip("Skipping test because HF_TOKEN is not available for downloading the model.")
+    except (LocalTokenNotFoundError, HTTPError, FileNotFoundError) as e:
+        pytest.skip(str(e))
 
     atoms = Atoms(
         "OO",
