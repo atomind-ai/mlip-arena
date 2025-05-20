@@ -22,6 +22,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+      #   lfs: true
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
@@ -34,7 +35,8 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip' # caching pip dependencies
+
+    - name: Install dependencies
       run: bash scripts/install-linux.sh
 
     - name: List dependencies
@@ -67,9 +69,14 @@ jobs:
         git reset --soft $BASE
         git commit -m "Squashed commit from PR #${{ github.event.pull_request.number }}"
 
+        # Install Git LFS
+        sudo apt-get update
+        sudo apt-get install -y git-lfs
+        git lfs install
+
         # Setup LFS
-        # git lfs fetch
-        # git lfs checkout
+        git lfs fetch
+        git lfs checkout
         # git config lfs.allowincompletepush true
 
         # Push to temporary branch on Hugging Face
