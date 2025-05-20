@@ -50,8 +50,8 @@ jobs:
       env:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
-      run: | 
-        python -c "import matgl; matgl.clear_cache()" || true
+      run: |
+        rm -rf /tmp/ocp/
         pytest -vra -n 5 --basetemp=./.pytest_temp tests
 
     - name: Squash commits and trial push to Hugging Face
