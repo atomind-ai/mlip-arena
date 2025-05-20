@@ -183,7 +183,7 @@ if __name__ == "__main__":
         memory="64 GB",
         processes=1,
         shebang="#!/bin/bash",
-        account="m3828",
+        account="matgen",
         walltime="00:30:00",
         # job_cpu=128,
         job_mem="0",
