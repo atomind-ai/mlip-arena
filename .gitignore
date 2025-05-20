@@ -2,7 +2,7 @@
 *.extxyz
 *.traj
 mlip_arena/tasks/*/
-examples/
+benchmarks/
 lab/
 manuscripts/
 datasets/
