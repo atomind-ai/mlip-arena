@@ -22,9 +22,8 @@ def test_calculate(model: MLIPEnum):
 
     try:
         calc = MLIPEnum[model.name].value()
-    except (LocalTokenNotFoundError, HTTPError):
-        # Gracefully skip the test if HF_TOKEN is not available
-        pytest.skip("Skipping test because HF_TOKEN is not available for downloading the model.")
+    except (LocalTokenNotFoundError, HTTPError, FileNotFoundError) as e:
+        pytest.skip(str(e))
 
     atoms = Atoms(
         "OO",

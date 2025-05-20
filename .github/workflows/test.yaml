@@ -50,9 +50,7 @@ jobs:
       env:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
-      run: |
-        rm -rf /tmp/ocp/
-        pytest -vra -n 5 --basetemp=./.pytest_temp tests
+      run: pytest -vra -n 5 --basetemp=./.pytest_temp tests
 
     - name: Squash commits and trial push to Hugging Face
       if: github.event_name == 'pull_request'
