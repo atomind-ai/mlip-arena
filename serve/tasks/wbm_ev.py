@@ -10,7 +10,7 @@ from scipy import stats
 
 from mlip_arena.models import REGISTRY as MODELS
 
-DATA_DIR = Path("examples/wbm_ev")
+DATA_DIR = Path("benchmarks/wbm_ev")
 
 st.markdown("""
 # Energy-volume scans

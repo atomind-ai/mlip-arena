@@ -10,7 +10,7 @@ from scipy import stats
 
 from mlip_arena.models import REGISTRY as MODELS
 
-DATA_DIR = Path("examples/eos_bulk")
+DATA_DIR = Path("benchmarks/eos_bulk")
 
 st.markdown("""
 # Equation of state (EOS)

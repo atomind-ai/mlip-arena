@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-DATA_DIR = Path("examples/eos_bulk")
+DATA_DIR = Path("benchmarks/eos_bulk")
 
 
 table = pd.read_csv(DATA_DIR / "summary.csv")
