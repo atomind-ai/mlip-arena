@@ -36,14 +36,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from pathlib import Path
 
 import numpy as np
-from phonopy import Phonopy
-from phonopy.structure.atoms import PhonopyAtoms
+from ase import Atoms
+from ase.calculators.calculator import BaseCalculator
 from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 
-from ase import Atoms
-from ase.calculators.calculator import BaseCalculator
+from mlip_arena.tasks.utils import logger
+
+try:
+    from phonopy import Phonopy
+    from phonopy.structure.atoms import PhonopyAtoms
+except ImportError as e:
+    logger.warning(e)
+    logger.warning(
+        "Phonopy is not installed. Please install it following the instructions at https://phonopy.github.io/phonopy/install.html to use this module."
+    )
 
 
 @task(cache_policy=TASK_SOURCE + INPUTS)
@@ -151,9 +159,7 @@ def run(
         filename=Path(outdir, "band.yaml") if outdir is not None else "band.yaml",
     )
     if outdir:
-        phonon.save(
-            Path(outdir, "phonopy.yaml"), settings={"force_constants": True}
-        )
+        phonon.save(Path(outdir, "phonopy.yaml"), settings={"force_constants": True})
 
     return {
         "phonon": phonon,
