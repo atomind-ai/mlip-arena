@@ -21,13 +21,11 @@ jobs:
     - name: Checkout PR with full history
       uses: actions/checkout@v4
       with:
-        lfs: true
         fetch-depth: 0
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
       with:
-        version: "latest"
         enable-cache: true
         cache-dependency-glob: "pyproject.toml"
 
@@ -58,7 +56,7 @@ jobs:
       id: trial_push
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        TRIAL_BRANCH: trial-sync-${{ github.sha }}
+        TRIAL_BRANCH: trial-sync-${{ github.sha }}-${{ matrix.python-version }}
       run: |
         # Configure Git user identity
         git config user.name "github-actions[ci]"
@@ -68,6 +66,11 @@ jobs:
         BASE=$(git merge-base origin/main HEAD)
         git reset --soft $BASE
         git commit -m "Squashed commit from PR #${{ github.event.pull_request.number }}"
+
+        # Install Git LFS
+        sudo apt-get update
+        sudo apt-get install -y git-lfs
+        git lfs install
 
         # Setup LFS
         git lfs fetch
@@ -80,6 +83,6 @@ jobs:
       if: steps.trial_push.outcome == 'success'
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        TRIAL_BRANCH: trial-sync-${{ github.sha }}
+        TRIAL_BRANCH: trial-sync-${{ github.sha }}-${{ matrix.python-version }}
       run: |
         git push https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena --delete $TRIAL_BRANCH || true

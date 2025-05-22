@@ -87,7 +87,7 @@ class EquiformerV2(OCPCalculator):
         self,
         checkpoint=REGISTRY["EquiformerV2(OC22)"]["checkpoint"],
         # TODO: cannot assign device
-        local_cache="/tmp/ocp/",
+        local_cache="~/.cache/ocp/",
         cpu=False,
         seed=0,
         **kwargs,
@@ -114,7 +114,7 @@ class EquiformerV2OC20(OCPCalculator):
         self,
         checkpoint=REGISTRY["EquiformerV2(OC22)"]["checkpoint"],
         # TODO: cannot assign device
-        local_cache="/tmp/ocp/",
+        local_cache="~/.cache/ocp/",
         cpu=False,
         seed=0,
         **kwargs,
@@ -133,7 +133,7 @@ class eSCN(OCPCalculator):
         self,
         checkpoint="eSCN-L6-M3-Lay20-S2EF-OC20-All+MD",  # TODO: import from registry
         # TODO: cannot assign device
-        local_cache="/tmp/ocp/",
+        local_cache="~/.cache/ocp/",
         cpu=False,
         seed=0,
         **kwargs,

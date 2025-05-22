@@ -10,7 +10,7 @@ from scipy import stats
 
 from mlip_arena.models import REGISTRY as MODELS
 
-DATA_DIR = Path("examples/eos_bulk")
+DATA_DIR = Path("benchmarks/eos_bulk")
 
 st.markdown("""
 # Equation of state (EOS)
@@ -34,7 +34,7 @@ selected_models = methods_container.multiselect(
 )
 
 # Visualization settings
-st.markdown("### Visualization Settings")
+st.markdown("### Visualization settings")
 vis = st.container(border=True)
 
 # Column settings
@@ -83,6 +83,7 @@ def generate_dataframe(model_name):
             "formula",
             "volume-ratio",
             "energy-delta-per-atom",
+            "energy-delta-per-volume-b0",
             "energy-diff-flip-times",
             "tortuosity",
             "spearman-compression-energy",
@@ -97,10 +98,12 @@ def generate_dataframe(model_name):
 
         try:
             results = df_raw_results.loc[df_raw_results["id"] == structure_id]
+            b0 = results["b0"].values[0]
+            # vol0 = results["v0"].values[0]
             results = results["eos"].values[0]
             es = np.array(results["energies"])
             vols = np.array(results["volumes"])
-            vol0 = wbm_struct.get_volume()
+            
 
             indices = np.argsort(vols)
             vols = vols[indices]
@@ -110,6 +113,7 @@ def generate_dataframe(model_name):
             # min_center_val = np.min(es[imid - 1 : imid + 2])
             # imine = np.where(es == min_center_val)[0][0]
             emin = es[imine]
+            vol0 = vols[imine]
 
             interpolated_volumes = [
                 (vols[i] + vols[i + 1]) / 2 for i in range(len(vols) - 1)
@@ -131,6 +135,7 @@ def generate_dataframe(model_name):
                 "volume-ratio": vols / vol0,
                 "energy-delta-per-atom": (es - emin) / len(wbm_struct),
                 "energy-diff-flip-times": np.sum(ediff_flip).astype(int),
+                "energy-delta-per-volume-b0": (es - emin) / (vol0 * b0),
                 "tortuosity": etv / (abs(es[0] - emin) + abs(es[-1] - emin)),
                 "spearman-compression-energy": stats.spearmanr(
                     vols[:imine], es[:imine]
@@ -151,6 +156,7 @@ def generate_dataframe(model_name):
                 "missing": True,
                 "volume-ratio": None,
                 "energy-delta-per-atom": None,
+                "energy-delta-per-volume-b0": None,
                 "energy-diff-flip-times": None,
                 "tortuosity": None,
                 "spearman-compression-energy": None,
@@ -185,10 +191,10 @@ def get_plots(selected_models):
             structure_id = row["structure"]
             formula = row.get("formula", "")
             if isinstance(row["volume-ratio"], list | np.ndarray) and isinstance(
-                row["energy-delta-per-atom"], list | np.ndarray
+                row["energy-delta-per-volume-b0"], list | np.ndarray
             ):
                 vol_strain = row["volume-ratio"]
-                energy_delta = row["energy-delta-per-atom"]
+                energy_delta = row["energy-delta-per-volume-b0"]
                 color = color_sequence[i % len(color_sequence)]
                 fig.add_trace(
                     go.Scatter(
@@ -203,7 +209,7 @@ def get_plots(selected_models):
                             structure_id + "<br>"
                             "Formula: " + str(formula) + "<br>"
                             "Volume ratio V/V₀: %{x:.3f}<br>"
-                            "ΔEnergy: %{y:.3f} eV/atom<br>"
+                            "ΔE/(BV₀): %{y:.3f} eV/atom<br>"
                             "<extra></extra>"
                         ),
 
@@ -215,10 +221,10 @@ def get_plots(selected_models):
         fig.update_layout(
             title=f"{model_name} ({len(valid_structures)} / {len(df)} structures)",
             xaxis_title="Volume ratio V/V₀",
-            yaxis_title="Relative energy ΔE (eV/atom)",
+            yaxis_title="Relative energy ΔE/(BV₀)",
             height=500,
             showlegend=False,  # Disable legend for the whole plot
-            yaxis=dict(range=[-0.1, 1]),  # Set y-axis limits
+            yaxis=dict(range=[-0.02, 0.1]),  # Set y-axis limits
         )
         fig.add_vline(x=1, line_dash="dash", line_color="gray", opacity=0.7)
         figs.append((model_name, fig, valid_structures))
