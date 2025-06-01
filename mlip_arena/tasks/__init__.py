@@ -23,7 +23,7 @@ try:
     from .phonon import run as PHONON
 
     __all__ = ["OPT", "EOS", "MD", "NEB", "NEB_FROM_ENDPOINTS", "ELASTICITY", "PHONON"]
-except (ImportError, TypeError) as e:
+except (ImportError, TypeError, NameError) as e:
     logger.warning(e)
 
 
