@@ -57,7 +57,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Callable
 
 import numpy as np
 from ase import Atoms, units
@@ -211,6 +211,7 @@ def run(
     traj_file: str | Path | None = None,
     traj_interval: int = 1,
     restart: bool = True,
+    callbacks: list[tuple[Callable, int]] | None = None,
 ):
     """
     Run a molecular dynamics (MD) simulation using ASE.
@@ -234,6 +235,7 @@ def run(
         traj_file (str | Path | None, optional): Path to the trajectory file for saving simulation results. Defaults to None.
         traj_interval (int, optional): Interval for saving trajectory frames. Defaults to 1.
         restart (bool, optional): Whether to restart the simulation from an existing trajectory file. Defaults to True.
+        callbacks (list[tuple[Callable, int]], optional): List of callbacks to attach to the MD runner.
 
     Returns:
         dict: A dictionary containing the following keys:
@@ -357,6 +359,10 @@ def run(
 
     if traj_file is not None:
         md_runner.attach(traj.write, interval=traj_interval)
+
+    if callbacks is not None:
+        for callback, interval in callbacks:
+            md_runner.attach(callback, interval=interval)
 
     with tqdm(total=n_steps) as pbar:
 
