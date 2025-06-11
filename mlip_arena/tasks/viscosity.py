@@ -61,35 +61,21 @@ class StressTensorCorrelator:
 
         # Calculate autocorrelations for each time lag
         for dt_idx in range(min(self.nrepeat, n_samples)):
-            if dt_idx >= n_samples:
-                break
-
             correlations = []
             count = 0
 
             # Calculate correlation for this time lag
             for i in range(n_samples - dt_idx):
-                if i + dt_idx < n_samples:
-                    # Autocorrelation: <S(t) * S(t + dt)>
-                    corr = history[i] * history[i + dt_idx]
-                    correlations.append(corr)
-                    count += 1
+                # Autocorrelation: <S(t) * S(t + dt)>
+                corr = history[i] * history[i + dt_idx]
+                correlations.append(corr)
+                count += 1
 
             if correlations:
                 self.correlations[dt_idx] = (
                     np.mean(correlations, axis=0) * self.prefactor
                 )
                 self.correlation_counts[dt_idx] = count
-
-    def get_correlation_data(self):
-        """Return correlation data in LAMMPS format."""
-        return {
-            "time_deltas": self.time_deltas,
-            "counts": self.correlation_counts,
-            "pxy_autocorr": self.correlations[:, 0],
-            "pxz_autocorr": self.correlations[:, 1],
-            "pyz_autocorr": self.correlations[:, 2],
-        }
 
     def integrate_correlations(self, dt):
         """Integrate correlation functions using trapezoidal rule."""
@@ -99,43 +85,6 @@ class StressTensorCorrelator:
             integral = np.trapezoid(self.correlations[:, i], dx=dt)
             integrations.append(integral)
         return integrations
-
-
-# class StressAutocorrelationAccumulator:
-#     """
-#     Mimics LAMMPS 'fix ave/correlate' by storing a rolling window of stress tensors
-#     and computing the Green-Kubo autocorrelation of off-diagonal components.
-#     """
-
-#     def __init__(self, max_lag: int):
-#         self.max_lag = max_lag
-#         self.buffer = deque(maxlen=max_lag)
-#         self.n_samples = 0
-#         self.sum_corr = np.zeros(max_lag)
-
-#     def add(self, stress_tensor: np.ndarray):
-#         """Add 3x3 stress tensor (in eV/Ang^3) and update correlations."""
-#         assert stress_tensor.shape == (3, 3)
-#         off_diag = np.array(
-#             [
-#                 stress_tensor[0, 1],
-#                 stress_tensor[0, 2],
-#                 stress_tensor[1, 2],
-#             ]
-#         ) * (1.602176634e-19 / 1e-30)  # eV/A^3 -> J/m^3
-#         self.buffer.append(off_diag.copy())
-
-#         buf = list(self.buffer)
-#         for lag in range(1, len(buf)):
-#             c = np.dot(buf[0], buf[lag]) / 3.0  # sum over xy, xz, yz
-#             self.sum_corr[lag] += c
-
-#         self.n_samples += 1
-
-#     def get_correlation(self):
-#         norm = self.n_samples - np.arange(self.max_lag)
-#         norm[norm <= 0] = 1  # avoid division by zero
-#         return self.sum_corr / norm[:, None]  # (max_lag, 1)
 
 
 @task
@@ -189,7 +138,6 @@ def run(
         nrepeat=500,  # Number of correlation time windows
         correlation_length=500,  # Maximum correlation time in steps
     )
-    # sacf = StressAutocorrelationAccumulator(max_lag=500)
 
     def store_stress():
         stress = result["atoms"].get_stress(voigt=False)
@@ -207,9 +155,10 @@ def run(
         callbacks=[(store_stress, 1)],  # Store stress every step
     )
 
+    # Calculate correlations after production run
+    sacf.calculate_correlations()
+    
     integrations = sacf.integrate_correlations(result["time_step"])
-    # corr = sacf.get_correlation().squeeze()
-    # integral = cumulative_trapezoid(corr, dx=result["time_step"], initial=0)
 
     kB_SI = 1.380649e-23  # J/K
 
@@ -219,13 +168,12 @@ def run(
         eta = (result["atoms"].get_volume() * (1e-30 / kB_SI) / temperature) * integral
         viscosity_components.append(eta)
 
-    # Average viscosity
     etas = np.mean(viscosity_components, axis=0)
 
     return {
         "viscosity": {
             "units": "mPa·s",
             "etas": etas * 1e3,  # convert to mPa·s
-            "final": etas[-1] * 1e3,  # final viscosity in mPa·s
+            "final": etas[-1] * 1e3,  # average viscosity in mPa·s
         }
     }
