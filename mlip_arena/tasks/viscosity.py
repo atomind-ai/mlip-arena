@@ -40,19 +40,55 @@ class StressTensorCorrelator:
         self.step_count = 0
 
     def add_stress_data(self, stress_tensor):
-        """Add stress tensor data point."""
+        """Add stress tensor data point and update correlations incrementally."""
         if self.step_count % self.nevery == 0:
             # Extract off-diagonal stress components (pxy, pxz, pyz)
             pxy = stress_tensor[0, 1]  # or stress_tensor[1, 0]
             pxz = stress_tensor[0, 2]  # or stress_tensor[2, 0]
             pyz = stress_tensor[1, 2]  # or stress_tensor[2, 1]
 
-            self.stress_history.append([pxy, pxz, pyz])
+            current_stress = np.array([pxy, pxz, pyz])
+            self.stress_history.append(current_stress)
+            
+            # Update correlations incrementally
+            self._update_correlations_incremental(current_stress)
 
         self.step_count += 1
 
+    def _update_correlations_incremental(self, current_stress):
+        """Update correlation functions incrementally with new data point."""
+        history_length = len(self.stress_history)
+        
+        if history_length < 2:
+            return
+            
+        # Update correlations for all possible time lags with the new sample
+        max_lag = min(self.nrepeat, history_length)
+        
+        for dt_idx in range(max_lag):
+            if dt_idx < history_length:
+                # Get the sample at time (t - dt)
+                past_sample = self.stress_history[-(dt_idx + 1)]
+                
+                # Calculate autocorrelation: <S(t-dt) * S(t)>
+                corr = past_sample * current_stress
+                
+                # Update running average
+                old_count = self.correlation_counts[dt_idx]
+                new_count = old_count + 1
+                
+                if old_count == 0:
+                    self.correlations[dt_idx] = corr * self.prefactor
+                else:
+                    # Running average update: new_avg = (old_avg * old_count + new_value) / new_count
+                    self.correlations[dt_idx] = (
+                        self.correlations[dt_idx] * old_count + corr * self.prefactor
+                    ) / new_count
+                
+                self.correlation_counts[dt_idx] = new_count
+
     def calculate_correlations(self):
-        """Calculate autocorrelation functions."""
+        """Calculate autocorrelation functions (fallback method for validation)."""
         if len(self.stress_history) < 2:
             return
 
@@ -81,9 +117,15 @@ class StressTensorCorrelator:
         """Integrate correlation functions using trapezoidal rule."""
         integrations = []
         for i in range(3):  # pxy, pxz, pyz
-            # Trapezoidal integration
-            integral = np.trapezoid(self.correlations[:, i], dx=dt)
-            integrations.append(integral)
+            # Only integrate over time lags where we have sufficient statistics
+            valid_indices = self.correlation_counts > 0
+            if np.any(valid_indices):
+                time_vals = self.time_deltas[valid_indices] * dt
+                corr_vals = self.correlations[valid_indices, i]
+                integral = np.trapezoid(corr_vals, x=time_vals)
+                integrations.append(integral)
+            else:
+                integrations.append(0.0)
         return integrations
 
 
@@ -156,7 +198,7 @@ def run(
     )
 
     # Calculate correlations after production run
-    sacf.calculate_correlations()
+    # sacf.calculate_correlations()
     
     integrations = sacf.integrate_correlations(result["time_step"])
 
