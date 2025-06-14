@@ -213,28 +213,33 @@ def run(
     T0 = atoms.get_temperature()
     P0 = -atoms.get_stress().trace() / 3.0
 
-    result = MD(
-        atoms=atoms,
-        calculator=calculator,
-        ensemble="npt",
-        temperature=[T0, temperature],
-        pressure=[P0, pressure],
-        time_step=time_step,
-        total_time=npt_eq_time,
-        velocity_seed=velocity_seed,
-    )
+    if npt_eq_time > 0:
+        result = MD(
+            atoms=atoms,
+            calculator=calculator,
+            ensemble="npt",
+            temperature=[T0, temperature],
+            pressure=[P0, pressure],
+            time_step=time_step,
+            total_time=npt_eq_time,
+            velocity_seed=velocity_seed,
+        )
+        atoms = result["atoms"]
 
     # Second stage: NVE equilibration
-    result = MD(
-        atoms=result["atoms"],
-        calculator=calculator,
-        ensemble="nve",
-        temperature=temperature,
-        pressure=pressure,
-        time_step=time_step,
-        total_time=nve_eq_time,
-        velocity_seed=velocity_seed,
-    )
+
+    if nve_eq_time > 0:
+        result = MD(
+            atoms=atoms,
+            calculator=calculator,
+            ensemble="nve",
+            temperature=temperature,
+            pressure=pressure,
+            time_step=time_step,
+            total_time=nve_eq_time,
+            velocity_seed=velocity_seed,
+        )
+        atoms = result["atoms"]
 
     # Third stage: NVE production run for viscosity calculation
     # Initialize correlator with LAMMPS-compatible parameters
