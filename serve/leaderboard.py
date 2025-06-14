@@ -72,15 +72,26 @@ st.markdown(
     """
 <h1 style='text-align: center;'>⚔️ MLIP Arena Leaderboard ⚔️</h1>
 
-> MLIP Arena is a platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional energy and force error metrics. It focuses on revealing the underlying physics and chemistry learned by these models and assessing their performance in molecular dynamics (MD) simulations. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
+<div align="center">
+    <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR-AI4Mat-blue"></a>
+    <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
+    <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/test.yaml"></a>
+    <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/mlip-arena"></a>
+    <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>
+    <!-- <a href="https://discord.gg/W8WvdQtT8T"><img alt="Discord" src="https://img.shields.io/discord/1299613474820984832?logo=discord"> -->
+</a>
+</div>
+
+
+> MLIP Arena is a unified platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional energy and force error metrics. It focuses on revealing the underlying physics and chemistry learned by these models. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
 
 ### :red[Introduction]
 
-Foundation machine learning interatomic potentials (fMLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations, have demonstrated remarkable zero-shot predictive capabilities for complex atomic interactions. These potentials derive quantum mechanical insights with high accuracy, expressivity, and generalizability, significantly outperforming classical empirical force fields while maintaining comparable computational efficiency.
+Foundation machine learning interatomic potentials (MLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations,have revolutionized molecular and materials modeling, but existing benchmarks suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific density functional theory (DFT) references.
 
-However, MLIPs trained on atomic energy and force labels do not necessarily capture the correct atomic interactions, even though they often excel in error-based metrics for bulk systems. To drive further advancements in this field, it is crucial to establish mechanisms that ensure fair and transparent benchmarking practices beyond basic regression metrics.
+We introduce MLIP Arena, a unified benchmark platform for evaluating foundation MLIP performance beyond conventional error metrics. It focuses on revealing the physical soundness learned by MLIPs and assessing their utilitarian performance agnostic to underlying model architecture and training dataset. 
 
-MLIP Arena aims to provide a fair and transparent platform for benchmarking MLIPs in a crowdsourced setting. Its primary goal is to uncover the learned physics and chemistry of open-source, open-weight MLIPs. The benchmarks are designed to be agnostic to both the underlying architecture and specific training targets, such as density functionals, ensuring a cross-comparable and unbiased evaluation.
+***By moving beyond static DFT references and revealing the important failure modes*** of current foundation MLIPs in real-world settings, MLIP Arena provides a reproducible framework to guide the next-generation MLIP development toward improved predictive accuracy and runtime efficiency while maintaining physical consistency.
 
 """,
     unsafe_allow_html=True,
