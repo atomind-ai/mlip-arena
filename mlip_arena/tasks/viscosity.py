@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from collections import deque
+from typing import Literal
 
 import numpy as np
 from ase import Atoms
 from ase.calculators.calculator import BaseCalculator
+from ase.md.md import MolecularDynamics
 from prefect import task
 
 from mlip_arena.tasks.md import run as MD
@@ -13,120 +15,163 @@ from mlip_arena.tasks.md import run as MD
 class StressTensorCorrelator:
     """
     Class to calculate stress tensor autocorrelation functions for viscosity calculation.
-    Emulates LAMMPS fix ave/correlate functionality.
+    Implements LAMMPS fix ave/correlate functionality with 'ave running' behavior.
+
+    Based on LAMMPS implementation:
+    - Correlation C_ij(dt) = <V_i(t) * V_j(t+dt)> where V_i, V_j are stress components
+    - For viscosity: correlate pxy, pxz, pyz with themselves (type=auto)
+    - Uses 'ave running': correlations accumulate continuously without reset
+    - Integration using trapezoidal rule with ASE unit conversion (eV/Å³ → Pa·s)
     """
 
-    def __init__(self, nevery=1, nrepeat=100, correlation_length=None, prefactor=1.0):
+    def __init__(self, nevery=1, nrepeat=100, nfreq=None, prefactor=1.0):
         """
-        Initialize stress tensor correlator.
+        Initialize stress tensor correlator following LAMMPS ave/correlate syntax.
 
         Parameters:
-        nevery: sampling interval (timesteps)
-        nrepeat: number of correlation time windows
-        correlation_length: maximum correlation time (if None, uses nrepeat*nevery)
+        nevery: sample input values every this many timesteps
+        nrepeat: number of correlation time windows to accumulate
+        nfreq: calculate correlation averages every this many timesteps (if None, uses nrepeat*nevery)
         prefactor: scaling factor for correlation data
+
+        Note: Uses 'ave running' behavior - correlations accumulate continuously
         """
         self.nevery = nevery
         self.nrepeat = nrepeat
-        self.correlation_length = correlation_length or nrepeat * nevery
+        self.nfreq = nfreq or nrepeat * nevery
         self.prefactor = prefactor
 
+        # Ensure nfreq >= (nrepeat - 1) * nevery as required by LAMMPS
+        min_nfreq = (nrepeat - 1) * nevery
+        if self.nfreq < min_nfreq:
+            self.nfreq = min_nfreq
+
         # Storage for stress tensor components (pxy, pxz, pyz)
-        self.stress_history = deque(maxlen=self.correlation_length // nevery + 1)
-        self.correlations = np.zeros((nrepeat, 3))  # For pxy, pxz, pyz
+        # Use deque with maxlen to automatically handle circular buffer
+        max_samples = self.nfreq // nevery + 1
+        self.stress_history = deque(maxlen=max_samples)
+
+        # Correlation arrays: [nrepeat x 3] for pxy, pxz, pyz
+        self.correlations = np.zeros((nrepeat, 3))
         self.correlation_counts = np.zeros(nrepeat)
+
+        # Time deltas in timesteps
         self.time_deltas = np.arange(nrepeat) * nevery
 
         self.step_count = 0
+        self.last_output_step = -1
 
     def add_stress_data(self, stress_tensor):
-        """Add stress tensor data point and update correlations incrementally."""
+        """Add stress tensor data point following LAMMPS sampling protocol."""
+
+        # Only sample every nevery steps
         if self.step_count % self.nevery == 0:
-            # Extract off-diagonal stress components (pxy, pxz, pyz)
-            pxy = stress_tensor[0, 1]  # or stress_tensor[1, 0]
-            pxz = stress_tensor[0, 2]  # or stress_tensor[2, 0]
-            pyz = stress_tensor[1, 2]  # or stress_tensor[2, 1]
+            # Extract off-diagonal stress components (shear stress)
+            # ASE stress tensor: eV/Å³, negative sign for pressure convention
+            pxy = -stress_tensor[0, 1]
+            pxz = -stress_tensor[0, 2]
+            pyz = -stress_tensor[1, 2]
 
             current_stress = np.array([pxy, pxz, pyz])
             self.stress_history.append(current_stress)
-            
-            # Update correlations incrementally
-            self._update_correlations_incremental(current_stress)
+
+            # Update correlations incrementally (ave running behavior)
+            self._update_correlations_running()
 
         self.step_count += 1
 
-    def _update_correlations_incremental(self, current_stress):
-        """Update correlation functions incrementally with new data point."""
-        history_length = len(self.stress_history)
-        
-        if history_length < 2:
-            return
-            
-        # Update correlations for all possible time lags with the new sample
-        max_lag = min(self.nrepeat, history_length)
-        
-        for dt_idx in range(max_lag):
-            if dt_idx < history_length:
-                # Get the sample at time (t - dt)
-                past_sample = self.stress_history[-(dt_idx + 1)]
-                
-                # Calculate autocorrelation: <S(t-dt) * S(t)>
-                corr = past_sample * current_stress
-                
-                # Update running average
-                old_count = self.correlation_counts[dt_idx]
-                new_count = old_count + 1
-                
-                if old_count == 0:
-                    self.correlations[dt_idx] = corr * self.prefactor
-                else:
-                    # Running average update: new_avg = (old_avg * old_count + new_value) / new_count
-                    self.correlations[dt_idx] = (
-                        self.correlations[dt_idx] * old_count + corr * self.prefactor
-                    ) / new_count
-                
-                self.correlation_counts[dt_idx] = new_count
+    def _update_correlations_running(self):
+        """
+        Update correlations using 'ave running' method - continuously accumulate.
+        This matches LAMMPS 'ave running' behavior where correlations are never reset.
 
-    def calculate_correlations(self):
-        """Calculate autocorrelation functions (fallback method for validation)."""
+        Uses incremental averaging: new_avg = (old_avg * old_count + new_data) / new_count
+        """
         if len(self.stress_history) < 2:
             return
 
-        history = np.array(self.stress_history)
-        n_samples = len(history)
+        # Get the most recent stress sample
+        current_stress = self.stress_history[-1]
+        history_length = len(self.stress_history)
 
-        # Calculate autocorrelations for each time lag
-        for dt_idx in range(min(self.nrepeat, n_samples)):
-            correlations = []
-            count = 0
+        # Update correlations for all possible time lags with the new sample
+        max_lag = min(self.nrepeat, history_length)
 
-            # Calculate correlation for this time lag
-            for i in range(n_samples - dt_idx):
-                # Autocorrelation: <S(t) * S(t + dt)>
-                corr = history[i] * history[i + dt_idx]
-                correlations.append(corr)
-                count += 1
+        for dt_idx in range(max_lag):
+            if dt_idx < history_length:
+                # Get the sample at time (t - dt*nevery)
+                past_index = -(dt_idx + 1)
+                if abs(past_index) <= len(self.stress_history):
+                    past_stress = self.stress_history[past_index]
 
-            if correlations:
-                self.correlations[dt_idx] = (
-                    np.mean(correlations, axis=0) * self.prefactor
-                )
-                self.correlation_counts[dt_idx] = count
+                    # Calculate autocorrelation: past_stress(t-dt) * current_stress(t)
+                    corr = (
+                        past_stress * current_stress
+                    )  # element-wise for pxy, pxz, pyz
 
-    def integrate_correlations(self, dt):
-        """Integrate correlation functions using trapezoidal rule."""
-        integrations = []
+                    # Update running average
+                    old_count = self.correlation_counts[dt_idx]
+                    new_count = old_count + 1
+
+                    if old_count == 0:
+                        self.correlations[dt_idx] = corr * self.prefactor
+                    else:
+                        # Running average: new_avg = (old_avg * old_count + new_value) / new_count
+                        self.correlations[dt_idx] = (
+                            self.correlations[dt_idx] * old_count
+                            + corr * self.prefactor
+                        ) / new_count
+
+                    self.correlation_counts[dt_idx] = new_count
+
+    def get_correlation_data(self):
+        """
+        Return correlation data in LAMMPS format.
+
+        Returns:
+        dict with keys:
+        - time_deltas: array of time delays (in timesteps)
+        - correlations: array of shape [nrepeat, 3] for pxy, pxz, pyz correlations
+        - counts: number of samples contributing to each correlation
+        """
+        return {
+            "time_deltas": self.time_deltas,
+            "correlations": self.correlations.copy(),
+            "counts": self.correlation_counts.copy(),
+        }
+
+    def integrate_correlations(self, dt_fs):
+        """
+        Integrate correlation functions using trapezoidal rule.
+
+        Parameters:
+        dt_fs: timestep in femtoseconds
+
+        Returns:
+        List of integrals for [pxy, pxz, pyz] correlations
+        """
+        integrals = []
+
         for i in range(3):  # pxy, pxz, pyz
-            # Only integrate over time lags where we have sufficient statistics
-            valid_indices = self.correlation_counts > 0
-            if np.any(valid_indices):
-                time_vals = self.time_deltas[valid_indices] * dt
-                corr_vals = self.correlations[valid_indices, i]
-                integral = np.trapezoid(corr_vals, x=time_vals)
-                integrations.append(integral)
+            # Only integrate over time lags where we have data
+            valid_mask = self.correlation_counts > 0
+
+            if np.any(valid_mask):
+                # Convert time delays from timesteps to femtoseconds
+                time_vals = self.time_deltas[valid_mask] * dt_fs
+                corr_vals = self.correlations[valid_mask, i]
+
+                # Trapezoidal integration
+                if len(time_vals) > 1:
+                    integral = np.trapezoid(corr_vals, x=time_vals)
+                else:
+                    integral = 0.0
+
+                integrals.append(integral)
             else:
-                integrations.append(0.0)
-        return integrations
+                integrals.append(0.0)
+
+        return integrals
 
 
 @task
@@ -140,12 +185,31 @@ def run(
     nve_eq_time: float = 1_000,  # fs
     prod_time: float = 100_000,  # fs
     velocity_seed: int | None = None,
+    method: Literal["green-kubo"] = "green-kubo",
+    correlation_length: int = 500,  # correlation time windows
+    sample_interval: int = 1,  # sampling interval in timesteps
 ):
+    """
+    Calculate shear viscosity using Green-Kubo method following LAMMPS methodology.
+
+    The viscosity is calculated from:
+    η = (V/(k_B*T)) * ∫[0→∞] <P_αβ(0) * P_αβ(t)> dt
+
+    Where:
+    - V is the volume
+    - k_B is Boltzmann constant
+    - T is temperature
+    - P_αβ are the off-diagonal stress tensor components (pxy, pxz, pyz)
+    - <...> denotes ensemble average
+    """
     atoms = atoms.copy()
     atoms.calc = calculator
 
-    # First stage: NPT equilibration from initial state to target temperature and pressure
+    assert method == "green-kubo", (
+        "Only Green-Kubo method is currently implemented for viscosity calculation."
+    )
 
+    # First stage: NPT equilibration from initial state to target temperature and pressure
     T0 = atoms.get_temperature()
     P0 = -atoms.get_stress().trace() / 3.0
 
@@ -161,7 +225,6 @@ def run(
     )
 
     # Second stage: NVE equilibration
-
     result = MD(
         atoms=result["atoms"],
         calculator=calculator,
@@ -174,17 +237,25 @@ def run(
     )
 
     # Third stage: NVE production run for viscosity calculation
+    # Initialize correlator with LAMMPS-compatible parameters
 
-    sacf = StressTensorCorrelator(
-        nevery=1,  # Store stress every step
-        nrepeat=500,  # Number of correlation time windows
-        correlation_length=500,  # Maximum correlation time in steps
+    # Calculate nfreq to ensure we get final correlation calculation
+    total_steps = int(prod_time / result["time_step"])
+    nfreq = min(total_steps, max(correlation_length * sample_interval, 1000))
+
+    correlator = StressTensorCorrelator(
+        nevery=sample_interval,
+        nrepeat=correlation_length,
+        nfreq=nfreq,
+        prefactor=1.0,  # Will handle unit conversion later
     )
 
-    def store_stress():
-        stress = result["atoms"].get_stress(voigt=False)
-        sacf.add_stress_data(stress)
+    def store_stress(dyn: MolecularDynamics):
+        """Callback to store stress tensor data during MD simulation."""
+        stress = dyn.atoms.get_stress(voigt=False)  # Get 3x3 stress tensor
+        correlator.add_stress_data(stress)
 
+    # Run production MD with stress data collection
     result = MD(
         atoms=result["atoms"],
         calculator=calculator,
@@ -197,25 +268,68 @@ def run(
         callbacks=[(store_stress, 1)],  # Store stress every step
     )
 
-    # Calculate correlations after production run
-    # sacf.calculate_correlations()
-    
-    integrations = sacf.integrate_correlations(result["time_step"])
+    # Get final correlation data
+    corr_data = correlator.get_correlation_data()
 
-    kB_SI = 1.380649e-23  # J/K
+    # Integrate correlation functions
+    dt_fs = result["time_step"]  # timestep in fs
+    integrals = correlator.integrate_correlations(dt_fs)
 
-    # Calculate viscosity for each component
+    # Unit conversion for ASE units to SI
+    # ASE units: stress in eV/Å³, time in fs, volume in Å³
+
+    # Physical constants
+    kB_SI = 1.380649e-23  # J/K - Boltzmann constant
+    eV_to_J = 1.602176634e-19  # J/eV
+    fs_to_s = 1.0e-15  # s/fs
+    A3_to_m3 = 1.0e-30  # m³/Å³
+
+    # Unit conversion factor for Green-Kubo viscosity
+    # stress²·time·volume / (kB·T) → Pa·s
+    # (eV/Å³)² · fs · Å³ / (J/K · K) → Pa·s
+    # = eV²·fs / (Å³·J/K·K) → Pa·s
+    # = (eV²·fs·K) / (Å³·J) → Pa·s
+
+    # Get system volume and temperature
+    volume_A3 = result["atoms"].get_volume()  # Volume in Å³
+    temp_K = temperature  # Temperature in K
+
+    # Calculate viscosity components using Green-Kubo formula
+    # η = (V / (k_B * T)) * ∫ <P_αβ(0) * P_αβ(t)> dt
+
     viscosity_components = []
-    for integral in integrations:
-        eta = (result["atoms"].get_volume() * (1e-30 / kB_SI) / temperature) * integral
-        viscosity_components.append(eta)
+    for integral_eV2_fs_per_A3 in integrals:
+        # Convert integral from (eV/Å³)²·fs to J²·s/m⁶
+        integral_SI = integral_eV2_fs_per_A3 * (eV_to_J**2) * fs_to_s / (A3_to_m3**2)
 
-    etas = np.mean(viscosity_components, axis=0)
+        # Apply Green-Kubo formula: η = (V / (k_B * T)) * integral
+        viscosity_SI = (volume_A3 * A3_to_m3) / (kB_SI * temp_K) * integral_SI
+        viscosity_components.append(viscosity_SI)
+
+    # Average the three components (pxy, pxz, pyz)
+    eta_Pa_s = np.mean(viscosity_components, axis=0)
+
+    # Convert to mPa·s (millipascal-seconds)
+    eta_mPa_s = eta_Pa_s * 1e3
 
     return {
         "viscosity": {
             "units": "mPa·s",
-            "etas": etas * 1e3,  # convert to mPa·s
-            "final": etas[-1] * 1e3,  # average viscosity in mPa·s
-        }
+            "components": {
+                "pxy": viscosity_components[0] * 1e3,
+                "pxz": viscosity_components[1] * 1e3,
+                "pyz": viscosity_components[2] * 1e3,
+            },
+            "average": eta_mPa_s,
+            "final": eta_mPa_s.mean(),
+        },
+        "correlation_data": corr_data,
+        "integrals": integrals,
+        "system_info": {
+            "volume_A3": volume_A3,
+            "temperature_K": temp_K,
+            "timestep_fs": dt_fs,
+            "total_steps": correlator.step_count,
+            "correlation_length": correlation_length,
+        },
     }

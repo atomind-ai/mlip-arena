@@ -58,6 +58,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 from typing import Literal, Callable
+import functools
 
 import numpy as np
 from ase import Atoms, units
@@ -362,7 +363,8 @@ def run(
 
     if callbacks is not None:
         for callback, interval in callbacks:
-            md_runner.attach(callback, interval=interval)
+            cb = functools.partial(callback, dyn=md_runner)
+            md_runner.attach(cb, interval=interval)
 
     with tqdm(total=n_steps) as pbar:
 
