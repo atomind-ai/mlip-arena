@@ -284,14 +284,14 @@ def run(
     if isinstance(dynamics, str):
         # Use known dynamics if `self.dynamics` is a str
         dynamics = dynamics.lower()
+        if ensemble == "nve":
+            dynamics = "velocityverlet"
         if dynamics not in _valid_dynamics[ensemble]:
             raise ValueError(
                 f"{dynamics} thermostat not available for {ensemble}."
                 f"Available {ensemble} thermostats are:"
                 " ".join(_valid_dynamics[ensemble])
             )
-        if ensemble == "nve":
-            dynamics = "velocityverlet"
         md_class = _preset_dynamics[f"{ensemble}_{dynamics}"]
     elif dynamics is MolecularDynamics:
         md_class = dynamics
@@ -395,4 +395,5 @@ def run(
         "atoms": atoms,
         "runtime": end_time - start_time,
         "n_steps": n_steps,
+        "time_step": time_step,
     }

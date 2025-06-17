@@ -8,8 +8,11 @@ from ase import Atoms
 from ase.calculators.calculator import BaseCalculator
 from ase.md.md import MolecularDynamics
 from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.runtime import task_run
 
 from mlip_arena.tasks.md import run as MD
+from mlip_arena.tasks.utils import logger
 
 
 class StressTensorCorrelator:
@@ -174,7 +177,18 @@ class StressTensorCorrelator:
         return integrals
 
 
-@task
+def _generate_task_run_name():
+    task_name = task_run.task_name
+    parameters = task_run.parameters
+
+    atoms = parameters["atoms"]
+    calculator = parameters["calculator"]
+
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator}"
+
+@task(
+    name="VISCOSITY", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS
+)
 def run(
     atoms: Atoms,
     calculator: BaseCalculator,
@@ -182,6 +196,7 @@ def run(
     pressure: float,
     time_step: float | None = None,  # fs
     npt_eq_time: float = 10_000,  # fs
+    dynamics: str | MolecularDynamics = "nose-hoover",
     nve_eq_time: float = 1_000,  # fs
     prod_time: float = 100_000,  # fs
     velocity_seed: int | None = None,
@@ -211,13 +226,26 @@ def run(
 
     # First stage: NPT equilibration from initial state to target temperature and pressure
     T0 = atoms.get_temperature()
-    P0 = -atoms.get_stress().trace() / 3.0
+    try:
+        P0 = -atoms.get_stress().trace() / 3.0
+    except Exception as e:
+        logger.error(
+            "Failed to get initial pressure from stress tensor. "
+            "Ensure the calculator supports stress calculation. "
+            "Error raised from: " + str(e)
+        )
+        logger.warning(
+            "Assuming initial pressure is zero. "
+            "This may lead to instability if the system is not close to equilibrium."
+        )
+        P0 = 0.0  # Assume initial pressure is zero if stress tensor is not available
 
     if npt_eq_time > 0:
         result = MD(
             atoms=atoms,
             calculator=calculator,
             ensemble="npt",
+            dynamics=dynamics,
             temperature=[T0, temperature],
             pressure=[P0, pressure],
             time_step=time_step,
@@ -233,6 +261,7 @@ def run(
             atoms=atoms,
             calculator=calculator,
             ensemble="nve",
+            dynamics="velocityverlet",
             temperature=temperature,
             pressure=pressure,
             time_step=time_step,
@@ -265,6 +294,7 @@ def run(
         atoms=result["atoms"],
         calculator=calculator,
         ensemble="nve",
+        dynamics="velocityverlet",
         temperature=temperature,
         pressure=pressure,
         time_step=time_step,
@@ -316,6 +346,10 @@ def run(
 
     # Convert to mPa·s (millipascal-seconds)
     eta_mPa_s = eta_Pa_s * 1e3
+
+    logger.info(
+        f"Calculated viscosity: {eta_mPa_s.mean():.3f} mPa·s "
+    )
 
     return {
         "viscosity": {
