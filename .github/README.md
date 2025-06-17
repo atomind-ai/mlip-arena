@@ -4,12 +4,13 @@
     <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
     <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/test.yaml"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/mlip-arena"></a>
+    <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mlip-arena"></a>
     <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>
     <!-- <a href="https://discord.gg/W8WvdQtT8T"><img alt="Discord" src="https://img.shields.io/discord/1299613474820984832?logo=discord"> -->
 </a>
 </div>
 
-Foundation machine learning interatomic potentials (MLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations,have revolutionized molecular and materials modeling, but existing benchmarks suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific density functional theory (DFT) references.
+Foundation machine learning interatomic potentials (MLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations, have revolutionized molecular and materials modeling, but existing benchmarks suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific density functional theory (DFT) references.
 
 We introduce MLIP Arena, a unified benchmark platform for evaluating foundation MLIP performance beyond conventional error metrics. It focuses on revealing the physical soundness learned by MLIPs and assessing their utilitarian performance agnostic to underlying model architecture and training dataset. 
 
@@ -22,7 +23,7 @@ MLIP Arena leverages modern pythonic workflow orchestrator 💙
 ![Thumnail](../serve/assets/workflow.png)
 
 > [!NOTE]
-> Contributions of new tasks are very welcome! If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks, or propose new feature requests in [Discussion](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
+> Contributions of new tasks through PRs are very welcome! If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks, or propose new feature requests in [Discussion](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
 
 ## Announcement
 
@@ -59,7 +60,8 @@ cd mlip-arena
 bash scripts/install-linux.sh
 ```
 
-Sometimes installing all compiled models takes all the available local storage. Optional pip flag `--no-cache` could be uesed. `uv cache clean` will be helpful too.
+> [!TIP]
+> Sometimes installing all compiled models takes all the available local storage. Optional pip flag `--no-cache` could be uesed. `uv cache clean` will be helpful too.
 
 **Mac**
 
@@ -99,9 +101,9 @@ for model in MLIPEnum:
             dispersion_kwargs=dict(
                 damping='bj', xc='pbe', cutoff=40.0 * units.Bohr
             ), # passing into TorchDFTD3Calculator
-        ),
-        ensemble="nve",
-        dynamics="velocityverlet",
+        ), # compatible with custom ASE Calculator
+        ensemble="nve", # nvt, nvt available
+        dynamics="velocityverlet", # compatible with any ASE Dynamics objects and their class names
         total_time=1e3, # 1 ps = 1e3 fs
         time_step=2, # fs
     )
@@ -144,11 +146,11 @@ The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `fr
 - [NEB_FROM_ENDPOINTS](../mlip_arena/tasks/neb.py#L164): Nudge elastic band with convenient image interpolation (linear or IDPP)
 - [ELASTICITY](../mlip_arena/tasks/elasticity.py#L78): Elastic tensor calculation
 
-## Contribute
+### Contribute and Development
 
-MLIP Arena is now in pre-alpha. If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). 
+PRs are welcome. Please clone the repo and submit PRs with changes.
 
-### Development
+To make change to huggingface space, fetch large files from git lfs first and run streamlit:
 
 ```
 git lfs fetch --all
@@ -171,7 +173,7 @@ If you have pretrained MLIP models that you would like to contribute to the MLIP
 2. Name your class with awesome model name and add the same name to [registry](../mlip_arena/models/registry.yaml) with metadata.
 
 > [!CAUTION] 
-> Remove unneccessary outputs under `results` class attributes to avoid error for MD simulations. Please refer to other class definition for example.
+> Remove unneccessary outputs under `results` class attributes to avoid error for MD simulations. Please refer to [CHGNet](../mlip_arena/models/externals/chgnet.py) as an example.
 
 #### Hugging Face Model (recommended, difficult)
 
