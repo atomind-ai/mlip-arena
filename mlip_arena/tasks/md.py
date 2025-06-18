@@ -337,16 +337,42 @@ def run(
             traj = Trajectory(traj_file, "w", atoms)
 
             if not np.isnan(t_schedule).any():
-                MaxwellBoltzmannDistribution(
-                    atoms=atoms,
-                    temperature_K=t_schedule[last_step],
-                    rng=np.random.default_rng(seed=velocity_seed),
-                )
+                if atoms.get_temperature() == 0.0:
+                    MaxwellBoltzmannDistribution(
+                        atoms=atoms,
+                        temperature_K=t_schedule[0],
+                        rng=np.random.default_rng(seed=velocity_seed),
+                    )
+                else:
+                    atoms.set_momenta(
+                        atoms.get_momenta() * np.sqrt(
+                            t_schedule[0] / atoms.get_temperature()
+                        )
+                    )
 
             if zero_linear_momentum:
                 Stationary(atoms)
             if zero_angular_momentum:
                 ZeroRotation(atoms)
+    else:
+        if not np.isnan(t_schedule).any():
+            if atoms.get_temperature() == 0.0:
+                MaxwellBoltzmannDistribution(
+                    atoms=atoms,
+                    temperature_K=t_schedule[0],
+                    rng=np.random.default_rng(seed=velocity_seed),
+                )
+            else:
+                atoms.set_momenta(
+                    atoms.get_momenta() * np.sqrt(
+                        t_schedule[0] / atoms.get_temperature()
+                    )
+                )
+
+        if zero_linear_momentum:
+            Stationary(atoms)
+        if zero_angular_momentum:
+            ZeroRotation(atoms)
 
     fraction_traceless = dynamics_kwargs.pop("fraction_traceless", 1.0)
 

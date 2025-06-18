@@ -254,6 +254,8 @@ def run(
         )
         atoms = result["atoms"]
 
+    # rescale temperature and volume
+
     # Second stage: NVE equilibration
 
     if nve_eq_time > 0:
@@ -355,9 +357,9 @@ def run(
         "viscosity": {
             "units": "mPa·s",
             "components": {
-                "pxy": viscosity_components[0] * 1e3,
-                "pxz": viscosity_components[1] * 1e3,
-                "pyz": viscosity_components[2] * 1e3,
+                "xy": viscosity_components[0] * 1e3,
+                "xz": viscosity_components[1] * 1e3,
+                "yz": viscosity_components[2] * 1e3,
             },
             "average": eta_mPa_s,
             "final": eta_mPa_s.mean(),
