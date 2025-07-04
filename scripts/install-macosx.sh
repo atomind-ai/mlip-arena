@@ -12,7 +12,10 @@ uv pip install torch-sparse --no-build-isolation
 
 uv pip install dgl -f https://data.dgl.ai/wheels/torch-${TORCH}/cpu/repo.html
 
-uv pip install -e .[test]
-uv pip install -e .[mace]
+uv pip install mlip-arena[fairchem]
+uv pip install mlip-arena[orb]
+uv pip install mlip-arena[matgl]
+uv pip install mlip-arena[test]
+uv pip install mlip-arena[mace]
 
 
