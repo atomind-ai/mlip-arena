@@ -76,12 +76,6 @@ jobs:
         git lfs fetch
         git lfs checkout
 
-        # Track binary files with LFS for HF
-        git lfs track "*.pdf"
-        git lfs track "*.png"
-        git add .gitattributes
-        git commit -m "Track binary files with LFS for HF" || echo "No changes to commit"
-
         # Push to temporary branch on Hugging Face
         git push -f https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena HEAD:refs/heads/$TRIAL_BRANCH
 
