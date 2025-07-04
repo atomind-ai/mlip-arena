@@ -57,7 +57,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Callable
+import functools
 
 import numpy as np
 from ase import Atoms, units
@@ -211,6 +212,7 @@ def run(
     traj_file: str | Path | None = None,
     traj_interval: int = 1,
     restart: bool = True,
+    callbacks: list[tuple[Callable, int]] | None = None,
 ):
     """
     Run a molecular dynamics (MD) simulation using ASE.
@@ -234,6 +236,7 @@ def run(
         traj_file (str | Path | None, optional): Path to the trajectory file for saving simulation results. Defaults to None.
         traj_interval (int, optional): Interval for saving trajectory frames. Defaults to 1.
         restart (bool, optional): Whether to restart the simulation from an existing trajectory file. Defaults to True.
+        callbacks (list[tuple[Callable, int]], optional): List of callbacks to attach to the MD runner.
 
     Returns:
         dict: A dictionary containing the following keys:
@@ -281,14 +284,14 @@ def run(
     if isinstance(dynamics, str):
         # Use known dynamics if `self.dynamics` is a str
         dynamics = dynamics.lower()
+        if ensemble == "nve":
+            dynamics = "velocityverlet"
         if dynamics not in _valid_dynamics[ensemble]:
             raise ValueError(
                 f"{dynamics} thermostat not available for {ensemble}."
                 f"Available {ensemble} thermostats are:"
                 " ".join(_valid_dynamics[ensemble])
             )
-        if ensemble == "nve":
-            dynamics = "velocityverlet"
         md_class = _preset_dynamics[f"{ensemble}_{dynamics}"]
     elif dynamics is MolecularDynamics:
         md_class = dynamics
@@ -334,16 +337,42 @@ def run(
             traj = Trajectory(traj_file, "w", atoms)
 
             if not np.isnan(t_schedule).any():
-                MaxwellBoltzmannDistribution(
-                    atoms=atoms,
-                    temperature_K=t_schedule[last_step],
-                    rng=np.random.default_rng(seed=velocity_seed),
-                )
+                if atoms.get_temperature() == 0.0:
+                    MaxwellBoltzmannDistribution(
+                        atoms=atoms,
+                        temperature_K=t_schedule[0],
+                        rng=np.random.default_rng(seed=velocity_seed),
+                    )
+                else:
+                    atoms.set_momenta(
+                        atoms.get_momenta() * np.sqrt(
+                            t_schedule[0] / atoms.get_temperature()
+                        )
+                    )
 
             if zero_linear_momentum:
                 Stationary(atoms)
             if zero_angular_momentum:
                 ZeroRotation(atoms)
+    else:
+        if not np.isnan(t_schedule).any():
+            if atoms.get_temperature() == 0.0:
+                MaxwellBoltzmannDistribution(
+                    atoms=atoms,
+                    temperature_K=t_schedule[0],
+                    rng=np.random.default_rng(seed=velocity_seed),
+                )
+            else:
+                atoms.set_momenta(
+                    atoms.get_momenta() * np.sqrt(
+                        t_schedule[0] / atoms.get_temperature()
+                    )
+                )
+
+        if zero_linear_momentum:
+            Stationary(atoms)
+        if zero_angular_momentum:
+            ZeroRotation(atoms)
 
     fraction_traceless = dynamics_kwargs.pop("fraction_traceless", 1.0)
 
@@ -357,6 +386,11 @@ def run(
 
     if traj_file is not None:
         md_runner.attach(traj.write, interval=traj_interval)
+
+    if callbacks is not None:
+        for callback, interval in callbacks:
+            cb = functools.partial(callback, dyn=md_runner)
+            md_runner.attach(cb, interval=interval)
 
     with tqdm(total=n_steps) as pbar:
 
@@ -387,4 +421,5 @@ def run(
         "atoms": atoms,
         "runtime": end_time - start_time,
         "n_steps": n_steps,
+        "time_step": time_step,
     }
