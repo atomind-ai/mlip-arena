@@ -57,7 +57,7 @@ git clone https://github.com/atomind-ai/mlip-arena.git
 cd mlip-arena
 
 # One script uv pip installation
-bash scripts/install-linux.sh
+bash scripts/install.sh
 ```
 
 > [!TIP]
