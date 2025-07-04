@@ -20,4 +20,20 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push -f https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena main
+        run: |
+          # Configure Git user identity
+          git config user.name "github-actions[ci]"
+          git config user.email "github-actions[ci]@users.noreply.github.com"
+
+          # Configure LFS tracking
+          git lfs track "*.pdf"
+          git lfs track "*.png"
+
+          # Create a new orphan branch (no history)
+          git checkout --orphan hf-clean
+
+          git add .
+          git commit -m "Clean sync from main branch - $(date '+%Y-%m-%d %H:%M:%S')"
+
+          # Force push to Hugging Face main branch
+          git push -f https://HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/atomind/mlip-arena hf-clean:main

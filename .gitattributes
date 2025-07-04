@@ -8,5 +8,3 @@ examples/mof/classification/MACE-MPA.pkl filter=lfs diff=lfs merge=lfs -text
 examples/mof/classification/MACE-MP(M).pkl filter=lfs diff=lfs merge=lfs -text
 examples/mof/classification/MatterSim.pkl filter=lfs diff=lfs merge=lfs -text
 examples/mof/classification/ORBv2.pkl filter=lfs diff=lfs merge=lfs -text
-examples/c2db/*.db filter=lfs diff=lfs merge=lfs -text
-examples/c2db/*.parquet filter=lfs diff=lfs merge=lfs -text
