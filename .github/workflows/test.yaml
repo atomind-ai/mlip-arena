@@ -62,17 +62,26 @@ jobs:
         git config user.name "github-actions[ci]"
         git config user.email "github-actions[ci]@users.noreply.github.com"
 
-        # Rebase and squash all PR commits into one
-        BASE=$(git merge-base origin/main HEAD)
-        git reset --soft $BASE
-        git commit -m "Squashed commit from PR #${{ github.event.pull_request.number }}"
-
         # Install Git LFS
         sudo apt-get update
         sudo apt-get install -y git-lfs
         git lfs install
 
-        # Setup LFS
+        # Configure LFS tracking for binary files (only for HF push)
+        git lfs track "*.pdf"
+        git lfs track "*.png"
+
+        git add .gitattributes
+
+        # Rebase and squash all PR commits into one
+        BASE=$(git merge-base origin/main HEAD)
+        git reset --soft $BASE
+        
+        # Re-add all files (binary files will now be tracked by LFS)
+        git add .
+        git commit -m "Squashed commit from PR #${{ github.event.pull_request.number }}"
+
+        # Setup LFS for the remote
         git lfs fetch
         git lfs checkout
 
