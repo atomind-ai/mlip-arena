@@ -207,6 +207,17 @@ MACE-MPA:
   npt: true
   license: MIT
 
+GRACE-2L-OAM:
+  module: externals
+  class: GRACE_2L_OAM
+  family: grace
+  package: tensorpotential==0.5.1
+  checkpoint: https://ruhr-uni-bochum.sciebo.de/s/dD2EuwbZPocFZxo
+  github: https://github.com/ICAMS/grace-tensorpotential
+  doi: 
+  license: ASL
+
+
 eSEN:
   module: externals
   class: eSEN

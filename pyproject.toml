@@ -57,6 +57,7 @@ test = [
     "alignn==2024.5.27",
     "mattersim==1.1.2",
     "torchani==2.2.4",
+    "tensorpotential==0.5.1",
     "pytest",
     "pytest-xdist",
     "prefect==3.2.13",

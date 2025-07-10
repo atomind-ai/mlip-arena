@@ -11,7 +11,7 @@ from mlip_arena.models.utils import get_freer_device
 class MACE_OFF_Medium(MACECalculator):
     def __init__(
         self,
-        checkpoint="https://github.com/ACEsuit/mace-off/raw/main/mace_off23/MACE-OFF23_medium.model?raw=true",
+        checkpoint="MACE-OFF23_medium.model",
         device: str | None = None,
         default_dtype="float32",
         **kwargs,
@@ -25,7 +25,7 @@ class MACE_OFF_Medium(MACECalculator):
             import urllib
 
             os.makedirs(cache_dir, exist_ok=True)
-            _, http_msg = urllib.request.urlretrieve(checkpoint, cached_model_path)
+            _, http_msg = urllib.request.urlretrieve(f"https://github.com/ACEsuit/mace-off/raw/main/mace_off23/{checkpoint}?raw=true", cached_model_path)
             if "Content-Type: text/html" in http_msg:
                 raise RuntimeError(
                     f"Model download failed, please check the URL {checkpoint}"

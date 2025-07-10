@@ -20,7 +20,7 @@ class CHGNet(CHGNetCalculator):
     ) -> None:
         use_device = str(device or get_freer_device())
         super().__init__(
-            model=checkpoint,
+            model=checkpoint if isinstance(checkpoint, CHGNetModel) else None,
             use_device=use_device,
             stress_weight=stress_weight,
             on_isolated_atoms=on_isolated_atoms,

@@ -1,11 +1,10 @@
 from __future__ import annotations
 
+import functools
 import importlib
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional, Type, TypeVar, Union
-
-T = TypeVar("T", bound="MLIP")
+from typing import TypeVar
 
 import torch
 import yaml
@@ -15,6 +14,9 @@ from huggingface_hub import PyTorchModelHubMixin
 from torch import nn
 from typing_extensions import Self
 
+T = TypeVar("T", bound="MLIP")
+
+
 try:
     from mlip_arena.data.collate import collate_fn
 except ImportError:
@@ -23,6 +25,7 @@ except ImportError:
         raise ImportError(
             "collate_fn import failed. Please install the required dependencies."
         )
+
 
 try:
     from prefect.logging import get_run_logger
@@ -41,8 +44,10 @@ for model, metadata in REGISTRY.items():
         module = importlib.import_module(
             f"{__package__}.{metadata['module']}.{metadata['family']}"
         )
-        MLIPMap[model] = getattr(module, metadata["class"])
-    except (ModuleNotFoundError, AttributeError, ValueError, ImportError, Exception) as e:
+        MLIPMap[model] = functools.partial(
+            getattr(module, metadata["class"]), metadata.get("checkpoint", None)
+        )
+    except Exception as e:
         logger.warning(e)
         continue
 
