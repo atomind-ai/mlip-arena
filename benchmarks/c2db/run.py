@@ -27,6 +27,7 @@ select_models = [
     "SevenNet",
 ]
 
+
 def elastic_tensor_to_voigt(C):
     """
     Convert a rank-4 (3x3x3x3) elastic tensor into a rank-2 (6x6) tensor using Voigt notation.
