@@ -1,4 +1,4 @@
-# Equation of state (EOS) benchmark on WBM structures
+# Equation of state (EOS) benchmark on WBM structures (2.1)
 
 The compiled WBM structures are available as ASE DB [here](../wbm_structures.db)
 
