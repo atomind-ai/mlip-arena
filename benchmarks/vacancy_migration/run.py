@@ -165,3 +165,7 @@ def run_hcp():
     return futures
     # wait(futures)
     # return [f.result(raise_on_failure=False) for f in futures if f.state.is_completed()]
+
+if __name__ == "__main__":
+    run_fcc()
+    run_hcp()
