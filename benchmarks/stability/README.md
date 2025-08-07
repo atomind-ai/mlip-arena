@@ -8,4 +8,4 @@ To run the benchmark, please modify the SLURM cluster setting (or change to desi
 
 ## Analysis
 
-To analyze the results, run `
+To analyze the results, run [plot.ipynb](plot.ipynb) notebook.
