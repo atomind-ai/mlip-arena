@@ -1,4 +1,6 @@
-# Dynamical stability of 2D materials (A.10.2)
+# Equation of state (EOS) benchmark on WBM structures
+
+The compiled WBM structures are available as ASE DB [here](../wbm_structures.db)
 
 ## Run
 
@@ -13,28 +15,32 @@ This benchmark requires parellel orchestration using Prefect utility. To run the
     cluster_kwargs = dict(
         cores=1,
         memory="64 GB",
+        processes=1,
         shebang="#!/bin/bash",
         account="matgen",
         walltime="00:30:00",
+        # job_cpu=128,
         job_mem="0",
         job_script_prologue=[
             "source ~/.bashrc",
             "module load python",
-            "module load cudatoolkit/12.4",
-            "source activate /pscratch/sd/c/cyrusyc/.conda/mlip-arena",
+            "source activate /pscratch/sd/c/cyrusyc/.conda/dev",
         ],
         job_directives_skip=["-n", "--cpus-per-task", "-J"],
         job_extra_directives=[
-            "-J eos_bulk",
+            "-J c2db",
             "-q regular",
             f"-N {nodes_per_alloc}",
             "-C gpu",
             f"-G {gpus_per_alloc}",
-            # "--exclusive",
         ],
     )
+
+    cluster = SLURMCluster(**cluster_kwargs)
+    print(cluster.job_script())
+    cluster.adapt(minimum_jobs=25, maximum_jobs=50)
 ```
 
 ## Analysis
 
-The example analysis code is provided in [analysis.ipynb](analysis.ipynb)
+To analyze and gather the results, run [analyze.py](analyze.py) and generate summary. To plot the EOS curves, run [plot.py](plot.py)

@@ -139,14 +139,14 @@ if __name__ == "__main__":
         cores=1,
         memory="64 GB",
         shebang="#!/bin/bash",
-        account="m3828",
+        account="matgen",
         walltime="00:30:00",
         job_mem="0",
         job_script_prologue=[
             "source ~/.bashrc",
             "module load python",
             "module load cudatoolkit/12.4",
-            "source activate /pscratch/sd/c/cyrusyc/.conda/dev",
+            "source activate /pscratch/sd/c/cyrusyc/.conda/mlip-arena",
         ],
         job_directives_skip=["-n", "--cpus-per-task", "-J"],
         job_extra_directives=[

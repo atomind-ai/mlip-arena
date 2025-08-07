@@ -27,19 +27,6 @@ def load_wbm_structures():
         for row in db.select():
             yield row.toatoms(add_additional_information=True)
 
-# # Collect valid models first
-# valid_models = []
-# for model_name in valid_models:
-#     fpath = DATA_DIR / f"{model_name}_processed.parquet"
-#     if fpath.exists():
-#         df = pd.read_parquet(fpath)
-#         if len(df) > 0:
-#             valid_models.append(model)
-
-# # Ensure we're showing all 8 models
-# if len(valid_models) < 8:
-#     print(f"Warning: Only found {len(valid_models)} valid models instead of 8")
-
 # Set up the grid layout
 n_models = len(valid_models)
 n_cols = 4  # Use 4 columns
