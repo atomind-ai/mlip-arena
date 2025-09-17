@@ -76,13 +76,13 @@ leaderboard = metadata_table.join(rank_df, how="left")
 
 if not rank_df.empty:
     leaderboard = leaderboard.copy()
-    leaderboard["Arena Rank Agg"] = 0
+    leaderboard["Meta Rank Agg"] = 0
 
     for col in rank_df.columns:
         ascending = True  # set False if higher value is better for this task
         # compute rank for this column (missing values go to bottom)
         
-        leaderboard["Arena Rank Agg"] += leaderboard[col].rank(
+        leaderboard["Meta Rank Agg"] += leaderboard[col].rank(
             method="min", ascending=ascending, na_option="bottom"
         )
         leaderboard[col] = leaderboard[col].astype("Int64")
@@ -90,27 +90,37 @@ if not rank_df.empty:
         # leaderboard.rename(columns={col: col}, inplace=True)
 
     # Final Arena Rank
-    leaderboard["Arena Rank"] = leaderboard["Arena Rank Agg"].rank(
+    leaderboard["Meta Rank Agg"] = leaderboard["Meta Rank Agg"].astype("Int64")
+    leaderboard["Arena Rank"] = leaderboard["Meta Rank Agg"].rank(
         method="min", ascending=True, na_option="bottom"
     ).astype("Int64")
 
     # Reorder columns: Training Set → Arena Rank → task ranks → rest
     rank_cols = [c for c in leaderboard.columns if c.endswith("Rank") and c != "Arena Rank"]
-    first_cols = ["Training Set", "Arena Rank"] + rank_cols
-    other_cols = [c for c in leaderboard.columns if c not in first_cols and c != "Arena Rank Agg"]
+    first_cols = ["Training Set", "Arena Rank", "Meta Rank Agg"] + rank_cols
+    other_cols = [c for c in leaderboard.columns if c not in first_cols] #and c != "Meta Rank Agg"]
     leaderboard = leaderboard.reindex(columns=first_cols + other_cols)
 
     # Optional: sort by Arena Rank
     leaderboard.sort_values("Arena Rank", inplace=True)
 
+    # rename rank_cols to remove " Rank" suffix
+    rename_dict = {col: col.replace(" Rank", "") for col in rank_cols}
+    leaderboard.rename(columns=rename_dict, inplace=True)
 
 # -----------------------------------------------------------------------------
 # Styling and rendering
 # -----------------------------------------------------------------------------
 
-style = leaderboard.drop(columns=["Arena Rank Agg"], errors="ignore").style
+# style = leaderboard.drop(columns=["Meta Rank Agg"], errors="ignore").style
+style = leaderboard.style
 if "Arena Rank" in leaderboard.columns:
-    style = style.background_gradient(cmap="Blues", subset=["Arena Rank"])
+    style = style.background_gradient(cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"])
+
+style = style.background_gradient(
+    cmap="cividis_r",
+    subset=list(rename_dict.values())
+)
 
 st.info(
     "Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
@@ -135,7 +145,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.subheader(":red[Supported Models + Arena Rank]")
+# st.subheader(":red[Supported Models + Arena Rank]")
 st.dataframe(
     style,
     use_container_width=True,
@@ -143,6 +153,10 @@ st.dataframe(
         "Code": st.column_config.LinkColumn(width="medium", display_text="Link"),
         "Paper": st.column_config.LinkColumn(width="medium", display_text="Link"),
     },
+)
+st.info(
+    "Missing ranks indicate that the tasks have not been performed yet or the models are not applicable to those tasks. The models are ranked at the bottom for the missing tasks. If you are a model developer, please consider contributing the missing tasks by running the evaluation scripts and submitting a pull request. See https://github.com/atomind-ai/mlip-arena/tree/main/benchmarks for detailed instructions for individual benchmarks.",
+    icon=":material/info:",
 )
 
 st.subheader(":red[Task Ranks]")
