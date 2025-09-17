@@ -28,7 +28,7 @@ classifiers=[
 ]
 dependencies=[
     "loguru",
-    "ase",
+    "ase>=3.26.0",
     "pymatgen",
     "torch",
     "huggingface_hub",
