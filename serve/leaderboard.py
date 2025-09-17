@@ -1,10 +1,8 @@
 import importlib
-from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
-from mlip_arena import PKG_DIR
 from mlip_arena.models import REGISTRY as MODELS
 from mlip_arena.tasks import REGISTRY as TASKS
 
@@ -79,11 +77,8 @@ if not rank_df.empty:
     leaderboard["Meta Rank Agg"] = 0
 
     for col in rank_df.columns:
-        ascending = True  # set False if higher value is better for this task
-        # compute rank for this column (missing values go to bottom)
-        
         leaderboard["Meta Rank Agg"] += leaderboard[col].rank(
-            method="min", ascending=ascending, na_option="bottom"
+            method="min", ascending=True, na_option="bottom"
         )
         leaderboard[col] = leaderboard[col].astype("Int64")
         # rename column to indicate rank
@@ -91,14 +86,20 @@ if not rank_df.empty:
 
     # Final Arena Rank
     leaderboard["Meta Rank Agg"] = leaderboard["Meta Rank Agg"].astype("Int64")
-    leaderboard["Arena Rank"] = leaderboard["Meta Rank Agg"].rank(
-        method="min", ascending=True, na_option="bottom"
-    ).astype("Int64")
+    leaderboard["Arena Rank"] = (
+        leaderboard["Meta Rank Agg"]
+        .rank(method="min", ascending=True, na_option="bottom")
+        .astype("Int64")
+    )
 
     # Reorder columns: Training Set → Arena Rank → task ranks → rest
-    rank_cols = [c for c in leaderboard.columns if c.endswith("Rank") and c != "Arena Rank"]
+    rank_cols = [
+        c for c in leaderboard.columns if c.endswith("Rank") and c != "Arena Rank"
+    ]
     first_cols = ["Training Set", "Arena Rank", "Meta Rank Agg"] + rank_cols
-    other_cols = [c for c in leaderboard.columns if c not in first_cols] #and c != "Meta Rank Agg"]
+    other_cols = [
+        c for c in leaderboard.columns if c not in first_cols
+    ]  # and c != "Meta Rank Agg"]
     leaderboard = leaderboard.reindex(columns=first_cols + other_cols)
 
     # Optional: sort by Arena Rank
@@ -114,13 +115,11 @@ if not rank_df.empty:
 
 # style = leaderboard.drop(columns=["Meta Rank Agg"], errors="ignore").style
 style = leaderboard.style
-if "Arena Rank" in leaderboard.columns:
-    style = style.background_gradient(cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"])
 
 style = style.background_gradient(
-    cmap="cividis_r",
-    subset=list(rename_dict.values())
+    cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"]
 )
+style = style.background_gradient(cmap="cividis_r", subset=list(rename_dict.values()))
 
 st.info(
     "Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
@@ -155,7 +154,7 @@ st.dataframe(
     },
 )
 st.info(
-    "Missing ranks indicate that the tasks have not been performed yet or the models are not applicable to those tasks. The models are ranked at the bottom for the missing tasks. If you are a model developer, please consider contributing the missing tasks by running the evaluation scripts and submitting a pull request. See https://github.com/atomind-ai/mlip-arena/tree/main/benchmarks for detailed instructions for individual benchmarks.",
+    "Missing ranks indicate that the tasks have not been performed yet or the models are not applicable to those tasks. The models are ranked at the bottom for the missing tasks. If you are a model developer, contribution to missing tasks is very appreciated by running the evaluation scripts and submitting a pull request. See https://github.com/atomind-ai/mlip-arena/tree/main/benchmarks for detailed instructions for individual benchmarks.",
     icon=":material/info:",
 )
 
