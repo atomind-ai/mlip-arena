@@ -4,7 +4,7 @@ build-backend="flit_core.buildapi"
 
 [project]
 name="mlip-arena"
-version="0.1.2"
+version="0.1.3"
 authors=[
     {name="Yuan Chiang", email="cyrusyc@lbl.gov"},
 ]
@@ -28,7 +28,7 @@ classifiers=[
 ]
 dependencies=[
     "loguru",
-    "ase",
+    "ase>=3.26.0",
     "pymatgen",
     "torch",
     "huggingface_hub",

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -6,50 +7,55 @@ import plotly.colors as pcolors
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from scipy.optimize import curve_fit
+from plotly.subplots import make_subplots
 
 from mlip_arena.models import REGISTRY
 
-DATA_DIR = Path("mlip_arena/tasks/stability")
+st.title("Stability")
 
-
-st.markdown("""
-# High Pressure Stability
-
-Stable and accurate molecular dynamics (MD) simulations are important for understanding the properties of matters.
-However, many MLIPs have unphysical potential energy surface (PES) at the short-range interatomic distances or under many-body effect. These are often manifested as softened repulsion and hole in the PES and can lead to incorrect and sampling of the phase space.
-
-Here, we analyze the stability of the MD simulations under high pressure conditions by gradually increasing the pressure from 0 to 1000 GPa at 300K until the system crashes or completes 100 ps trajectory. This benchmark also explores faster the far-from-equilibrium dynamics of the system and the durability of the MLIPs under extreme conditions.
-""")
+DATA_DIR = Path(__file__).parents[2] / "benchmarks" / "stability"
 
 st.markdown("### Methods")
 container = st.container(border=True)
+
+# Filter models that have valid parquet results
 valid_models = [
     model
     for model, metadata in REGISTRY.items()
-    if Path(__file__).stem in metadata.get("gpu-tasks", [])
+    if (
+        DATA_DIR / REGISTRY[str(model)]["family"].lower() / f"{model}-heating.parquet"
+    ).exists()
 ]
 
 models = container.multiselect(
-    "MLIPs", valid_models, ["MACE-MP(M)", "CHGNet", "ORB", "SevenNet"]
+    "MLIPs",
+    valid_models,
+    [
+        "MACE-MP(M)",
+        "CHGNet",
+        "SevenNet",
+        "ORBv2",
+        "eqV2(OMat)",
+        "M3GNet",
+        "MatterSim",
+        "MACE-MPA",
+    ],
 )
 
 st.markdown("### Settings")
 vis = st.container(border=True)
-# Get all attributes from pcolors.qualitative
-all_attributes = dir(pcolors.qualitative)
+
+# Build available color palettes from Plotly
 color_palettes = {
     attr: getattr(pcolors.qualitative, attr)
-    for attr in all_attributes
+    for attr in dir(pcolors.qualitative)
     if isinstance(getattr(pcolors.qualitative, attr), list)
 }
 color_palettes.pop("__all__", None)
 
-palette_names = list(color_palettes.keys())
-palette_colors = list(color_palettes.values())
-
-palette_name = vis.selectbox("Color sequence", options=palette_names, index=22)
-
+palette_name = vis.selectbox(
+    "Color sequence", options=list(color_palettes.keys()), index=22
+)
 color_sequence = color_palettes[palette_name]
 
 if not models:
@@ -57,172 +63,257 @@ if not models:
 
 
 @st.cache_data
-def get_data(models):
-    families = [REGISTRY[str(model)]["family"] for model in models]
+def get_data(model_list, run_type: Literal["heating", "compression"]) -> pd.DataFrame:
+    """Load parquet files for selected models."""
+    dfs = []
+    for m in model_list:
+        fpath = (
+            DATA_DIR / REGISTRY[str(m)]["family"].lower() / f"{m}-{run_type}.parquet"
+        )
+        if not fpath.exists():
+            continue
+        df_local = pd.read_parquet(fpath)
+        df_local["method"] = str(m)
+        dfs.append(df_local)
+    return pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
 
-    dfs = [
-        pd.read_json(DATA_DIR / family.lower() / "chloride-salts.json")
-        for family in families
-    ]
-    df = pd.concat(dfs, ignore_index=True)
-    df.drop_duplicates(inplace=True, subset=["material_id", "formula", "method"])
 
-    return df
+df_nvt = get_data(models, run_type="heating")
+df_npt = get_data(models, run_type="compression")
 
-
-df = get_data(models)
-
+# Map model → color
 method_color_mapping = {
     method: color_sequence[i % len(color_sequence)]
-    for i, method in enumerate(df["method"].unique())
-}
-
-###
-
-# Determine the bin edges for the entire dataset to keep them consistent across groups
-
-max_steps = df["total_steps"].max()
-max_target_steps = df["target_steps"].max()
-
-bins = np.append(np.arange(0, max_steps + 1, max_steps // 10), max_target_steps)
-bin_labels = [f"{bins[i]}-{bins[i+1]}" for i in range(len(bins) - 1)]
-
-num_bins = len(bin_labels)
-colormap = px.colors.sequential.YlOrRd_r
-indices = np.linspace(0, len(colormap) - 1, num_bins, dtype=int)
-bin_colors = [colormap[i] for i in indices]
-
-# Initialize a dictionary to hold the counts for each method and bin range
-counts_per_method = {method: [0] * len(bin_labels) for method in df["method"].unique()}
-
-
-# Populate the dictionary with counts
-for method, group in df.groupby("method"):
-    counts, _ = np.histogram(group["total_steps"], bins=bins)
-    counts_per_method[method] = counts
-
-# Sort the dictionary by the percentage of the last bin
-counts_per_method = {
-    k: v
-    for k, v in sorted(
-        counts_per_method.items(), key=lambda item: item[1][-1] / sum(item[1])
-    )
+    for i, method in enumerate(df_nvt["method"].unique())
 }
 
 
-count_or_percetange = st.toggle("show counts", False)
+@st.cache_data
+def prepare_scatter_df(df_in: pd.DataFrame, max_points: int = 20000) -> pd.DataFrame:
+    """Prepare scatter dataframe with marker sizes scaled by total steps."""
+    dfp = df_in.dropna(subset=["natoms", "steps_per_second"]).copy()
+    if dfp.empty:
+        return dfp
+
+    # Downsample if too many points
+    if len(dfp) > max_points:
+        dfp = dfp.sample(max_points, random_state=1)
+
+    if "total_steps" in dfp.columns:
+        ts_local = dfp["total_steps"].fillna(dfp["total_steps"].median()).astype(float)
+        ts_range = ts_local.max() - ts_local.min()
+        scaled = (ts_local - ts_local.min()) / (ts_range if ts_range != 0 else 1.0)
+        dfp["_marker_size"] = (scaled * 40) + 5
+    else:
+        dfp["_marker_size"] = 8
+    return dfp
 
 
-@st.experimental_fragment()
-def plot_md_steps(counts_per_method, count_or_percetange):
-    """Plot the distribution of the total number of MD steps before crash or completion."""
-    # Create a figure
+@st.cache_data
+def compute_power_law_fits(df_in: pd.DataFrame) -> dict:
+    """Fit power-law scaling: steps/s ~ a * N^(-n)."""
+    fits = {}
+    for name, grp in df_in.groupby("method"):
+        grp_clean = grp.dropna(subset=["natoms", "steps_per_second"])
+        grp_clean = grp_clean[
+            (grp_clean["natoms"] > 0) & (grp_clean["steps_per_second"] > 0)
+        ]
+        if len(grp_clean) < 3:
+            continue
+        try:
+            logsx = np.log(grp_clean["natoms"].astype(float))
+            logsy = np.log(grp_clean["steps_per_second"].astype(float))
+            slope, intercept = np.polyfit(logsx, logsy, 1)
+            fits[name] = (float(np.exp(intercept)), float(-slope))  # (a, n)
+        except Exception:
+            continue
+    return fits
+
+
+@st.cache_data
+def build_speed_figure(
+    df_in: pd.DataFrame, color_map: dict, show_scatter: bool
+) -> go.Figure:
+    """Build scatter plot of inference speed vs number of atoms with power-law fits."""
     fig = go.Figure()
 
-    # Add a bar for each bin range across all methods
-    for i, bin_label in enumerate(bin_labels):
-        for method, counts in counts_per_method.items():
-            fig.add_trace(
-                go.Bar(
-                    # name=method,  # This will be the legend entry
-                    x=[counts[i] / counts.sum() * 100]
-                    if not count_or_percetange
-                    else [counts[i]],
-                    y=[method],  # Method as the y-axis category
-                    # name=bin_label,
-                    orientation="h",  # Horizontal bars
-                    marker=dict(
-                        color=bin_colors[i],
-                        line=dict(color="rgb(248, 248, 249)", width=1),
-                    ),
-                    text=f"{bin_label}: {counts[i]/counts.sum()*100:.0f}%",
-                    width=0.5,
-                )
-            )
+    # Optionally add scatter points
+    if show_scatter:
+        dfp = prepare_scatter_df(df_in)
+        scatter_fig = px.scatter(
+            dfp,
+            x="natoms",
+            y="steps_per_second",
+            color="method",
+            size="_marker_size",
+            hover_data=[c for c in ["material_id", "formula"] if c in dfp.columns],
+            color_discrete_map=color_map,
+            log_x=True,
+            log_y=True,
+            render_mode="webgl",
+            labels={
+                "steps_per_second": "Steps per second",
+                "natoms": "Number of atoms",
+            },
+        )
+        for trace in scatter_fig.data:
+            fig.add_trace(trace)
 
-    # Update the layout to stack the bars
-    fig.update_layout(
-        barmode="stack",  # Stack the bars
-        title="Total MD steps (before crash or completion)",
-        xaxis_title="Percentage (%)" if not count_or_percetange else "Count",
-        yaxis_title="Method",
-        showlegend=False,
-    )
-
-    st.plotly_chart(fig)
-
-
-plot_md_steps(counts_per_method, count_or_percetange)
-
-st.caption(
-"""
-The histogram shows the distribution of the total number of MD steps before the system crashes or completes the trajectory. :red[The color of the bins indicates the number of steps in the bin]. :blue[The height of the bars indicates the number or percentage of each bin among all the runs].
-"""
-)
-
-###
-
-st.markdown(
-"""
-## Inference speed
-
-The inference speed of the MLIPs is crucial for the high-throughput virutal screening. Under high pressure conditions, the atoms often move faster and closer to each other, which increases the size of neighbor list and local graph construction and hence slows down the inference speed.
-"""
-)
-
-
-def func(x, a, n):
-    return a * x ** (-n)
-
-
-@st.experimental_fragment()
-def plot_speed(df, method_color_mapping):
-    """Plot the inference speed as a function of the number of atoms."""
-    fig = px.scatter(
-        df,
-        x="natoms",
-        y="steps_per_second",
-        color="method",
-        size="total_steps",
-        hover_data=["material_id", "formula"],
-        color_discrete_map=method_color_mapping,
-        # trendline="ols",
-        # trendline_options=dict(log_x=True),
-        log_x=True,
-        # log_y=True,
-        # range_y=[1, 1e2],
-        range_x=[df["natoms"].min() * 0.9, df["natoms"].max() * 1.1],
-        # range_x=[1e3, 1e2],
-        title="Inference speed (on single A100 GPU)",
-        labels={"steps_per_second": "Steps per second", "natoms": "Number of atoms"},
-    )
-
-    x = np.linspace(df["natoms"].min(), df["natoms"].max(), 100)
-
-    for method, data in df.groupby("method"):
-        data.dropna(subset=["steps_per_second"], inplace=True)
-        popt, pcov = curve_fit(func, data["natoms"], data["steps_per_second"])
+    # Overlay fits
+    fits = compute_power_law_fits(df_in)
+    for method, (a, n) in fits.items():
+        grp = df_in[df_in["method"] == method]
+        if grp["natoms"].dropna().empty:
+            continue
+        xs = np.logspace(
+            np.log10(grp["natoms"].min()), np.log10(grp["natoms"].max()), 200
+        )
+        ys = a * xs ** (-n)
 
         fig.add_trace(
             go.Scatter(
-                x=x,
-                y=func(x, *popt),
+                x=xs,
+                y=ys,
                 mode="lines",
-                # name='Fit',
-                line=dict(color=method_color_mapping[method], width=3),
-                showlegend=False,
-                name=f"{popt[0]:.2f}N^{-popt[1]:.2f}",
-                hovertext=f"{popt[0]:.2f}N^{-popt[1]:.2f}",
+                line=dict(color=color_map.get(method, "black"), width=2),
+                showlegend=not show_scatter,
+                name=f"{method}",
+                # zorder=0,
+                # text=hover_text,
+                # hoverinfo='text',  # use the custom text
             )
         )
 
-    st.plotly_chart(fig)
+    fig.update_layout(
+        height=520,
+        title="Inference speed (steps/s)",
+        xaxis=dict(type="log", title="Number of atoms"),
+        yaxis=dict(type="log", title="Steps per second"),
+    )
+    return fig
 
 
-plot_speed(df, method_color_mapping)
+@st.cache_data
+def build_nvt_figure(
+    df_in: pd.DataFrame, color_map: dict, show_scatter: bool
+) -> go.Figure:
+    """Build subplot: NVT valid runs (cumulative) + speed scaling plot."""
+    fig = make_subplots(
+        rows=1,
+        cols=2,
+        column_widths=[0.4, 0.6],
+        subplot_titles=("Valid runs", "Inference speed: steps/s vs N"),
+    )
 
-st.caption(
-"""
-The plot shows the inference speed (steps per second) as a function of the number of atoms in the system. :red[The size of the points is proportional to the total number of steps in the MD trajectory before crash or completion (~49990)]. :blue[The lines show the fit of the data to the power law function $a N^{-n}$], where $N$ is the number of atoms and $a$ and $n$ are the fit parameters.
-"""
-)
+    # Right panel: speed scaling
+    speed_fig = build_speed_figure(df_in, color_map, show_scatter)
+    for trace in speed_fig.data:
+        fig.add_trace(trace, row=1, col=2)
+
+    # Left panel: cumulative valid runs
+    for method, df_model in df_in.groupby("method"):
+        df_model_grp = df_model.drop_duplicates(["formula"])
+        hist, bin_edges = np.histogram(
+            df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50)
+        )
+        cumulative_population = np.cumsum(hist)
+        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+        fig.add_trace(
+            go.Scatter(
+                x=bin_centers[:-1],
+                y=(cumulative_population[-1] - cumulative_population[:-1]) / 120 * 100,
+                mode="lines",
+                line=dict(color=color_map.get(method)),
+                name=str(method),
+                showlegend=False,
+            ),
+            row=1,
+            col=1,
+        )
+
+    fig.update_xaxes(title_text="Normalized time", row=1, col=1, range=[0, 1])
+    fig.update_yaxes(title_text="Valid runs (%)", row=1, col=1)
+    fig.update_xaxes(type="log", row=1, col=2, title_text="Number of atoms")
+    fig.update_yaxes(type="log", row=1, col=2, title_text="Steps per second")
+    fig.update_layout(height=520, width=1000)
+    return fig
+
+
+@st.cache_data
+def build_npt_figure(
+    df_in: pd.DataFrame, color_map: dict, show_scatter: bool
+) -> go.Figure:
+    """Build subplot: NPT valid runs (cumulative) + speed scaling plot."""
+    fig = make_subplots(
+        rows=1,
+        cols=2,
+        column_widths=[0.4, 0.6],
+        subplot_titles=("Valid runs", "Inference speed: steps/s vs N"),
+    )
+
+    # Right panel: speed scaling
+    speed_fig = build_speed_figure(df_in, color_map, show_scatter)
+    for trace in speed_fig.data:
+        fig.add_trace(trace, row=1, col=2)
+
+    # Left panel: cumulative valid runs
+    for method, df_model in df_in.groupby("method"):
+        df_model_grp = df_model.drop_duplicates(["formula"])
+        hist, bin_edges = np.histogram(
+            df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50)
+        )
+        cumulative_population = np.cumsum(hist)
+        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+        fig.add_trace(
+            go.Scatter(
+                x=bin_centers[:-1],
+                y=(cumulative_population[-1] - cumulative_population[:-1]) / 80 * 100,
+                mode="lines",
+                line=dict(color=color_map.get(method)),
+                name=str(method),
+                showlegend=False,
+            ),
+            row=1,
+            col=1,
+        )
+
+    fig.update_xaxes(title_text="Normalized time", row=1, col=1, range=[0, 1])
+    fig.update_yaxes(title_text="Valid runs (%)", row=1, col=1)
+    fig.update_xaxes(type="log", row=1, col=2, title_text="Number of atoms")
+    fig.update_yaxes(type="log", row=1, col=2, title_text="Steps per second")
+    fig.update_layout(height=520, width=1000)
+    return fig
+
+
+if df_nvt.empty and df_npt.empty:
+    st.info("No data available to display for selected models.")
+else:
+    st.markdown("""
+    ## Heating
+    Isochoric-isothermal (NVT) MD simulations on RM24 structures, with temperature ramp from 300K to 3000K over 10 ps.
+    """)
+
+    show_scatter_nvt = st.toggle(
+        "Show scatter points", key="show_scatter_nvt", value=True
+    )
+    # Toggle for scatter points
+    # show_scatter = vis.checkbox("Show scatter points", value=True)
+    st.plotly_chart(
+        build_nvt_figure(df_nvt, method_color_mapping, show_scatter_nvt),
+        use_container_width=True,
+    )
+
+    st.markdown("""
+    ## Compression
+    Isothermal-isobaric (NPT) MD simulations on RM24 structures, with pressure ramp from 0 GPa to 500 GPa and temperature ramp from 300K to 3000K over 10 ps.
+    """)
+
+    show_scatter_npt = st.toggle(
+        "Show scatter points", key="show_scatter_npt", value=True
+    )
+    # Toggle for scatter points
+    # show_scatter = vis.checkbox("Show scatter points", value=True)
+    st.plotly_chart(
+        build_npt_figure(df_npt, method_color_mapping, show_scatter_npt),
+        use_container_width=True,
+    )

@@ -93,17 +93,17 @@ def run(
         logger.info(pformat(optimizer_kwargs))
         logger.info(f"Criterion: {pformat(criterion)}")
 
-        optimizer_instance.run(**criterion)
+        converged = optimizer_instance.run(**criterion)
     elif filter is None:
         optimizer_instance = optimizer(atoms, **optimizer_kwargs)
         logger.info(f"Using optimizer: {optimizer_instance}")
         logger.info(pformat(optimizer_kwargs))
         logger.info(f"Criterion: {pformat(criterion)}")
-        optimizer_instance.run(**criterion)
+        converged = optimizer_instance.run(**criterion)
 
 
     return {
         "atoms": atoms,
         "steps": optimizer_instance.nsteps,
-        "converged": optimizer_instance.converged(),
+        "converged": converged,
     }

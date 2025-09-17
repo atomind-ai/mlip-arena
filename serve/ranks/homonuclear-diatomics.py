@@ -128,54 +128,59 @@ table = table.reindex(
 #     column_format="l" + "r" * (len(table.columns) - 1),
 # )
 
-s = (
-    table.style.background_gradient(
-        cmap="viridis_r",
-        subset=["Conservation deviation [eV/Å]"],
-        gmap=np.log(table["Conservation deviation [eV/Å]"].to_numpy()),
-    )
-    .background_gradient(
-        cmap="Reds",
-        subset=[
-            "Spearman's coeff. (E: repulsion)",
-            "Spearman's coeff. (F: descending)",
-        ],
-        # vmin=-1, vmax=-0.5
-    )
-    # .background_gradient(
-    #     cmap="Greys",
-    #     subset=[
-    #         "PBE energy MAE [eV]",
-    #         "PBE force MAE [eV/Å]",
-    #     ],
-    # )
-    .background_gradient(
-        cmap="RdPu",
-        subset=["Tortuosity", "Energy jump [eV]", "Force flips"],
-    )
-    .background_gradient(
-        cmap="Blues",
-        subset=["Rank", "Rank aggr."],
-    )
-    .format(
-        "{:.3f}",
-        subset=[
-            "Conservation deviation [eV/Å]",
-            "Spearman's coeff. (E: repulsion)",
-            "Spearman's coeff. (F: descending)",
-            "Tortuosity",
-            "Energy jump [eV]",
-            "Force flips",
-            "Spearman's coeff. (E: attraction)",
-            "Spearman's coeff. (F: ascending)",
-            "PBE energy MAE [eV]",
-            "PBE force MAE [eV/Å]",
-        ],
-    )
-)
+
+@st.cache_data
+def get_table():
+    return table
 
 
 def render():
+    s = (
+        get_table()
+        .style.background_gradient(
+            cmap="viridis_r",
+            subset=["Conservation deviation [eV/Å]"],
+            gmap=np.log(get_table()["Conservation deviation [eV/Å]"].to_numpy()),
+        )
+        .background_gradient(
+            cmap="Reds",
+            subset=[
+                "Spearman's coeff. (E: repulsion)",
+                "Spearman's coeff. (F: descending)",
+            ],
+            # vmin=-1, vmax=-0.5
+        )
+        # .background_gradient(
+        #     cmap="Greys",
+        #     subset=[
+        #         "PBE energy MAE [eV]",
+        #         "PBE force MAE [eV/Å]",
+        #     ],
+        # )
+        .background_gradient(
+            cmap="RdPu",
+            subset=["Tortuosity", "Energy jump [eV]", "Force flips"],
+        )
+        .background_gradient(
+            cmap="Blues",
+            subset=["Rank", "Rank aggr."],
+        )
+        .format(
+            "{:.3f}",
+            subset=[
+                "Conservation deviation [eV/Å]",
+                "Spearman's coeff. (E: repulsion)",
+                "Spearman's coeff. (F: descending)",
+                "Tortuosity",
+                "Energy jump [eV]",
+                "Force flips",
+                "Spearman's coeff. (E: attraction)",
+                "Spearman's coeff. (F: ascending)",
+                "PBE energy MAE [eV]",
+                "PBE force MAE [eV/Å]",
+            ],
+        )
+    )
     st.dataframe(
         s,
         use_container_width=True,

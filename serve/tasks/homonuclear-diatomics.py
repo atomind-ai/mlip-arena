@@ -11,7 +11,7 @@ from plotly.subplots import make_subplots
 from mlip_arena.models import REGISTRY
 
 st.markdown(
-    """
+"""
 # Homonuclear Diatomics
 
 Homonuclear diatomics are molecules composed of two atoms of the same element.

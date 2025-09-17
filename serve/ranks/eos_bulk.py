@@ -9,7 +9,6 @@ DATA_DIR = Path("benchmarks/eos_bulk")
 table = pd.read_csv(DATA_DIR / "summary.csv")
 
 
-
 table = table.rename(
     columns={
         "model": "Model",
@@ -26,37 +25,47 @@ table = table.rename(
 
 table.set_index("Model", inplace=True)
 
-s = (
-    table.style.background_gradient(
-        cmap="Blues",
-        subset=["Rank", "Rank aggr."],
-    ).background_gradient(
-        cmap="Reds",
-        subset=[
-            "Spearman's coeff. (compression)",
-        ],
-    ).background_gradient(
-        cmap="Reds_r",
-        subset=[
-            "Spearman's coeff. (tension)",
-            "Spearman's coeff. (compression derivative)",
-        ],
-    ).background_gradient(
-        cmap="RdPu",
-        subset=["Tortuosity", "Derivative flips"],
-    ).format(
-        "{:.5f}",
-        subset=[
-            "Spearman's coeff. (compression)",
-            "Spearman's coeff. (tension)",
-            "Spearman's coeff. (compression derivative)",
-            "Tortuosity",
-            "Derivative flips",
-        ],
-    )
-)
+
+@st.cache_data
+def get_table():
+    return table
+
 
 def render():
+    s = (
+        get_table()
+        .style.background_gradient(
+            cmap="Blues",
+            subset=["Rank", "Rank aggr."],
+        )
+        .background_gradient(
+            cmap="Reds",
+            subset=[
+                "Spearman's coeff. (compression)",
+            ],
+        )
+        .background_gradient(
+            cmap="Reds_r",
+            subset=[
+                "Spearman's coeff. (tension)",
+                "Spearman's coeff. (compression derivative)",
+            ],
+        )
+        .background_gradient(
+            cmap="RdPu",
+            subset=["Tortuosity", "Derivative flips"],
+        )
+        .format(
+            "{:.5f}",
+            subset=[
+                "Spearman's coeff. (compression)",
+                "Spearman's coeff. (tension)",
+                "Spearman's coeff. (compression derivative)",
+                "Tortuosity",
+                "Derivative flips",
+            ],
+        )
+    )
     st.dataframe(
         s,
         use_container_width=True,
