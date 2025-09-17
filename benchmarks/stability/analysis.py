@@ -122,7 +122,9 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
     }
 
 
-def gather_results(run_dir: Path, prefix: str, run_type: Literal['nvt', 'npt']) -> pd.DataFrame:
+def gather_results(
+    run_dir: Path, prefix: str, run_type: Literal["nvt", "npt"]
+) -> pd.DataFrame:
     df = pd.DataFrame()
 
     run_dir = Path(run_dir)
@@ -163,13 +165,41 @@ def gather_results(run_dir: Path, prefix: str, run_type: Literal['nvt', 'npt']) 
 
 if __name__ == "__main__":
     from mlip_arena.models import REGISTRY, MLIPEnum
+    from mlip_arena.tasks.stability.input import get_atoms_from_db
+
+    compositions = []
+    sizes = []
+    for atoms in tqdm(get_atoms_from_db("random-mixture.db")):
+        if len(atoms) == 0:
+            continue
+        compositions.append(atoms.get_chemical_formula())
 
     for model in MLIPEnum:
-        run_dir = Path(__file__).parent / f"{REGISTRY[model.name]['family']}"
-        df = gather_results(run_dir, prefix=model.name, run_type='nvt')
-        df.to_parquet(run_dir / f"{model.name}-heating.parquet", index=False)
+        try:
+            run_dir = Path(__file__).parent / f"{REGISTRY[model.name]['family']}"
+            df = gather_results(run_dir, prefix=model.name, run_type="nvt")
+
+            df = df[
+                df["formula"].isin(compositions[:120])
+            ].copy()  # tentatively we only take the first 120 structures
+
+            assert len(df) > 0
+
+            df.to_parquet(run_dir / f"{model.name}-heating.parquet", index=False)
+        except Exception as e:
+            logger.warning(f"Error processing model {model.name}: {e}")
 
     for model in MLIPEnum:
-        run_dir = Path(__file__).parent / f"{REGISTRY[model.name]['family']}"
-        df = gather_results(run_dir, prefix=model.name, run_type='npt')
-        df.to_parquet(run_dir / f"{model.name}-compression.parquet", index=False)
+        try:
+            run_dir = Path(__file__).parent / f"{REGISTRY[model.name]['family']}"
+            df = gather_results(run_dir, prefix=model.name, run_type="npt")
+
+            df = df[
+                df["formula"].isin(compositions[:80])
+            ].copy()  # tentatively we only take the first 80 structures
+
+            assert len(df) > 0
+
+            df.to_parquet(run_dir / f"{model.name}-compression.parquet", index=False)
+        except Exception as e:
+            logger.warning(f"Error processing model {model.name}: {e}")

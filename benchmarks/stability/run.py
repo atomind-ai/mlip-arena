@@ -240,12 +240,14 @@ if __name__ == "__main__":
     cluster.adapt(minimum_jobs=10, maximum_jobs=50)
     client = Client(cluster)
 
-    heating.with_options(
-        task_runner=DaskTaskRunner(address=client.scheduler.address), 
-        log_prints=True
-    )()
+    for model in MLIPEnum:
+        heating.with_options(
+            task_runner=DaskTaskRunner(address=client.scheduler.address),
+            log_prints=True,
+        )(model)
 
-    compression.with_options(
-        task_runner=DaskTaskRunner(address=client.scheduler.address), 
-        log_prints=True
-    )()
+    for model in MLIPEnum:
+        compression.with_options(
+            task_runner=DaskTaskRunner(address=client.scheduler.address),
+            log_prints=True,
+        )(model)

@@ -16,16 +16,16 @@ Energy-volume scans:
   task-layout: wide
   rank-page: wbm_ev
   last-update: 2025-04-29
+Stability:
+  category: Molecular Dynamics
+  task-page: stability
+  task-layout: wide
+  rank-page: 
 Combustion:
   category: Molecular Dynamics
   task-page: combustion
   task-layout: centered
   rank-page: combustion
-High pressure stability:
-  category: Molecular Dynamics
-  task-page: stability
-  task-layout: centered
-  rank-page: 
 Lattice thermal conductivity:
   category: Properties and Physical Behaviors
   task-page: thermal-conductivity
