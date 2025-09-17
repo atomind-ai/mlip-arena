@@ -5,8 +5,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, Optional, Type, TypeVar, Union
 
-T = TypeVar("T", bound="MLIP")
-
 import torch
 import yaml
 from ase import Atoms
@@ -26,10 +24,13 @@ except ImportError:
 
 try:
     from prefect.logging import get_run_logger
-
     logger = get_run_logger()
 except (ImportError, RuntimeError):
     from loguru import logger
+
+T = TypeVar("T", bound="MLIP")
+
+
 
 with open(Path(__file__).parent / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
@@ -42,11 +43,18 @@ for model, metadata in REGISTRY.items():
             f"{__package__}.{metadata['module']}.{metadata['family']}"
         )
         MLIPMap[model] = getattr(module, metadata["class"])
-    except (ModuleNotFoundError, AttributeError, ValueError, ImportError, Exception) as e:
+    except (
+        ModuleNotFoundError,
+        AttributeError,
+        ValueError,
+        ImportError,
+        Exception,
+    ) as e:
         logger.warning(e)
         continue
-
+ 
 MLIPEnum = Enum("MLIPEnum", MLIPMap)
+logger.info(f"Successfully loaded models: {list(MLIPEnum.__members__.keys())}")
 
 
 class MLIP(

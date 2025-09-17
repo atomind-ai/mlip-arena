@@ -4,17 +4,17 @@ Homonuclear diatomics:
   task-layout: wide
   rank-page: homonuclear-diatomics
   last-update: 2024-09-19
-Energy-volume scans:
-  category: Fundamentals
-  task-page: wbm_ev
-  task-layout: wide
-  rank-page: wbm_ev
-  last-update: 2025-04-29
 Equation of state:
   category: Fundamentals
   task-page: eos_bulk
   task-layout: wide
   rank-page: eos_bulk
+  last-update: 2025-04-29
+Energy-volume scans:
+  category: Fundamentals
+  task-page: wbm_ev
+  task-layout: wide
+  rank-page: wbm_ev
   last-update: 2025-04-29
 Combustion:
   category: Molecular Dynamics
