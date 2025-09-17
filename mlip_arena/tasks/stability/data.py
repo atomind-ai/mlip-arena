@@ -1,12 +1,12 @@
 import os
+from collections.abc import Generator, Iterable
 from pathlib import Path
-from typing import Generator, Iterable
-
-from huggingface_hub import HfApi, hf_hub_download
-from prefect import task
 
 from ase import Atoms
 from ase.db import connect
+from huggingface_hub import HfApi, hf_hub_download
+from prefect import task
+
 from mlip_arena.tasks.utils import logger
 
 

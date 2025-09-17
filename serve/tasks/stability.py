@@ -290,7 +290,7 @@ if df_nvt.empty and df_npt.empty:
 else:
     st.markdown("""
     ## Heating
-    Isochoric-isothermal (NVT) MD simulations on RM24 structures, with temperature ramp from 300K to 3000K over 10 ps. 
+    Isochoric-isothermal (NVT) MD simulations on RM24 structures, with temperature ramp from 300K to 3000K over 10 ps.
     """)
 
     show_scatter_nvt = st.toggle(

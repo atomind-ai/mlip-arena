@@ -17,7 +17,6 @@ import numpy as np
 from prefect import flow, task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
-from prefect.logging import get_run_logger
 from prefect.runtime import task_run
 from prefect.states import State
 from tqdm.auto import tqdm

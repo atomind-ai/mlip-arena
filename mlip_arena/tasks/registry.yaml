@@ -20,17 +20,17 @@ Stability:
   category: Molecular Dynamics
   task-page: stability
   task-layout: wide
-  rank-page: 
+  rank-page: stability
 Combustion:
   category: Molecular Dynamics
   task-page: combustion
   task-layout: centered
   rank-page: combustion
-Lattice thermal conductivity:
-  category: Properties and Physical Behaviors
-  task-page: thermal-conductivity
-  task-layout: centered
-  rank-page: thermal-conductivity
+# Lattice thermal conductivity:
+#   category: Properties and Physical Behaviors
+#   task-page: thermal-conductivity
+#   task-layout: centered
+#   rank-page: thermal-conductivity
 # 2D materials:
 #   category: Properties and Physical Behaviors
 #   task-page: c2db

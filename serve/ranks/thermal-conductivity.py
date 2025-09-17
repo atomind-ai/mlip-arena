@@ -1,4 +1,3 @@
-
 import pandas as pd
 import streamlit as st
 
@@ -20,7 +19,7 @@ table.set_index("Model", inplace=True)
 
 table.sort_values(["SRME[𝜅]"], ascending=True, inplace=True)
 
-table["Rank"] = table["SRME[𝜅]"].rank(method='min').astype(int)
+table["Rank"] = table["SRME[𝜅]"].rank(method="min").astype(int)
 
 table = table.reindex(
     columns=[
@@ -29,24 +28,24 @@ table = table.reindex(
     ]
 )
 
-s = (
-    table.style.background_gradient(
-        cmap="Reds", subset=["SRME[𝜅]"]
-    )
-    .background_gradient(
-        cmap="Blues",
-        subset=["Rank"],
-    )
-    .format("{:.3f}", subset=["SRME[𝜅]"])
-)
+
+@st.cache_data
+def get_table():
+    return table
 
 
 def render():
-
-    st.dataframe(
-        s,
-        use_container_width=True
+    s = (
+        get_table()
+        .style.background_gradient(cmap="Reds", subset=["SRME[𝜅]"])
+        .background_gradient(
+            cmap="Blues",
+            subset=["Rank"],
+        )
+        .format("{:.3f}", subset=["SRME[𝜅]"])
     )
+
+    st.dataframe(s, use_container_width=True)
 
     with st.expander("Explanation", icon=":material/info:"):
         st.caption(

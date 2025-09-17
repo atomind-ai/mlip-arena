@@ -73,9 +73,9 @@ source $HOME/.local/bin/env
 bash scripts/install-macosx.sh
 ```
 
-## Quickstart
+## Workflow Overview
 
-### The first example: Molecular Dynamics
+### ✅ The first Prefect workflow: molecular dynamics
 
 Arena provides a unified interface to run all the compiled MLIPs. This can be achieved simply by looping through `MLIPEnum`:
 
@@ -110,7 +110,7 @@ for model in MLIPEnum:
     results.append(result)
 ```
 
-### 🚀 Parallelize Benchmarks at Scale
+### 🚀 Parallelize benchmarks at scale
 
 To run multiple benchmarks in parallel, add `.submit` before the task function and wrap all the tasks into a flow to dispatch the tasks to worker for concurrent execution. See Prefect Doc on [tasks](https://docs.prefect.io/v3/develop/write-tasks) and [flow](https://docs.prefect.io/v3/develop/write-flows) for more details.
 
@@ -134,7 +134,7 @@ def run_all_tasks:
 
 For a more practical example using HPC resources, please now refer to [MD stability benchmark](../benchmarks/stability/temperature.ipynb).
 
-### List of implemented tasks
+### List of modular tasks
 
 The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `from mlip_arena.tasks import *` for convenient imports (currently doesn't work if [phonopy](https://phonopy.github.io/phonopy/install.html) is not installed).
 
@@ -146,7 +146,11 @@ The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `fr
 - [NEB_FROM_ENDPOINTS](../mlip_arena/tasks/neb.py#L164): Nudge elastic band with convenient image interpolation (linear or IDPP)
 - [ELASTICITY](../mlip_arena/tasks/elasticity.py#L78): Elastic tensor calculation
 
-### Contribute and Development
+## Workflow Quickstart
+
+Instruction for individual benchmark is provided in the README in each corresponding folder under [/benchmark](../benchmarks/).
+
+## Contribute and Development
 
 PRs are welcome. Please clone the repo and submit PRs with changes.
 
@@ -158,10 +162,10 @@ git lfs pull
 streamlit run serve/app.py
 ```
 
-### Add new benchmark tasks (WIP)
+### Add new benchmark
 
 > [!NOTE]
-> Please reuse, extend, or chain the general tasks defined [above](#list-of-implemented-tasks)
+> Please reuse, extend, or chain the general tasks defined [above](#list-of-implemented-tasks) and add new folder and script under [/benchmark](../benchmarks/)
 
 ### Add new MLIP models 
 
