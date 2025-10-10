@@ -6,9 +6,9 @@ MACE-MP(M):
   checkpoint: 2023-12-03-mace-128-L1_epoch-199.model
   username: cyrusyc
   last-update: 2024-03-25T14:30:00
-  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  datetime: 2024-03-25T14:30:00
   datasets:
-    - MPTrj # TODO: fake HF dataset repo
+    - MPTrj
   cpu-tasks:
     - eos_alloy
   gpu-tasks:
@@ -83,10 +83,11 @@ MatterSim:
   checkpoint: MatterSim-v1.0.0-5M.pth
   username: 
   last-update: 2024-10-29T00:00:00
-  datetime: 2024-10-29T00:00:00 # TODO: Fake datetime
+  datetime: 2024-10-29T00:00:00
   datasets:
     - MPTrj
     - Alexandria
+    - Proprietary
   cpu-tasks:
     - eos_alloy
   gpu-tasks:
@@ -111,7 +112,7 @@ ORBv2:
   checkpoint: orb-v2-20241011.ckpt
   username: 
   last-update: 2024-10-29T00:00:00
-  datetime: 2024-10-29T00:00:00 # TODO: Fake datetime
+  datetime: 2024-10-29T00:00:00
   datasets:
     - MPTrj
     - Alexandria
@@ -162,7 +163,7 @@ eqV2(OMat):
   family: fairchem
   package: fairchem-core==1.2.0
   checkpoint: eqV2_86M_omat_mp_salex.pt
-  username: fairchem # HF handle
+  username: fairchem
   last-update: 2024-10-18T00:00:00
   datetime: 2024-10-18T00:00:00
   datasets:
@@ -190,15 +191,16 @@ MACE-MPA:
   checkpoint: mace-mpa-0-medium.model
   username: 
   last-update: 2025-11-19T00:00:00
-  datetime: 2024-12-09T00:00:00 # TODO: Fake datetime
+  datetime: 2024-12-09T00:00:00
   datasets:
-    - MPTrj # TODO: fake HF dataset repo
+    - MPTrj
     - Alexandria
   gpu-tasks:
     - homonuclear-diatomics
     - stability
     - eos_bulk
     - wbm_ev
+    - combustion
   github: https://github.com/ACEsuit/mace
   doi: https://arxiv.org/abs/2401.00096
   date: 2024-12-09
@@ -245,7 +247,6 @@ EquiformerV2(OC22):
     - OC22
   gpu-tasks:
     - homonuclear-diatomics
-    - combustion
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2306.12059
   date: 2023-06-21
@@ -305,9 +306,9 @@ MACE-OFF(M):
   checkpoint: MACE-OFF23_medium.model
   username: cyrusyc
   last-update: 2024-03-25T14:30:00
-  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  datetime: 2024-03-25T14:30:00
   datasets:
-    - SPICE # TODO: fake HF dataset repo
+    - SPICE
   gpu-tasks:
     - homonuclear-diatomics
   github: https://github.com/ACEsuit/mace
@@ -326,7 +327,7 @@ ANI2x:
   checkpoint: ani-2x_8x.info
   username: cyrusyc
   last-update: 2024-12-11T16:00:00
-  datetime: 2024-12-11T16:00:00 # TODO: Fake datetime
+  datetime: 2024-12-11T16:00:00
   datasets:
   cpu-tasks:
   gpu-tasks:
@@ -371,9 +372,9 @@ DeepMD:
   checkpoint: dp0808c_v024mixu.pth
   username: 
   last-update: 2024-10-09T00:00:00
-  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  datetime: 2024-03-25T14:30:00
   datasets:
-    - MPTrj # TODO: fake HF dataset repo
+    - MPTrj
   github: https://github.com/deepmodeling/deepmd-kit/
   doi: https://arxiv.org/abs/2312.15492
   date: 2024-10-09
@@ -390,9 +391,9 @@ ORB:
   checkpoint: orbff-v1-20240827.ckpt
   username: cyrusyc
   last-update: 2024-03-25T14:30:00
-  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  datetime: 2024-03-25T14:30:00
   datasets:
-    - MPTrj # TODO: fake HF dataset repo
+    - MPTrj
     - Alexandria
   gpu-tasks:
     - homonuclear-diatomics

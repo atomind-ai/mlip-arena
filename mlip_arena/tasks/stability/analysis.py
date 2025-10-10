@@ -95,7 +95,7 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
         total_time_seconds += block_time.total_seconds()
         total_steps += steps[indices][-1] - steps[indices][0]
 
-    target_steps = traj[0].info["target_steps"]
+    target_steps = traj[1].info["target_steps"]
     natoms = len(atoms0)
 
     return {
