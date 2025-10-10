@@ -1,8 +1,8 @@
 import numpy as np
+from ase.build import bulk
+
 from mlip_arena.models import MLIPCalculator
 from mlip_arena.models.classicals.zbl import ZBL
-
-from ase.build import bulk
 
 
 def test_zbl():

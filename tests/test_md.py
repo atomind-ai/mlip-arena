@@ -17,7 +17,7 @@ def test_nve(model: MLIPEnum):
     result = MD.fn(
         atoms,
         calculator=get_calculator(
-            calculator_name=model.name,
+            model.name,
         ),
         ensemble="nve",
         dynamics="velocityverlet",

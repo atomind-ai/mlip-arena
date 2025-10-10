@@ -1,12 +1,12 @@
 import sys
 
 import pytest
+from ase.spacegroup import crystal
+from prefect.testing.utilities import prefect_test_harness
+
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks import NEB_FROM_ENDPOINTS
 from mlip_arena.tasks.utils import get_calculator
-from prefect.testing.utilities import prefect_test_harness
-
-from ase.spacegroup import crystal
 
 pristine = crystal(
     "Al", [(0, 0, 0)], spacegroup=225, cellpar=[4.05, 4.05, 4.05, 90, 90, 90]

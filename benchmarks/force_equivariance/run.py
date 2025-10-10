@@ -11,6 +11,7 @@ import numpy as np
 from ase import Atoms
 from ase.calculators.calculator import BaseCalculator
 from prefect import task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
 from scipy.spatial.transform import Rotation as R
 from tqdm import tqdm
 

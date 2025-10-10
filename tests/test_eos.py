@@ -10,7 +10,6 @@ from mlip_arena.tasks.eos import run as EOS
 from mlip_arena.tasks.utils import get_calculator
 
 
-
 @flow(persist_result=True)
 def single_eos_flow(calculator_name, concurrent=True, cache=False):
     atoms = bulk("Cu", "fcc", a=3.6)
