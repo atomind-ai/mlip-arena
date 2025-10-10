@@ -36,6 +36,7 @@ models = container.multiselect(
         "EquiformerV2(OC20)",
         "eSCN(OC20)",
         "MatterSim",
+        "MACE-MPA"
     ],
 )
 
