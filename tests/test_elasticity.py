@@ -24,7 +24,7 @@ def test_elasticity(model: MLIPEnum):
         result = ELASTICITY(
             atoms=bulk("Cu", "fcc", a=3.6),
             calculator=get_calculator(
-                calculator_name=model.name,
+                model.name,
             ),
             optimizer="BFGSLineSearch",
             optimizer_kwargs=None,

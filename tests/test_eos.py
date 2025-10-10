@@ -20,7 +20,7 @@ def single_eos_flow(calculator_name, concurrent=True, cache=False):
     )(
         atoms=atoms,
         calculator=get_calculator(
-            calculator_name=calculator_name,
+            calculator_name,
         ),
         optimizer="BFGSLineSearch",
         optimizer_kwargs=None,

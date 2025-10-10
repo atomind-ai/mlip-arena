@@ -37,7 +37,7 @@ def test_neb(model: MLIPEnum):
             end=end.copy(),
             n_images=5,
             calculator=get_calculator(
-                calculator_name=model.name,
+                model.name,
             ),
             optimizer="BFGS",
         )
