@@ -9,6 +9,7 @@ from pathlib import Path
 
 import numpy as np
 from ase import Atoms
+from ase.calculators.calculator import BaseCalculator
 from prefect import task
 from scipy.spatial.transform import Rotation as R
 from tqdm import tqdm
@@ -138,7 +139,7 @@ def save_molecule_results(
 
 @task(
     name="Equivariance testing",
-    task_run_name=_generate_task_run_name,
+    # task_run_name=_generate_task_run_name,
     cache_policy=TASK_SOURCE + INPUTS,
 )
 def run(

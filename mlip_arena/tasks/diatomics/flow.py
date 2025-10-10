@@ -14,9 +14,9 @@ from mlip_arena.tasks.utils import get_calculator
 
 
 @task
-def homonuclear_diatomics(symbol: str, calculator: BaseCalculator, out_dir: Path):
+def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path):
     """
-    Calculate potential energy curves for homonuclear diatomic molecules.
+    Calculate the potential energy curve for single homonuclear diatomic molecule.
 
     This function computes the potential energy of a diatomic molecule (two atoms of
     the same element) across a range of interatomic distances. The distance range is
@@ -100,21 +100,17 @@ def homonuclear_diatomics(symbol: str, calculator: BaseCalculator, out_dir: Path
 
 
 @flow
-def submit_homonuclear_diatomics():
+def homonuclear_diatomics(model: str | BaseCalculator, run_dir: Path):
+
+    model = MLIPEnum[model] if isinstance(model, str) else model
+    model_name = model.name if isinstance(model, MLIPEnum) else model.__class__.__name__
+
     futures = []
-    for symbol, model in itertools.product(
-        chemical_symbols[1:],
-        MLIPEnum,
-    ):
-        if "homonuclear-diatomics" not in REGISTRY[model.name].get("gpu-tasks", []):
-            continue
 
-        out_dir = Path(__file__).parent / model.name
-
+    for symbol in chemical_symbols[1:]:
+        out_dir = run_dir / model_name
         calculator = get_calculator(model)
-
-        # if not (out_dir / "homonuclear-diatomics.json").exists():
-        future = homonuclear_diatomics.submit(
+        future = homonuclear_diatomic.submit(
             symbol,
             calculator,
             out_dir=out_dir,
@@ -125,7 +121,7 @@ def submit_homonuclear_diatomics():
 
 
 if __name__ == "__main__":
-    submit_homonuclear_diatomics.with_options(
+    homonuclear_diatomics.with_options(
         # task_runner=DaskTaskRunner(address=client.scheduler.address),
         log_prints=True,
     )()
