@@ -87,6 +87,7 @@ MatterSim:
   datasets:
     - MPTrj
     - Alexandria
+    - Proprietary
   cpu-tasks:
     - eos_alloy
   gpu-tasks:
@@ -162,7 +163,7 @@ eqV2(OMat):
   family: fairchem
   package: fairchem-core==1.2.0
   checkpoint: eqV2_86M_omat_mp_salex.pt
-  username: fairchem # HF handle
+  username: fairchem
   last-update: 2024-10-18T00:00:00
   datetime: 2024-10-18T00:00:00
   datasets:
@@ -199,6 +200,7 @@ MACE-MPA:
     - stability
     - eos_bulk
     - wbm_ev
+    - combustion
   github: https://github.com/ACEsuit/mace
   doi: https://arxiv.org/abs/2401.00096
   date: 2024-12-09
@@ -245,7 +247,6 @@ EquiformerV2(OC22):
     - OC22
   gpu-tasks:
     - homonuclear-diatomics
-    - combustion
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2306.12059
   date: 2023-06-21

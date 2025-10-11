@@ -6,20 +6,18 @@ import streamlit as st
 
 from mlip_arena.models import REGISTRY as MODELS
 
+DATA_DIR = Path(__file__).parents[2] / "benchmarks" / "combustion"
+
 valid_models = [
     model
     for model, metadata in MODELS.items()
     if Path(__file__).stem in metadata.get("gpu-tasks", [])
 ]
 
-DATA_DIR = Path("mlip_arena/tasks/combustion")
-
-
 @st.cache_data
 def get_data(models):
-    families = [MODELS[str(model)]["family"] for model in models]
     dfs = [
-        pd.read_json(DATA_DIR / family.lower() / "hydrogen.json") for family in families
+        pd.read_json(DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json") for model in models
     ]
     df = pd.concat(dfs, ignore_index=True)
     df.drop_duplicates(inplace=True, subset=["formula", "method"])

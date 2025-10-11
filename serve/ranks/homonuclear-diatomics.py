@@ -12,10 +12,10 @@ valid_models = [
     if Path(__file__).stem in metadata.get("gpu-tasks", [])
 ]
 
-DATA_DIR = Path("mlip_arena/tasks/diatomics")
+DATA_DIR = Path("benchmarks/diatomics")
 
 dfs = [
-    pd.read_json(DATA_DIR / MODELS[model].get("family") / "homonuclear-diatomics.json")
+    pd.read_json(DATA_DIR / MODELS[model].get("family") / f"{model}.json")
     for model in valid_models
 ]
 df = pd.concat(dfs, ignore_index=True)

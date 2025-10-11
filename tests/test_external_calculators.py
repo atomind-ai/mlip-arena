@@ -1,12 +1,12 @@
+import numpy as np
 import pytest
 from ase import Atoms
 from ase.calculators.calculator import PropertyNotImplementedError
-import numpy as np
+from huggingface_hub.errors import LocalTokenNotFoundError
+from requests import HTTPError
 
 from mlip_arena.models import MLIPEnum
 
-from requests import HTTPError
-from huggingface_hub.errors import LocalTokenNotFoundError
 
 @pytest.mark.parametrize("model", MLIPEnum)
 def test_calculate(model: MLIPEnum):

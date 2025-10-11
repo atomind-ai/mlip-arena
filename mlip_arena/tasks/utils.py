@@ -54,7 +54,7 @@ def get_freer_device() -> torch.device:
 
 
 def get_calculator(
-    calculator_name: str | MLIPEnum | BaseCalculator,
+    calculator: str | MLIPEnum | BaseCalculator,
     calculator_kwargs: dict | None = None,
     dispersion: bool = False,
     dispersion_kwargs: dict | None = None,
@@ -69,26 +69,26 @@ def get_calculator(
 
     logger.info(f"Using device: {device}")
 
-    if isinstance(calculator_name, MLIPEnum) and calculator_name in MLIPEnum:
-        calc = calculator_name.value(**calculator_kwargs)
-        calc.__str__ = lambda: calculator_name.name
-    elif isinstance(calculator_name, str) and hasattr(MLIPEnum, calculator_name):
-        calc = MLIPEnum[calculator_name].value(**calculator_kwargs)
-        calc.__str__ = lambda: calculator_name
-    elif isinstance(calculator_name, type) and issubclass(
-        calculator_name, BaseCalculator
+    if isinstance(calculator, MLIPEnum) and calculator in MLIPEnum:
+        calc = calculator.value(**calculator_kwargs)
+        calc.__str__ = lambda: calculator.name
+    elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
+        calc = MLIPEnum[calculator].value(**calculator_kwargs)
+        calc.__str__ = lambda: calculator
+    elif isinstance(calculator, type) and issubclass(
+        calculator, BaseCalculator
     ):
-        logger.warning(f"Using custom calculator class: {calculator_name}")
-        calc = calculator_name(**calculator_kwargs)
+        logger.warning(f"Using custom calculator class: {calculator}")
+        calc = calculator(**calculator_kwargs)
         calc.__str__ = lambda: f"{calc.__class__.__name__}"
-    elif isinstance(calculator_name, BaseCalculator):
+    elif isinstance(calculator, BaseCalculator):
         logger.warning(
-            f"Using custom calculator object (kwargs are ignored): {calculator_name}"
+            f"Using custom calculator object (kwargs are ignored): {calculator}"
         )
-        calc = calculator_name
+        calc = calculator
         calc.__str__ = lambda: f"{calc.__class__.__name__}"
     else:
-        raise ValueError(f"Invalid calculator: {calculator_name}")
+        raise ValueError(f"Invalid calculator: {calculator}")
 
     logger.info(f"Using calculator: {calc}")
     if calculator_kwargs:

@@ -65,17 +65,17 @@ if not mlip_methods and not dft_methods:
 
 @st.cache_data
 def get_data(mlip_methods, dft_methods):
-    DATA_DIR = Path("mlip_arena/tasks/diatomics")
+    DATA_DIR = Path("benchmarks/diatomics")
 
     dfs = [
         pd.read_json(
-            DATA_DIR / REGISTRY[method]["family"] / "homonuclear-diatomics.json"
+            DATA_DIR / REGISTRY[method]["family"] / f"{method}.json"
         )
         for method in mlip_methods
     ]
     dfs.extend(
         [
-            pd.read_json(DATA_DIR / "vasp" / "homonuclear-diatomics.json")
+            pd.read_json(Path("mlip_arena/tasks/diatomics") / "vasp" / "homonuclear-diatomics.json")
             # for method in dft_methods
         ]
     )

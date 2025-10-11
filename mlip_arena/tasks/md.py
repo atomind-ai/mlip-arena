@@ -358,7 +358,7 @@ def run(
     if traj_file is not None:
         md_runner.attach(traj.write, interval=traj_interval)
 
-    with tqdm(total=n_steps) as pbar:
+    with tqdm(total=n_steps, desc=f"MD {atoms.get_chemical_formula()}") as pbar:
 
         def _callback(dyn: MolecularDynamics = md_runner) -> None:
             step = last_step + dyn.nsteps
@@ -377,10 +377,18 @@ def run(
         md_runner.attach(_callback, interval=1)
 
         start_time = datetime.now()
-        md_runner.run(steps=n_steps)
+        complete = md_runner.run(steps=n_steps) if n_steps > 0 else True
         end_time = datetime.now()
 
     if traj_file is not None:
+        if complete and read(traj_file, index="-1").info.get("step") != target_steps:
+            # If the MD run was completed but the last step in the trajectory
+            # does not match the target steps, write the final frame.
+            atoms.info["restart"] = last_step + md_runner.nsteps
+            atoms.info["datetime"] = datetime.now()
+            atoms.info["step"] = target_steps
+            atoms.info["target_steps"] = target_steps
+            traj.write(atoms)
         traj.close()
 
     return {
