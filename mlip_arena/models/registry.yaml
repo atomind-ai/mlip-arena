@@ -406,3 +406,31 @@ ORB:
   nvt: true
   npt: true
   license: Apache-2.0
+
+NequIP-OAM-L:
+  module: externals
+  class: NequIP_OAM_L
+  family: nequip
+  package: nequip==0.15.0
+  username: cw-tan
+  last-update:
+  datetime:
+  datasets:
+    - OMat
+    - MPTrj
+    - Alexandria
+  cpu-tasks:
+    - eos_alloy
+  gpu-tasks:
+    - homonuclear-diatomics
+    - stability
+    - combustion
+    - eos_bulk
+    - wbm_ev
+  github: https://github.com/mir-group/nequip
+  doi:
+  date: 2024-8-28
+  prediction: EFS
+  nvt: true
+  npt: true
+  license: MIT
