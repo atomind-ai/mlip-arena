@@ -2,12 +2,12 @@ import sys
 
 import numpy as np
 import pytest
+from ase.build import bulk
+from prefect.testing.utilities import prefect_test_harness
+
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.elasticity import run as ELASTICITY
 from mlip_arena.tasks.utils import get_calculator
-from prefect.testing.utilities import prefect_test_harness
-
-from ase.build import bulk
 
 
 @pytest.mark.skipif(
@@ -24,7 +24,7 @@ def test_elasticity(model: MLIPEnum):
         result = ELASTICITY(
             atoms=bulk("Cu", "fcc", a=3.6),
             calculator=get_calculator(
-                calculator_name=model.name,
+                model.name,
             ),
             optimizer="BFGSLineSearch",
             optimizer_kwargs=None,

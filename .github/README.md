@@ -1,7 +1,10 @@
 <div align="center">
     <h1>⚔️ MLIP Arena ⚔️</h1>
-    <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR-AI4Mat-blue"></a>
     <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
+    <a href="https://neurips.cc/virtual/2025/poster/121648"><img alt="Static Badge" src="https://img.shields.io/badge/NeurIPS-Spotlight-blue"></a>
+    <a href="https://arxiv.org/abs/2509.20630"><img src="https://img.shields.io/badge/arXiv-2509.20630-b31b1b"></a>
+    <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR-AI4Mat-blue"></a>
+    <br>
     <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/test.yaml"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/mlip-arena"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mlip-arena"></a>
@@ -23,11 +26,12 @@ MLIP Arena leverages modern pythonic workflow orchestrator 💙
 ![Thumnail](../serve/assets/workflow.png)
 
 > [!NOTE]
-> Contributions of new tasks through PRs are very welcome! If you're interested in joining the effort, please reach out to Yuan at [cyrusyc@berkeley.edu](mailto:cyrusyc@berkeley.edu). See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks, or propose new feature requests in [Discussion](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
+> Contributions of new tasks through PRs are very welcome! See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks, or propose new feature requests in [Discussion](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
 
 ## Announcement
 
-- **[April 8, 2025]** [🎉 **MLIP Arena is accepted as an ICLR AI4Mat Spotlight!** 🎉](https://openreview.net/forum?id=ysKfIavYQE#discussion) Huge thanks to all co-authors for their contributions!
+- **[Sep 18, 2025]** [🎊 **MLIP Arena is accepted as NeurIPS Spotlight!** 🎊](https://neurips.cc/virtual/2025/poster/121648)
+- **[Apr 8, 2025]** [🎉 **MLIP Arena is accepted as an ICLR AI4Mat Spotlight!** 🎉](https://openreview.net/forum?id=ysKfIavYQE#discussion) Huge thanks to all co-authors for their contributions!
 
 
 ## Installation

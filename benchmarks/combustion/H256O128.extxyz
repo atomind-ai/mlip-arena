@@ -1,5 +1,5 @@
 384
-Lattice="30.0 0.0 0.0 0.0 30.0 0.0 0.0 0.0 30.0" Properties=species:S:1:pos:R:3 pbc="T T T"
+Lattice="30.0 0.0 0.0 0.0 30.0 0.0 0.0 0.0 30.0" Properties=species:S:1:pos:R:3 Built=T with=T Packmol=T pbc="T T T"
 H       16.87897000      14.36340900       5.78639500
 H       17.43576500      14.42974000       6.26492700
 H        3.55483600       6.05817200      17.69903100

@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from mlip_arena.models import REGISTRY as MODELS
 
-DATA_DIR = Path("mlip_arena/tasks/combustion")
+DATA_DIR = Path(__file__).parents[2] / "benchmarks" / "combustion"
 
 
 st.markdown("""
@@ -36,6 +36,7 @@ models = container.multiselect(
         "EquiformerV2(OC20)",
         "eSCN(OC20)",
         "MatterSim",
+        "MACE-MPA"
     ],
 )
 
@@ -60,17 +61,15 @@ if not models:
     st.stop()
 
 
+
 @st.cache_data
 def get_data(models):
-    # List comprehension for concise looping and filtering
     dfs = [
-        pd.read_json(DATA_DIR / MODELS[str(model)]["family"].lower() / "hydrogen.json")[
-            lambda df: df["method"] == model
-        ]
-        for model in models
+        pd.read_json(DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json") for model in models
     ]
-    # Concatenate all filtered DataFrames
-    return pd.concat(dfs, ignore_index=True)
+    df = pd.concat(dfs, ignore_index=True)
+    df.drop_duplicates(inplace=True, subset=["formula", "method"])
+    return df
 
 
 df = get_data(models)
