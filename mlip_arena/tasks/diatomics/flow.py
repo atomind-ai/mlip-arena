@@ -16,26 +16,9 @@ from mlip_arena.tasks.utils import get_calculator
 @task
 def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path):
     """
-    Calculate the potential energy curve for single homonuclear diatomic molecule.
-
-    This function computes the potential energy of a diatomic molecule (two atoms of
-    the same element) across a range of interatomic distances. The distance range is
-    automatically determined from the covalent and van der Waals radii of the element.
-
-    Args:
-        symbol: Chemical symbol of the atom (e.g., 'H', 'O', 'Fe')
-        calculator: ASE calculator object used to compute the potential energies. Could be VASP, MLIP, etc.
-
-    Returns:
-        None: Results are saved as trajectory files in a directory structure:
-              /{model_family}/{element_pair}/{model_name}.extxyz
-
-    Note:
-        - Minimum distance is set to 0.9× the covalent radius
-        - Maximum distance is set to 3.1× the van der Waals radius (or 6 Å if unknown)
-        - Distance step size is fixed at 0.01 Å
-        - If an existing trajectory file is found, the calculation will resume from where it left off
-        - The atoms are placed in a periodic box large enough to avoid self-interaction
+    Compute and save the potential energy curve for a homonuclear diatomic by varying the interatomic distance.
+    
+    The distance range is determined from the element's covalent and van der Waals radii (minimum = 0.9 × covalent radius; maximum = 3.1 × vdw radius or 6 Å if vdw is unknown) with a fixed step of 0.01 Å. Results are appended to an extxyz trajectory file named "<symbol><symbol>.extxyz" in the provided output directory; if that file exists the calculation resumes from the last frame. The provided ASE calculator is used to evaluate potential energies and each geometry is saved as a frame in the trajectory.
     """
 
     atom = Atom(symbol)
@@ -102,6 +85,16 @@ def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path)
 @flow
 def homonuclear_diatomics(model: str | BaseCalculator, run_dir: Path):
 
+    """
+    Submit homonuclear diatomic potential curve tasks for a given model and collect their results.
+    
+    Parameters:
+        model (str | BaseCalculator): Model identifier or calculator instance; if a string, it is mapped to the corresponding MLIPEnum.
+        run_dir (Path): Base directory where per-model output directories will be created.
+    
+    Returns:
+        list: Results returned by each submitted homonuclear diatomic task, in the same order as chemical symbols were processed. Each entry is the task's return value or an exception wrapper if the task failed.
+    """
     model = MLIPEnum[model] if isinstance(model, str) else model
     model_name = model.name if isinstance(model, MLIPEnum) else model.__class__.__name__
 

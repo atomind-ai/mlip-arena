@@ -213,41 +213,41 @@ def run(
     restart: bool = True,
 ):
     """
-    Run a molecular dynamics (MD) simulation using ASE.
-
+    Run an ASE molecular dynamics (MD) simulation for the given Atoms and calculator.
+    
+    Summary:
+        Execute an MD trajectory with configurable ensemble, dynamics, timestep, time-dependent temperature/pressure schedules, trajectory output, and optional restart from an existing trajectory.
+    
     Parameters:
-        atoms (Atoms): The atomic structure to simulate.
-        calculator (BaseCalculator): The calculator to use for energy and force calculations.
-        ensemble (Literal["nve", "nvt", "npt"], optional): The MD ensemble to use. Defaults to "nvt".
-        dynamics (str | MolecularDynamics, optional): The dynamics method to use. Defaults to "langevin".
-        time_step (float | None, optional): The time step for the simulation in femtoseconds.
-            Defaults to 0.5 fs if hydrogen isotopes are present, otherwise 2.0 fs.
-        total_time (float, optional): The total simulation time in femtoseconds. Defaults to 1000 fs.
-        temperature (float | Sequence | np.ndarray | None, optional): The temperature schedule in Kelvin.
-            Can be a scalar or a sequence. Defaults to 300 K.
-        pressure (float | Sequence | np.ndarray | None, optional): The pressure schedule in eV/Å³.
-            Can be a scalar or a sequence. Defaults to None.
-        dynamics_kwargs (dict | None, optional): Additional keyword arguments for the dynamics method. Defaults to None.
-        velocity_seed (int | None, optional): Seed for random number generation for initial velocities. Defaults to None.
-        zero_linear_momentum (bool, optional): Whether to remove linear momentum from the system. Defaults to True.
-        zero_angular_momentum (bool, optional): Whether to remove angular momentum from the system. Defaults to True.
-        traj_file (str | Path | None, optional): Path to the trajectory file for saving simulation results. Defaults to None.
-        traj_interval (int, optional): Interval for saving trajectory frames. Defaults to 1.
-        restart (bool, optional): Whether to restart the simulation from an existing trajectory file. Defaults to True.
-
+        atoms (Atoms): Atomic configuration to simulate; a copy is used and the provided calculator is set on it.
+        calculator (BaseCalculator): Calculator used for forces/energies.
+        ensemble (Literal["nve","nvt","npt"], optional): Thermodynamic ensemble. Default: "nvt".
+        dynamics (str | MolecularDynamics, optional): Dynamics method name (e.g., "langevin", "andersen", "velocityverlet") or an ASE MolecularDynamics class. Must be compatible with the chosen ensemble. Default: "langevin".
+        time_step (float | None, optional): Integration timestep in femtoseconds. If None, defaults to 0.5 fs when hydrogen isotopes are present, otherwise 2.0 fs.
+        total_time (float, optional): Total simulation time in femtoseconds. Default: 1000.
+        temperature (float | Sequence | np.ndarray | None, optional): Temperature schedule in Kelvin. May be a scalar (constant temperature), a 1D sequence/array to be linearly interpolated to simulation steps, or None/NaN to disable thermostat (used by "nve").
+        pressure (float | Sequence | np.ndarray | None, optional): Pressure or external stress schedule in eV/Å³. May be a scalar, a 1D sequence/array to be interpolated, or a full 3×3 (or sequence of 3×3) ndarray for stepwise stress. NaN disables barostat.
+        dynamics_kwargs (dict | None, optional): Extra keyword arguments forwarded to the ASE dynamics class. For "langevin" a default friction is added if not provided. Special key: "fraction_traceless" (float, default 1.0) is consumed to set NPT fraction traceless and removed from the kwargs.
+        velocity_seed (int | None, optional): RNG seed for initializing Maxwell–Boltzmann velocities.
+        zero_linear_momentum (bool, optional): If True, remove center-of-mass linear momentum after velocity initialization. Default: True.
+        zero_angular_momentum (bool, optional): If True, remove net rotation after velocity initialization. Default: True.
+        traj_file (str | Path | None, optional): Path to trajectory file to write frames. If provided, directory is created. If restart is True and the file exists, the last frame will be used to resume the run when readable.
+        traj_interval (int, optional): Interval (in MD steps) between trajectory frame writes. Default: 1.
+        restart (bool, optional): When True, attempt to resume from existing traj_file; if resume fails a new trajectory is started. Default: True.
+    
     Returns:
-        dict: A dictionary containing the following keys:
-            - "atoms" (Atoms): The final atomic structure after the simulation.
-            - "runtime" (timedelta): The runtime of the simulation.
-            - "n_steps" (int): The number of steps performed in the simulation.
-
+        dict: {
+            "atoms": Atoms,        # final Atoms object after the run
+            "runtime": timedelta,  # elapsed wall-clock time for the MD run
+            "n_steps": int         # number of steps performed (remaining steps computed from total_time and timestep)
+        }
+    
     Raises:
-        ValueError: If an invalid dynamics method is specified or if the dynamics method is incompatible with the ensemble.
-
-    Notes:
-        - The function supports restarting from an existing trajectory file if `restart` is True.
-        - For NPT dynamics, the atomic cell is transformed to an upper triangular form to meet ASE's requirements.
-        - Temperature and pressure schedules can be specified as sequences or arrays for time-dependent control.
+        ValueError: If the specified dynamics is invalid or incompatible with the chosen ensemble.
+    
+    Side effects:
+        - May write to traj_file and create its parent directories.
+        - For NPT dynamics, the atomic cell is converted to an upper-triangular form to satisfy ASE requirements.
     """
 
     atoms = atoms.copy()
@@ -361,6 +361,17 @@ def run(
     with tqdm(total=n_steps, desc=f"MD {atoms.get_chemical_formula()}") as pbar:
 
         def _callback(dyn: MolecularDynamics = md_runner) -> None:
+            """
+            Update MD runner state and per-frame metadata during each MD step.
+            
+            This callback computes the current step as the sum of the saved last_step and the runner's nsteps, writes per-frame metadata into dyn.atoms.info (restart, datetime, step, and target_steps), updates the thermostat temperature when applicable, updates the barostat stress when applicable, and advances the progress bar.
+            
+            Parameters:
+                dyn (MolecularDynamics): The active ASE MD runner whose atoms and state are being updated.
+            
+            Returns:
+                None
+            """
             step = last_step + dyn.nsteps
             dyn.atoms.info["restart"] = last_step
             dyn.atoms.info["datetime"] = datetime.now()

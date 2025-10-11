@@ -18,26 +18,17 @@ from mlip_arena.tasks.utils import get_calculator
 @task
 def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path):
     """
-    Calculate the potential energy curve for single homonuclear diatomic molecule.
-
-    This function computes the potential energy of a diatomic molecule (two atoms of
-    the same element) across a range of interatomic distances. The distance range is
-    automatically determined from the covalent and van der Waals radii of the element.
-
-    Args:
-        symbol: Chemical symbol of the atom (e.g., 'H', 'O', 'Fe')
-        calculator: ASE calculator object used to compute the potential energies. Could be VASP, MLIP, etc.
-
-    Returns:
-        None: Results are saved as trajectory files.
-              
-
-    Note:
-        - Minimum distance is set to 0.9× the covalent radius
-        - Maximum distance is set to 3.1× the van der Waals radius (or 6 Å if unknown)
-        - Distance step size is fixed at 0.01 Å
-        - If an existing trajectory file is found, the calculation will resume from where it left off
-        - The atoms are placed in a periodic box large enough to avoid self-interaction
+    Compute and save the potential energy curve for a homonuclear diatomic over a range of interatomic distances.
+    
+    The distance range is determined from element radii: minimum = 0.9 × covalent radius, maximum = 3.1 × van der Waals radius (or 6.0 Å if van der Waals radius is unavailable), sampled with a fixed step of 0.01 Å. Results are written to an extxyz trajectory file named "<symbol><symbol>.extxyz" in out_dir; if that file already exists the computation resumes by appending missing frames.
+    
+    Parameters:
+        symbol (str): Chemical symbol of the atom (e.g., 'H', 'O', 'Fe').
+        calculator (BaseCalculator): ASE calculator used to evaluate potential energies for each geometry.
+        out_dir (Path): Directory where the trajectory file will be created or appended.
+    
+    Side effects:
+        Writes or appends trajectory frames to out_dir/<symbol><symbol>.extxyz. The function does not return a value.
     """
 
     atom = Atom(symbol)
@@ -103,6 +94,33 @@ def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path)
 @task
 def analyze(out_dir: Path):
 
+    """
+    Analyze homonuclear diatomic trajectory files in a directory and return a DataFrame of potential-energy-curve metrics.
+    
+    Parameters:
+    	out_dir (Path): Directory containing per-diatomic trajectory files named like "HeHe.extxyz", "LiLi.extxyz", etc.
+    
+    Returns:
+    	df (pandas.DataFrame): One row per analyzed diatomic with columns:
+    		- name: diatomic identifier (e.g., "HeHe")
+    		- method: (placeholder, may be set later)
+    		- R, E, F, S^2: arrays of interatomic distances, energies, forces, and spin-squared values
+    		- force-flip-times: number of sign changes in the force sequence
+    		- force-total-variation: sum of absolute force differences
+    		- force-jump: magnitude measure of force discontinuities
+    		- energy-diff-flip-times: number of sign changes in successive energy differences
+    		- energy-grad-norm-max: maximum absolute dE/dr
+    		- energy-jump: magnitude measure of energy discontinuities
+    		- energy-total-variation: total variation of the energy curve
+    		- tortuosity: normalized energy total variation
+    		- conservation-deviation: mean absolute value of (F + dE/dr)
+    		- spearman-descending-force, spearman-ascending-force: Spearman correlations of R vs F on descending/ascending branches
+    		- spearman-repulsion-energy, spearman-attraction-energy: Spearman correlations of R vs E on repulsive/attractive branches
+    		- pbe-energy-mae, pbe-force-mae: placeholders for comparison error metrics (may be populated externally)
+    
+    Notes:
+    	Files that are missing or unreadable are skipped; only successfully read trajectories contribute rows.
+    """
     df = pd.DataFrame(
         columns=[
             "name",
@@ -258,6 +276,16 @@ def analyze(out_dir: Path):
 @flow
 def homonuclear_diatomics(model: str | BaseCalculator, run_dir: Path | None = None):
 
+    """
+    Orchestrates homonuclear diatomic PEC computations for all elements, collects their results, and writes a summary JSON to the output directory.
+    
+    Parameters:
+        model (str | BaseCalculator): Either a model key string (lookup in MLIPEnum/REGISTRY) or an instantiated ASE calculator; determines the calculator used for each per-element task.
+        run_dir (Path | None): Optional path to write per-element trajectories and the aggregated "homonuclear-diatomics.json". If omitted, a default directory is created under the current working directory using the model family and name.
+    
+    Returns:
+        list: Per-element task results in the same order as chemical_symbols[1:]. Each entry is the corresponding task's return value or an exception-like object if the task failed.
+    """
     model_name = MLIPEnum[model].name if isinstance(model, str) else model.__class__.__name__
     family = REGISTRY[model_name]['family'] if hasattr(MLIPEnum, model_name) else "custom"
 

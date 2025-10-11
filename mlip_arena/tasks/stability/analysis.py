@@ -10,44 +10,37 @@ from tqdm.auto import tqdm
 
 
 def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
-    """Compute runtime statistics for an ASE trajectory.
-
+    """
+    Compute runtime statistics for an ASE trajectory.
+    
     Parameters
     ----------
     traj : list[ase.Atoms]
-        Sequence of ASE Atoms objects representing trajectory frames. Each frame
-        is expected to have an `info` dict containing at least the keys
-        'restart', 'datetime', and 'step'. The first frame should provide
-        'target_steps'.
+        Sequence of ASE Atoms frames. Each frame is expected to have an `info`
+        dict containing at least the keys 'restart', 'datetime', and 'step'. The
+        function reads `target_steps` from traj[1].info.
     atoms0 : ase.Atoms
-        Reference Atoms object (typically the first frame) used to compute
-        center-of-mass drift and to determine the number of atoms.
-
+        Reference Atoms object used to compute center-of-mass drift and to
+        determine the number of atoms.
+    
     Returns
     -------
     dict
-        A dictionary containing the following keys:
-        - 'natoms': int, number of atoms from atoms0.
-        - 'total_time_seconds': float, total wall-clock time summed across
-          unique restart blocks (seconds).
-        - 'total_steps': int, total MD steps summed across unique restart blocks.
-        - 'steps_per_second': float, throughput (0 if total_time_seconds == 0).
-        - 'seconds_per_step': float, average seconds per step (inf if total_steps == 0).
-        - 'seconds_per_step_per_atom': float, seconds per step normalized by atom count.
-        - 'energies': list of potential energies for successfully parsed frames.
-        - 'kinetic_energies': list of kinetic energies.
-        - 'temperatures': list of temperatures.
-        - 'pressures': list of mean pressures (may be empty if not available).
-        - 'target_steps': target number of steps taken from traj[0].info.
-        - 'final_step': last recorded step number (0 if no valid frames).
-        - 'timestep': array of step numbers for valid frames.
-        - 'com_drifts': list of center-of-mass drift vectors relative to atoms0.
-
-    Notes
-    -----
-    Frames that raise exceptions when querying potential energy are skipped.
-    Unique restart blocks are identified by atoms.info['restart'] and used to
-    compute contiguous time and step differences across restarts.
+        Dictionary with runtime and per-frame statistics:
+        - natoms: int, number of atoms from atoms0.
+        - total_time_seconds: float, sum of durations of unique restart blocks (seconds).
+        - total_steps: int, sum of step differences across unique restart blocks.
+        - steps_per_second: float, total_steps / total_time_seconds (0 if total_time_seconds == 0).
+        - seconds_per_step: float, total_time_seconds / total_steps (inf if total_steps == 0).
+        - seconds_per_step_per_atom: float, seconds per step normalized by atom count (inf if total_steps == 0).
+        - energies: list of potential energies for frames successfully parsed.
+        - kinetic_energies: list of per-frame kinetic energies.
+        - temperatures: list of frame temperatures.
+        - pressures: list of mean pressures per frame (NaN if unavailable).
+        - target_steps: int, target number of steps read from traj[1].info.
+        - final_step: int, last recorded step number (0 if no valid frames).
+        - timestep: np.ndarray of step numbers for valid frames.
+        - com_drifts: list of center-of-mass drift vectors (relative to atoms0).
     """
     restarts = []
     steps, times = [], []

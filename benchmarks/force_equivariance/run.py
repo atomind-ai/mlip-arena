@@ -153,19 +153,30 @@ def run(
     seed: int | None = None,
 ) -> dict:
     """
-    Test equivariance of force predictions under rotations for multiple structures.
-
-    Args:
-        atoms_list: List of input atomic structures
-        idx_list: List of the indices of the atoms in the original dataset
-        calculator: Calculator to use
-        num_rotations: Number of random rotations to test
-        rotation_angle: Angle of rotation in degrees
-        threshold: Threshold for considering forces equivariant
-        seed: Random seed
-
+    Run equivariance tests of predicted forces under rotations for a sequence of atomic structures.
+    
+    Per structure and per rotation angle, the function rotates the structure around multiple random axes,
+    compares predicted forces before and after rotation, and aggregates mean absolute error (MAE),
+    cosine similarities, and pass/fail statistics. Optionally persists results to disk.
+    
+    Parameters:
+        atoms_list (Sequence[Atoms]): Sequence of ASE Atoms objects to test.
+        idx_list (np.ndarray): Array of original dataset indices corresponding to atoms_list entries.
+        calculator (BaseCalculator): ASE calculator used to compute forces.
+        save_path (str | Path | None): Directory path (Path-like or string) where result files will be written; no files are written if None.
+        rotation_angles (list[float] | np.ndarray | None): Rotation angles in degrees to test. If None, defaults to [30, 60, ..., 360].
+        num_random_axes (int): Number of random rotation axes to test per angle.
+        threshold (float): Threshold used to determine pass conditions: MAE < threshold and cosine similarities > (1 - threshold).
+        seed (int | None): Optional random seed for reproducible axis generation.
+    
     Returns:
-        Dictionary containing test results
+        dict: Aggregate results containing:
+            - num_molecules: number of molecules tested.
+            - all_molecules_passed: true if every molecule passed all angle tests.
+            - average_equivariant_ratio: mean fraction of axes per molecule that passed.
+            - average_cosine_similarity_by_angle: mapping angle -> mean cosine similarity across molecules and axes.
+            - average_mae_by_angle: mapping angle -> mean MAE across molecules and axes.
+            - molecule_results: list of per-molecule result dictionaries including per-angle summaries, average metrics, and pass flags.
     """
     if seed is not None:
         np.random.seed(seed)
