@@ -13,6 +13,17 @@ from mlip_arena.tasks.utils import get_calculator
 
 @flow(persist_result=True)
 def single_eos_flow(calculator_name, concurrent=True, cache=False):
+    """
+    Run an equation-of-state (EOS) Prefect flow for an FCC copper bulk using the specified calculator.
+    
+    Parameters:
+    	calculator_name (str): Name or identifier of the calculator to obtain via get_calculator.
+    	concurrent (bool): If True, allow the EOS task to run with concurrency enabled.
+    	cache (bool): If True, use cached EOS results when available; if False, force a refresh.
+    
+    Returns:
+    	result (dict): Results produced by the EOS task. Contains keys produced by the EOS implementation (tests expect a `'b0'` key with a float value).
+    """
     atoms = bulk("Cu", "fcc", a=3.6)
 
     return EOS.with_options(

@@ -16,6 +16,15 @@ valid_models = [
 
 @st.cache_data
 def get_data(models):
+    """
+    Load and concatenate per-model benchmark JSON files into a single DataFrame with duplicates removed.
+    
+    Parameters:
+        models (Iterable[str]): Iterable of model identifiers that exist in the global MODELS registry; each model's JSON is loaded from DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json".
+    
+    Returns:
+        pandas.DataFrame: Concatenated DataFrame of all models' data with duplicate rows removed based on the "formula" and "method" columns.
+    """
     dfs = [
         pd.read_json(DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json") for model in models
     ]

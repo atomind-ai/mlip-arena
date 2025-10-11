@@ -16,6 +16,15 @@ from mlip_arena.tasks.utils import get_calculator
 
 
 def identify_water_molecules(atoms):
+    """
+    Count water molecules in an ASE Atoms object by identifying oxygen atoms bonded to exactly two hydrogen neighbors.
+    
+    Parameters:
+        atoms (ase.Atoms): Atomic configuration to analyze.
+    
+    Returns:
+        int: Number of distinct water molecules detected (each O with exactly two H neighbors counted once).
+    """
     nl = NeighborList(natural_cutoffs(atoms), self_interaction=False, bothways=True)
     nl.update(atoms)
 
@@ -35,6 +44,31 @@ def identify_water_molecules(atoms):
 
 @task
 def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
+    """
+    Compute runtime and per-frame statistics from an ASE trajectory.
+    
+    Parameters:
+        traj (list[Atoms]): Sequence of ASE Atoms objects representing trajectory frames; each frame must include 'restart', 'datetime', and 'step' in its .info and have energy/temperature accessible.
+        atoms0 (Atoms): Reference initial ASE Atoms object used to compute center-of-mass drift and to obtain the atom count.
+    
+    Returns:
+        dict: Aggregate statistics and per-frame arrays with the following keys:
+            natoms (int): Number of atoms from atoms0.
+            total_time_seconds (float): Sum of elapsed seconds across unique restart blocks.
+            total_steps (int): Sum of step differences across unique restart blocks.
+            steps_per_second (float): total_steps / total_time_seconds, 0 if total_time_seconds is 0.
+            seconds_per_step (float): total_time_seconds / total_steps, infinity if total_steps is 0.
+            seconds_per_step_per_atom (float): seconds_per_step divided by natoms, infinity if total_steps is 0.
+            energies (list): Per-frame potential energies.
+            kinetic_energies (list): Per-frame kinetic energies.
+            temperatures (list): Per-frame temperatures.
+            pressures (list): Per-frame scalar pressures (NaN if unavailable).
+            target_steps (int): Target total steps read from traj[1].info["target_steps"].
+            final_step (int): Last recorded step value (0 if no valid frames).
+            timestep (list): Per-frame step indices.
+            com_drifts (list): Per-frame center-of-mass displacement vectors relative to atoms0.
+            nproducts (list): Per-frame counts of identified product molecules (e.g., water) as returned by identify_water_molecules.
+    """
     restarts = []
     steps, times = [], []
     Ts, Ps, PEs, KEs = [], [], [], []
@@ -116,7 +150,16 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
 
 @flow
 def hydrogen_combustion(model: str | BaseCalculator, run_dir: Path):
-    """Run hydrogen combustion simulation and analyze results."""
+    """
+    Run a molecular dynamics simulation of hydrogen combustion with the given model and write a trajectory and JSON summary to run_dir.
+    
+    Parameters:
+        model (str | BaseCalculator): Either the name of a MLIPEnum entry (string) identifying a machine-learned interatomic model or an ASE-compatible calculator instance to use for the simulation.
+        run_dir (Path): Directory where the trajectory (.traj) and summary (.json) files will be written.
+    
+    Returns:
+        MD result object: The object returned by the MD task representing the completed simulation.
+    """
     atoms = io.read(Path(__file__).parent / "H256O128.extxyz")
     assert isinstance(atoms, Atoms)
 

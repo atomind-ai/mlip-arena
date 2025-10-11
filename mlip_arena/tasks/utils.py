@@ -60,7 +60,23 @@ def get_calculator(
     dispersion_kwargs: dict | None = None,
     device: str | None = None,
 ) -> BaseCalculator:
-    """Get a calculator with optional dispersion correction."""
+    """
+    Constructs an ASE BaseCalculator configured for the specified MLIP model and device, optionally combined with a dispersion correction.
+    
+    Parameters:
+        calculator (str | MLIPEnum | BaseCalculator): The calculator specifier — an MLIPEnum member, the name of an MLIPEnum entry, a subclass of ASE BaseCalculator, or an instance of BaseCalculator.
+        calculator_kwargs (dict | None): Keyword arguments passed to the calculator constructor. The resolved device is injected into this dict.
+        dispersion (bool): If True, attach a DFT-D3-like dispersion calculator and combine it with the main calculator.
+        dispersion_kwargs (dict | None): Keyword arguments for the dispersion calculator. If not provided, defaults to {'damping': 'bj', 'xc': 'pbe', 'cutoff': 40.0 * units.Bohr}. The resolved device is injected into this dict.
+        device (str | None): Device identifier to use (e.g., 'cuda:0', 'mps', 'cpu'). If None, the function selects a device via get_freer_device().
+    
+    Returns:
+        BaseCalculator: The constructed calculator. If dispersion is requested, returns a SumCalculator that combines the main calculator with the dispersion calculator.
+    
+    Raises:
+        ValueError: If `calculator` is not a supported type or value.
+        ImportError: If `dispersion` is True but the required torch_dftd dependency is not installed.
+    """
 
     device = device or str(get_freer_device())
 

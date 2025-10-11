@@ -64,6 +64,15 @@ if not models:
 
 @st.cache_data
 def get_data(models):
+    """
+    Load and merge benchmark JSON data for the specified MLIP models.
+    
+    Parameters:
+        models (Iterable[str]): Iterable of model keys present in the global MODELS registry. For each model, a JSON file at DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json" will be loaded.
+    
+    Returns:
+        pandas.DataFrame: Concatenated DataFrame of all loaded model files with duplicate rows removed based on the `formula` and `method` columns.
+    """
     dfs = [
         pd.read_json(DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json") for model in models
     ]
