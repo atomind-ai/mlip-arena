@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 import numpy as np
@@ -11,7 +13,7 @@ from prefect.futures import wait
 from scipy import stats
 from tqdm.auto import tqdm
 
-from mlip_arena.models import MLIPEnum, REGISTRY
+from mlip_arena.models import REGISTRY, MLIPEnum
 from mlip_arena.tasks.utils import get_calculator
 
 
@@ -30,7 +32,7 @@ def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path)
 
     Returns:
         None: Results are saved as trajectory files.
-              
+
 
     Note:
         - Minimum distance is set to 0.9× the covalent radius
@@ -100,13 +102,13 @@ def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path)
         es[i] = atoms.get_potential_energy()
         write(traj_fpath, atoms, append="a")
 
+
 @task
 def analyze(out_dir: Path):
-
     df = pd.DataFrame(
         columns=[
             "name",
-            "method",
+            # "method",
             "R",
             "E",
             "F",
@@ -257,9 +259,12 @@ def analyze(out_dir: Path):
 
 @flow
 def homonuclear_diatomics(model: str | BaseCalculator, run_dir: Path | None = None):
-
-    model_name = MLIPEnum[model].name if isinstance(model, str) else model.__class__.__name__
-    family = REGISTRY[model_name]['family'] if hasattr(MLIPEnum, model_name) else "custom"
+    model_name = (
+        MLIPEnum[model].name if isinstance(model, str) else model.__class__.__name__
+    )
+    family = (
+        REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
+    )
 
     out_dir = run_dir if run_dir is not None else Path.cwd() / family / model_name
 
