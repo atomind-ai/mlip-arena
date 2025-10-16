@@ -197,10 +197,10 @@ If you find the work useful, please consider citing the following:
 ```bibtex
 @inproceedings{
     chiang2025mlip,
-    title={{MLIP} Arena: Advancing Fairness and Transparency in Machine Learning Interatomic Potentials through an Open and Accessible Benchmark Platform},
-    author={Yuan Chiang and Tobias Kreiman and Elizabeth Weaver and Ishan Amin and Matthew Kuner and Christine Zhang and Aaron Kaplan and Daryl Chrzan and Samuel M Blau and Aditi S. Krishnapriyan and Mark Asta},
-    booktitle={AI for Accelerated Materials Design - ICLR 2025},
+    title={{MLIP} Arena: Advancing Fairness and Transparency in Machine Learning Interatomic Potentials via an Open, Accessible Benchmark Platform},
+    author={Yuan Chiang and Tobias Kreiman and Christine Zhang and Matthew C. Kuner and Elizabeth Jin Weaver and Ishan Amin and Hyunsoo Park and Yunsung Lim and Jihan Kim and Daryl Chrzan and Aron Walsh and Samuel M Blau and Aditi S. Krishnapriyan and Mark Asta},
+    booktitle={The Thirty-ninth Annual Conference on Neural Information Processing Systems Datasets and Benchmarks Track},
     year={2025},
-    url={https://openreview.net/forum?id=ysKfIavYQE}
+    url={https://openreview.net/forum?id=SAT0KPA5UO}
 }
 ```
