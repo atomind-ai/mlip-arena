@@ -412,6 +412,7 @@ NequIP-OAM-L:
   class: NequIP_OAM_L
   family: nequip
   package: nequip==0.15.0
+  checkpoint: nequip.net:mir-group/NequIP-OAM-L:0.1
   username: cw-tan
   last-update:
   datetime:
