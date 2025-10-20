@@ -30,7 +30,11 @@ MLIP Arena leverages modern pythonic workflow orchestrator 💙
 
 ## Announcement
 
+<<<<<<< HEAD
 - **[Sep 18, 2025]** [🎊 **MLIP Arena is accepted as a Spotlight (top 3.5%) at NeurIPS!** 🎊](https://neurips.cc/virtual/2025/poster/121648)
+=======
+- **[Sep 18, 2025]** [🎊 **MLIP Arena is accepted as NeurIPS Spotlight!** 🎊](https://neurips.cc/virtual/2025/poster/121648)
+>>>>>>> main
 - **[Apr 8, 2025]** [🎉 **MLIP Arena is accepted as an ICLR AI4Mat Spotlight!** 🎉](https://openreview.net/forum?id=ysKfIavYQE#discussion) Huge thanks to all co-authors for their contributions!
 
 
