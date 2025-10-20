@@ -31,7 +31,7 @@ dependencies=[
     "ase>=3.26.0",
     "pymatgen",
     "torch",
-    "huggingface_hub",
+    "huggingface_hub>=0.35.0",
     "datasets",
     "safetensors",
     "prefect[dask]",
