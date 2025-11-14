@@ -1,9 +1,9 @@
 <div align="center">
     <h1>⚔️ MLIP Arena ⚔️</h1>
     <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
-    <a href="https://neurips.cc/virtual/2025/poster/121648"><img alt="Static Badge" src="https://img.shields.io/badge/NeurIPS-Spotlight-blue"></a>
+    <a href="https://neurips.cc/virtual/2025/poster/121648"><img alt="Static Badge" src="https://img.shields.io/badge/NeurIPS-Spotlight-magenta"></a>
     <a href="https://arxiv.org/abs/2509.20630"><img src="https://img.shields.io/badge/arXiv-2509.20630-b31b1b"></a>
-    <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR-AI4Mat-blue"></a>
+    <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR AI4Mat-Spotlight-purple"></a>
     <br>
     <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/test.yaml"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/mlip-arena"></a>
@@ -13,7 +13,7 @@
 </a>
 </div>
 
-Foundation machine learning interatomic potentials (MLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations, have revolutionized molecular and materials modeling, but existing benchmarks suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific density functional theory (DFT) references.
+Foundation machine learning interatomic potentials (MLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations, have revolutionized molecular and materials modeling, but existing benchmarks suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific DFT references.
 
 We introduce MLIP Arena, a unified benchmark platform for evaluating foundation MLIP performance beyond conventional error metrics. It focuses on revealing the physical soundness learned by MLIPs and assessing their utilitarian performance agnostic to underlying model architecture and training dataset. 
 
@@ -30,25 +30,25 @@ MLIP Arena leverages modern pythonic workflow orchestrator 💙
 
 ## Announcement
 
-- **[Sep 18, 2025]** [🎊 **MLIP Arena is accepted as NeurIPS Spotlight!** 🎊](https://neurips.cc/virtual/2025/poster/121648)
+- **[Sep 18, 2025]** [🎊 **MLIP Arena is accepted as a Spotlight (top 3.5%) at NeurIPS!** 🎊](https://neurips.cc/virtual/2025/poster/121648)
 - **[Apr 8, 2025]** [🎉 **MLIP Arena is accepted as an ICLR AI4Mat Spotlight!** 🎉](https://openreview.net/forum?id=ysKfIavYQE#discussion) Huge thanks to all co-authors for their contributions!
 
 
 ## Installation
 
-### From PyPI (prefect workflow only, without pretrained models)
+### From PyPI (prefect workflow only, *without* pretrained models)
 
 ```bash
 pip install mlip-arena
 ```
 
-### From source (with integrated pretrained models, advanced)
+### From source (with integrated pretrained models)
 
 > [!CAUTION] 
 > We strongly recommend clean build in a new virtual environment due to the compatibility issues between multiple popular MLIPs. We provide a single installation script using `uv` for minimal package conflicts and fast installation!
 
 > [!CAUTION]
-> To automatically download farichem OMat24 checkpoint, please make sure you have gained downloading access to their HuggingFace [***model repo***](https://huggingface.co/facebook/OMAT24) (not dataset repo), and login locally on your machine through `huggginface-cli login` (see [HF hub authentication](https://huggingface.co/docs/huggingface_hub/en/quick-start#authentication))
+> To automatically download farichem OMat24 checkpoint, please make sure you have gained downloading access to their HuggingFace [***model repo***](https://huggingface.co/facebook/OMAT24) (not dataset repo), and login locally on your machine through `hf auth login` (see [HF hub authentication](https://huggingface.co/docs/huggingface_hub/en/quick-start#authentication))
 
 **Linux**
 
@@ -138,6 +138,10 @@ def run_all_tasks:
 
 For a more practical example using HPC resources, please now refer to [MD stability benchmark](../benchmarks/stability/temperature.ipynb).
 
+## Quickstart
+
+Instruction for individual benchmark is provided in the README in each corresponding folder under [/benchmark](../benchmarks/).
+
 ### List of modular tasks
 
 The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `from mlip_arena.tasks import *` for convenient imports (currently doesn't work if [phonopy](https://phonopy.github.io/phonopy/install.html) is not installed).
@@ -150,10 +154,6 @@ The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `fr
 - [NEB_FROM_ENDPOINTS](../mlip_arena/tasks/neb.py#L164): Nudge elastic band with convenient image interpolation (linear or IDPP)
 - [ELASTICITY](../mlip_arena/tasks/elasticity.py#L78): Elastic tensor calculation
 
-## Workflow Quickstart
-
-Instruction for individual benchmark is provided in the README in each corresponding folder under [/benchmark](../benchmarks/).
-
 ## Contribute and Development
 
 PRs are welcome. Please clone the repo and submit PRs with changes.
@@ -165,11 +165,6 @@ git lfs fetch --all
 git lfs pull
 streamlit run serve/app.py
 ```
-
-### Add new benchmark
-
-> [!NOTE]
-> Please reuse, extend, or chain the general tasks defined [above](#list-of-implemented-tasks) and add new folder and script under [/benchmark](../benchmarks/)
 
 ### Add new MLIP models 
 
@@ -189,6 +184,11 @@ If you have pretrained MLIP models that you would like to contribute to the MLIP
 1. Create a new [Hugging Face Model](https://huggingface.co/new) repository and upload the model file using [push_to_hub function](https://huggingface.co/docs/huggingface_hub/en/package_reference/mixins#huggingface_hub.ModelHubMixin.push_to_hub).
 2. Follow the template to code the I/O interface for your model [here](../mlip_arena/models/README.md). 
 3. Update model [registry](../mlip_arena/models/registry.yaml) with metadata
+
+### Add new benchmark
+
+> [!NOTE]
+> Please reuse, extend, or chain the general tasks defined [above](#list-of-modular-tasks) and add new folder and script under [/benchmarks](../benchmarks/)
 
 ## Citation
 

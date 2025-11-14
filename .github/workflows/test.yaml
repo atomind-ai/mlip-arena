@@ -43,8 +43,8 @@ jobs:
     - name: Login to Hugging Face
       if: github.event_name != 'pull_request' || github.event.pull_request.base.ref != 'develop'
       env:
-        HF_TOKEN: ${{ secrets.HF_TOKEN_READ_ONLY }}
-      run: huggingface-cli login --token $HF_TOKEN
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: hf auth login --token $HF_TOKEN
 
     - name: Run tests
       env:
