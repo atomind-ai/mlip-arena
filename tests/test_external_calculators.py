@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from ase import Atoms
 from ase.calculators.calculator import PropertyNotImplementedError
+from httpx import HTTPStatusError
 from huggingface_hub.errors import LocalTokenNotFoundError
 from requests import HTTPError
 
@@ -12,7 +13,12 @@ from mlip_arena.models import MLIPEnum
 def test_calculate(model: MLIPEnum):
     try:
         calc = MLIPEnum[model.name].value()
-    except (LocalTokenNotFoundError, HTTPError, FileNotFoundError) as e:
+    except (
+        LocalTokenNotFoundError,
+        HTTPError,
+        HTTPStatusError,
+        FileNotFoundError,
+    ) as e:
         pytest.skip(str(e))
     except Exception as e:
         if model.name == "ALIGNN":
