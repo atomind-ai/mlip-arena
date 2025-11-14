@@ -25,6 +25,22 @@ MLIP Arena leverages modern pythonic workflow orchestrator 💙
 
 ![Thumnail](../serve/assets/workflow.png)
 
+- [Announcement](#announcement)
+- [Installation](#installation)
+  - [From PyPI (prefect workflow only, *without* pretrained models)](#from-pypi-prefect-workflow-only-without-pretrained-models)
+  - [From source (with integrated pretrained models)](#from-source-with-integrated-pretrained-models)
+- [Workflow Overview](#workflow-overview)
+  - [✅ The first Prefect workflow: molecular dynamics](#-the-first-prefect-workflow-molecular-dynamics)
+  - [🚀 Parallelize benchmarks at scale](#-parallelize-benchmarks-at-scale)
+- [Quickstart](#quickstart)
+  - [List of modular tasks](#list-of-modular-tasks)
+- [Contribute and Development](#contribute-and-development)
+  - [Add new MLIP models](#add-new-mlip-models)
+    - [External ASE Calculator (easy)](#external-ase-calculator-easy)
+    - [Hugging Face Model (recommended, difficult)](#hugging-face-model-recommended-difficult)
+  - [Add new benchmark](#add-new-benchmark)
+- [Citation](#citation)
+
 > [!NOTE]
 > Contributions of new tasks through PRs are very welcome! See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks, or propose new feature requests in [Discussion](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
 
@@ -48,7 +64,7 @@ pip install mlip-arena
 > We strongly recommend clean build in a new virtual environment due to the compatibility issues between multiple popular MLIPs. We provide a single installation script using `uv` for minimal package conflicts and fast installation!
 
 > [!CAUTION]
-> To automatically download farichem OMat24 checkpoint, please make sure you have gained downloading access to their HuggingFace [***model repo***](https://huggingface.co/facebook/OMAT24) (not dataset repo), and login locally on your machine through `hf auth login` (see [HF hub authentication](https://huggingface.co/docs/huggingface_hub/en/quick-start#authentication))
+> To automatically download fairchem model checkpoints, please make sure you have gained downloading access to their HuggingFace [***model repo (e.g. OMAT24)***](https://huggingface.co/facebook/OMAT24) (not dataset repo), and login locally on your machine through `hf auth login` (see [HF hub authentication](https://huggingface.co/docs/huggingface_hub/en/quick-start#authentication))
 
 **Linux**
 
