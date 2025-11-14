@@ -29,10 +29,10 @@ MLIP Arena leverages modern pythonic workflow orchestrator 💙
 - [Installation](#installation)
   - [From PyPI (prefect workflow only, *without* pretrained models)](#from-pypi-prefect-workflow-only-without-pretrained-models)
   - [From source (with integrated pretrained models)](#from-source-with-integrated-pretrained-models)
+- [Quickstart](#quickstart)
 - [Workflow Overview](#workflow-overview)
   - [✅ The first Prefect workflow: molecular dynamics](#-the-first-prefect-workflow-molecular-dynamics)
   - [🚀 Parallelize benchmarks at scale](#-parallelize-benchmarks-at-scale)
-- [Quickstart](#quickstart)
   - [List of modular tasks](#list-of-modular-tasks)
 - [Contribute and Development](#contribute-and-development)
   - [Add new MLIP models](#add-new-mlip-models)
@@ -92,6 +92,10 @@ source $HOME/.local/bin/env
 # One script uv pip installation
 bash scripts/install-macosx.sh
 ```
+
+## Quickstart
+
+Instruction for individual benchmark is provided in the README in each corresponding folder under [/benchmark](../benchmarks/).
 
 ## Workflow Overview
 
@@ -154,10 +158,6 @@ def run_all_tasks:
 
 For a more practical example using HPC resources, please now refer to [MD stability benchmark](../benchmarks/stability/temperature.ipynb).
 
-## Quickstart
-
-Instruction for individual benchmark is provided in the README in each corresponding folder under [/benchmark](../benchmarks/).
-
 ### List of modular tasks
 
 The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `from mlip_arena.tasks import *` for convenient imports (currently doesn't work if [phonopy](https://phonopy.github.io/phonopy/install.html) is not installed).
@@ -214,7 +214,7 @@ If you find the work useful, please consider citing the following:
 @inproceedings{
     chiang2025mlip,
     title={{MLIP} Arena: Advancing Fairness and Transparency in Machine Learning Interatomic Potentials via an Open, Accessible Benchmark Platform},
-    author={Yuan Chiang and Tobias Kreiman and Christine Zhang and Matthew C. Kuner and Elizabeth Jin Weaver and Ishan Amin and Hyunsoo Park and Yunsung Lim and Jihan Kim and Daryl Chrzan and Aron Walsh and Samuel M Blau and Aditi S. Krishnapriyan and Mark Asta},
+    author={Yuan Chiang and Tobias Kreiman and Christine Zhang and Matthew C. Kuner and Elizabeth Jin Weaver and Ishan Amin and Hyunsoo Park and Yunsung Lim and Jihan Kim and Daryl Chrzan and Aron Walsh and Samuel M Blau and Mark Asta and Aditi S. Krishnapriyan},
     booktitle={The Thirty-ninth Annual Conference on Neural Information Processing Systems Datasets and Benchmarks Track},
     year={2025},
     url={https://openreview.net/forum?id=SAT0KPA5UO}
