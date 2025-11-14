@@ -30,6 +30,8 @@ def test_calculate(model: MLIPEnum):
             )
         elif model.name == "M3GNet":
             pytest.xfail("Cache sometimes fails")
+        elif model.name == "NequIP-OAM-L":
+            pytest.xfail("CPU model is not available at the moment")
         else:
             pytest.fail(f"Failed to initialize model {model.name}: {e}")
 
