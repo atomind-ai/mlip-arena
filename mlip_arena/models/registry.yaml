@@ -406,3 +406,36 @@ ORB:
   nvt: true
   npt: true
   license: Apache-2.0
+
+
+
+UMA:
+  module: externals
+  class: UMA
+  family: uma
+  package: fairchem-core==2.11.0
+  model_name: uma-s-1p1
+  task_name: omat
+  username: fairchem
+  last-update: 2025-11-17T00:00:00
+  datetime: 2025-11-17T00:00:00
+  datetime:
+  datasets:
+    - OMat
+    - OMol
+    - OC20
+  cpu-tasks:
+  gpu-tasks:
+    - homonuclear-diatomics
+    - stability
+    - combustion
+    - eos_bulk
+    - wbm_ev
+    - eos_alloy
+  github: https://github.com/facebookresearch/fairchem/tree/main
+  doi:
+  date: 2025-11-12
+  prediction: EFS
+  nvt: true
+  npt: true
+  license: MIT
