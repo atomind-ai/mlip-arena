@@ -71,7 +71,7 @@ matgl = [
 ]
 fairchem = [
     "hydra-core",
-    "fairchem-core==1.10.0",
+    "fairchem-core==2.11.0",
 ]
 orb = [
     "orb-models==0.4.0",
