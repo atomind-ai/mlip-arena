@@ -436,12 +436,9 @@ NequIP-OAM-L:
   npt: true
   license: MIT
 
-
-
-
-UMA:
+UMA-S-1P1:
   module: externals
-  class: UMA
+  class: UMA_S_1P1
   family: uma
   package: fairchem-core==2.11.0
   model_name: uma-s-1p1
