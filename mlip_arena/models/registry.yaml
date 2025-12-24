@@ -446,7 +446,6 @@ UMA-S-1P1:
   username: fairchem
   last-update: 2025-11-17T00:00:00
   datetime: 2025-11-17T00:00:00
-  datetime:
   datasets:
     - OMat
     - OMol
