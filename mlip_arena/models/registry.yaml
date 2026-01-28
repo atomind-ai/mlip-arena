@@ -430,7 +430,7 @@ NequIP-OAM-L:
     - wbm_ev
   github: https://github.com/mir-group/nequip
   doi:
-  date: 2024-8-28
+  date: 2024-08-28
   prediction: EFS
   nvt: true
   npt: true
