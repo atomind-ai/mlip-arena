@@ -22,14 +22,15 @@ except ImportError:
             "collate_fn import failed. Please install the required dependencies."
         )
 
+
 try:
     from prefect.logging import get_run_logger
+
     logger = get_run_logger()
 except (ImportError, RuntimeError):
     from loguru import logger
 
 T = TypeVar("T", bound="MLIP")
-
 
 
 with open(Path(__file__).parent / "registry.yaml", encoding="utf-8") as f:
@@ -50,9 +51,10 @@ for model, metadata in REGISTRY.items():
         ImportError,
         Exception,
     ) as e:
-        logger.warning(e)
+        logger.warning(f"Failed to load model {model} due to {e.__class__.__name__}. Skipping.")
+        logger.debug(f"Error details: {e}")
         continue
- 
+
 MLIPEnum = Enum("MLIPEnum", MLIPMap)
 logger.info(f"Successfully loaded models: {list(MLIPEnum.__members__.keys())}")
 
