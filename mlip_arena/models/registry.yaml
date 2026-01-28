@@ -440,7 +440,7 @@ UMA-S-1P1:
   module: externals
   class: UMA_S_1P1
   family: uma
-  package: fairchem-core==2.11.0
+  package: fairchem-core==2.13.0
   model_name: uma-s-1p1
   task_name: omat
   username: fairchem

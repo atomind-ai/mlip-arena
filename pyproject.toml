@@ -43,44 +43,43 @@ dependencies=[
 
 [project.optional-dependencies]
 app = [
-    "streamlit==1.43.2",
+    "streamlit>=1.43.2",
     "plotly",
 ]
 test = [
-    "torch==2.4.0",
-    "torch_dftd==0.4.0",
-    "e3nn==0.5.6",
+    "torch>=2.4.0",
+    "torch_dftd>=0.4.0",
+    "e3nn>=0.5.6",
     "dgl",
-    "chgnet==0.3.8",
-    "sevenn==0.9.3.post1",
-    "alignn==2024.5.27",
-    "mattersim==1.1.2",
-    "torchani==2.2.4",
-    "nequip==0.15.0",
+    "chgnet>=0.3.8",
+    "sevenn>=0.9.3.post1",
+    "alignn>=2024.5.27",
+    "mattersim>=1.1.2",
+    "torchani>=2.2.4",
+    "nequip>=0.16.0",
     "pytest",
     "pytest-xdist",
-    "prefect==3.2.13",
+    "prefect>=3.2.13",
     "pymatgen>=2025.1.9",
     "MDAnalysis", # mof,
-    "streamlit==1.43.2"
+    "streamlit>=1.43.2"
 ]
 mace = [
-    "mace-torch==0.3.12",
+    "mace-torch>=0.3.12",
 ]
 matgl = [
-    "matgl==1.2.6",
+    "matgl>=1.2.6",
 ]
 fairchem = [
-    "hydra-core",
-    "fairchem-core==2.11.0",
+    "fairchem-core>=2.13.0",
 ]
 orb = [
-    "orb-models==0.4.0",
+    "orb-models>=0.4.0",
     "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168",
 ]
 deepmd = [
-    "torch==2.2.0",
-    "deepmd-kit@git+https://github.com/deepmodeling/deepmd-kit.git@v3.0.0b4"
+    "torch>=2.2.0",
+    "deepmd-kit"
 ]
 
 [project.urls]

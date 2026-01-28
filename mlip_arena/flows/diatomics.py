@@ -18,7 +18,7 @@ from mlip_arena.tasks.utils import get_calculator
 
 
 @task
-def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path):
+def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculator, out_dir: Path):
     """
     Calculate the potential energy curve for single homonuclear diatomic molecule.
 
@@ -28,7 +28,7 @@ def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path)
 
     Args:
         symbol: Chemical symbol of the atom (e.g., 'H', 'O', 'Fe')
-        calculator: ASE calculator object used to compute the potential energies. Could be VASP, MLIP, etc.
+        calculator: An ASE calculator instance or a string/MLIPEnum to create one
 
     Returns:
         None: Results are saved as trajectory files.
@@ -86,7 +86,7 @@ def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path)
             pbc=False,
         )
 
-    atoms.calc = calculator
+    atoms.calc = get_calculator(calculator)
 
     for i, r in enumerate(tqdm(rs)):
         if i < skip:
@@ -258,10 +258,17 @@ def analyze(out_dir: Path):
 
 
 @flow
-def homonuclear_diatomics(model: str | BaseCalculator, run_dir: Path | None = None):
-    model_name = (
-        MLIPEnum[model].name if isinstance(model, str) else model.__class__.__name__
-    )
+def homonuclear_diatomics(model: MLIPEnum | BaseCalculator | str, run_dir: Path | None = None):
+    
+    if isinstance(model, MLIPEnum):
+        model_name = model.name
+    elif isinstance(model, BaseCalculator):
+        model_name = model.__class__.__name__
+    elif isinstance(model, str) and hasattr(MLIPEnum, model):
+        model_name = model
+    else:
+        raise ValueError(f"Unsupported model: {model}")
+
     family = (
         REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
     )
@@ -270,10 +277,9 @@ def homonuclear_diatomics(model: str | BaseCalculator, run_dir: Path | None = No
 
     futures = []
     for symbol in chemical_symbols[1:]:
-        calculator = get_calculator(model)
         future = homonuclear_diatomic.submit(
             symbol,
-            calculator,
+            model,
             out_dir=out_dir,
         )
         futures.append(future)
