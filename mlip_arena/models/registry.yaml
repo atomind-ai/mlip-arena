@@ -406,3 +406,55 @@ ORB:
   nvt: true
   npt: true
   license: Apache-2.0
+
+PET-OAM:
+  module: externals
+  class: PET_OAM
+  family: pet
+  package: upet==0.1.1
+  checkpoint: pet-oam-xl-v1.0.0.ckpt
+  username: 
+  last-update: 2026-01-30T00:00:00
+  datetime: 2026-01-30T00:00:00
+  datasets:
+    - OMat
+    - Alexandria
+    - MPTrj
+  gpu-tasks:
+    - homonuclear-diatomics
+    - stability
+    - eos_bulk
+    - wbm_ev
+    - combustion
+  github: https://github.com/lab-cosmo/upet
+  doi: https://arxiv.org/abs/2601.16195
+  date: 2026-01-22
+  prediction: EFS
+  nvt: true
+  npt: true
+  license: BSD-3-Clause
+
+PET-MAD:
+  module: externals
+  class: PET_MAD
+  family: pet
+  package: upet==0.1.1
+  checkpoint: pet-mad-s-v1.0.2.ckpt
+  username: 
+  last-update: 2026-01-30T00:00:00
+  datetime: 2026-01-30T00:00:00
+  datasets:
+    - MAD
+  gpu-tasks:
+    - homonuclear-diatomics
+    - stability
+    - eos_bulk
+    - wbm_ev
+    - combustion
+  github: https://github.com/lab-cosmo/upet
+  doi: https://www.nature.com/articles/s41467-025-65662-7
+  date: 2025-11-27
+  prediction: EFS
+  nvt: true
+  npt: true
+  license: BSD-3-Clause
