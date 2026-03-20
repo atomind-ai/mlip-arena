@@ -18,9 +18,9 @@ from prefect.futures import wait
 from prefect.results import ResultRecord
 from prefect.runtime import task_run
 from prefect.states import State
+from pymatgen.analysis.eos import BirchMurnaghan
 
 from mlip_arena.tasks.optimize import run as OPT
-from pymatgen.analysis.eos import BirchMurnaghan
 
 if TYPE_CHECKING:
     from ase.filters import Filter

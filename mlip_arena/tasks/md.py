@@ -312,12 +312,14 @@ def run(
                 last_atoms = read(traj_file, index="-1")
                 assert isinstance(last_atoms, Atoms)
                 last_step = last_atoms.info.get("step")
+                assert isinstance(last_step, int)
                 n_steps -= last_step
                 traj = Trajectory(traj_file, "a", atoms)
                 atoms.set_positions(last_atoms.get_positions())
                 atoms.set_momenta(last_atoms.get_momenta())
             except Exception:
                 traj = Trajectory(traj_file, "w", atoms)
+                last_step = 0
 
                 if not np.isnan(t_schedule).any():
                     MaxwellBoltzmannDistribution(

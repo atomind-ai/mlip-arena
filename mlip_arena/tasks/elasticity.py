@@ -49,11 +49,11 @@ from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 from prefect.states import State
-
-from mlip_arena.tasks.optimize import run as OPT
 from pymatgen.analysis.elasticity import DeformedStructureSet, ElasticTensor, Strain
 from pymatgen.analysis.elasticity.elastic import get_strain_state_dict
 from pymatgen.io.ase import AseAtomsAdaptor
+
+from mlip_arena.tasks.optimize import run as OPT
 
 if TYPE_CHECKING:
     from ase.filters import Filter

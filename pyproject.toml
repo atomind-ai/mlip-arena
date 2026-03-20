@@ -10,7 +10,7 @@ authors=[
 ]
 description="Fair and transparent benchmark of machine learning interatomic potentials (MLIPs), beyond error-based regression metrics"
 readme=".github/README.md"
-requires-python=">=3.9"
+requires-python=">=3.10"
 keywords=[
     "pytorch",
     "machine-learning-interatomic-potentials",
@@ -34,12 +34,10 @@ dependencies=[
     "huggingface_hub>=0.35.0",
     "datasets",
     "safetensors",
-    "prefect[dask]",
+    "prefect[dask]==3.6.0",
     "dask",
     "dask_jobqueue",
     "tables",
-    "MDAnalysis",
-    "quests"
 ]
 
 [project.optional-dependencies]
@@ -60,7 +58,6 @@ test = [
     "nequip>=0.16.0",
     "pytest",
     "pytest-xdist",
-    "prefect>=3.2.13",
     "pymatgen>=2025.1.9",
     "MDAnalysis", # mof,
     "streamlit==1.43.2",
@@ -76,11 +73,16 @@ fairchem = [
 ]
 orb = [
     "orb-models>=0.4.0",
-    "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168",
 ]
 deepmd = [
     "torch>=2.2.0",
     "deepmd-kit"
+]
+extra = [
+    "MDAnalysis",
+    "quests",
+    "ipykernel",
+    "ipywidgets",
 ]
 
 [project.urls]

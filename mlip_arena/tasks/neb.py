@@ -52,10 +52,10 @@ from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 from prefect.states import State
+from pymatgen.io.ase import AseAtomsAdaptor
 
 from mlip_arena.tasks.optimize import run as OPT
 from mlip_arena.tasks.utils import logger, pformat
-from pymatgen.io.ase import AseAtomsAdaptor
 
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,

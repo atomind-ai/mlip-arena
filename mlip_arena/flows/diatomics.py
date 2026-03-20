@@ -18,7 +18,9 @@ from mlip_arena.tasks.utils import get_calculator
 
 
 @task
-def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculator, out_dir: Path):
+def homonuclear_diatomic(
+    symbol: str, calculator: str | MLIPEnum | BaseCalculator, out_dir: Path
+):
     """
     Calculate the potential energy curve for single homonuclear diatomic molecule.
 
@@ -258,11 +260,10 @@ def analyze(out_dir: Path):
 
 
 @flow
-def homonuclear_diatomics(model: MLIPEnum | BaseCalculator | str, run_dir: Path | None = None):
-    
-    if isinstance(model, MLIPEnum):
-        model_name = model.name
-    elif isinstance(model, BaseCalculator):
+def homonuclear_diatomics(
+    model: BaseCalculator | str, run_dir: Path | None = None
+):
+    if isinstance(model, BaseCalculator):
         model_name = model.__class__.__name__
     elif isinstance(model, str) and hasattr(MLIPEnum, model):
         model_name = model
