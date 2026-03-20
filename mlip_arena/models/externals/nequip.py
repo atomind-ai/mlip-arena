@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from nequip.ase import NequIPCalculator
+from nequip.integrations.ase import NequIPCalculator
+
 from mlip_arena.models.utils import get_freer_device
 
 

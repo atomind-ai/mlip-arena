@@ -55,7 +55,7 @@ test = [
     "alignn>=2024.5.27",
     "mattersim>=1.1.2",
     "torchani>=2.2.4",
-    "nequip>=0.16.0",
+    "nequip>=0.17.0",
     "pytest",
     "pytest-xdist",
     "pymatgen>=2025.1.9",
