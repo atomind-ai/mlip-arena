@@ -17,7 +17,7 @@ from mlip_arena.models import REGISTRY, MLIPEnum
 from mlip_arena.tasks.utils import get_calculator
 
 
-@task
+@task(refresh_cache=True)
 def homonuclear_diatomic(
     symbol: str, calculator: str | MLIPEnum | BaseCalculator, out_dir: Path
 ):
@@ -105,7 +105,6 @@ def homonuclear_diatomic(
         write(traj_fpath, atoms, append="a")
 
 
-@task
 def analyze(out_dir: Path):
     df = pd.DataFrame(
         columns=[
