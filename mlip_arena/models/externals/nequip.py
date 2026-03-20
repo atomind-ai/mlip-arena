@@ -13,5 +13,5 @@ class NequIP_OAM_L:
         return NequIPCalculator._from_saved_model(
             nequip_net_id,
             device=device,
-            chemical_species_to_atom_type_map=True
+            # chemical_species_to_atom_type_map=True
         )

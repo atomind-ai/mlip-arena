@@ -420,14 +420,8 @@ NequIP-OAM-L:
     - OMat
     - MPTrj
     - Alexandria
-  cpu-tasks:
-    - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
-    - stability
-    - combustion
-    - eos_bulk
-    - wbm_ev
   github: https://github.com/mir-group/nequip
   doi:
   date: 2024-08-28
@@ -450,14 +444,6 @@ UMA-S-1P1:
     - OMat
     - OMol
     - OC20
-  cpu-tasks:
-  gpu-tasks:
-    - homonuclear-diatomics
-    - stability
-    - combustion
-    - eos_bulk
-    - wbm_ev
-    - eos_alloy
   github: https://github.com/facebookresearch/fairchem/tree/main
   doi:
   date: 2025-11-12

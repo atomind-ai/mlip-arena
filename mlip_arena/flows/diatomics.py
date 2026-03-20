@@ -287,6 +287,6 @@ def homonuclear_diatomics(
 
     df = analyze(out_dir)
     df["method"] = model_name
-    df.to_json(out_dir / "homonuclear-diatomics.json", orient="records")
+    df.to_json(out_dir.parents[1] / f"{model_name}.json", orient="records")
 
     return [f.result(raise_on_failure=False) for f in futures]
