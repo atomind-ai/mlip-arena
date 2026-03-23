@@ -81,7 +81,7 @@ def compute_auc(df: pd.DataFrame) -> dict:
         )
         cumulative_population = np.cumsum(hist)
         valid_curve = (cumulative_population[-1] - cumulative_population) / len(dfm)
-        aucs[method] = np.trapz(valid_curve, bin_edges[:-1])  # trapezoidal integration
+        aucs[method] = np.trapezoid(valid_curve, bin_edges[:-1])  # trapezoidal integration
     return aucs
 
 
