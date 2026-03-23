@@ -41,6 +41,9 @@ dependencies=[
 ]
 
 [project.optional-dependencies]
+dev = [
+    "pre-commit",
+]
 app = [
     "streamlit==1.43.2",
     "plotly",
