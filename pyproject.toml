@@ -45,7 +45,7 @@ dev = [
     "pre-commit",
 ]
 app = [
-    "streamlit==1.43.2",
+    "streamlit==1.55.0",
     "plotly",
 ]
 test = [

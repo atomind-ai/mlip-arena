@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from ase import Atoms
 
 
-def _calculate_metrics(
+def calculate_metrics(
     res_eos: dict, wbm_struct: Atoms, model_name: str, structure_id: str
 ) -> dict:
     """Calculate analysis metrics from E-V curves."""
@@ -76,11 +76,7 @@ def run(
     else:
         raise ValueError(f"Unsupported model: {model}")
 
-    out_dir = (
-        run_dir
-        if run_dir is not None
-        else Path.cwd() / Path(__file__).stem / model_name
-    )
+    out_dir = run_dir if run_dir is not None else Path.cwd() / Path(__file__).stem
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -122,9 +118,8 @@ def run(
     )
 
     with connect(db_path) as db:
-        for wbm_struct in (
-            row.toatoms(add_additional_information=True) for row in db.select()
-        ):
+        for row in db.select():
+            wbm_struct = row.toatoms(add_additional_information=True)
             structure_id = wbm_struct.info["key_value_pairs"]["wbm_id"]
 
             try:
@@ -132,8 +127,8 @@ def run(
                 if row_results.empty:
                     raise ValueError(f"No results found for {structure_id}")
 
-                res_eos = row_results["eos"].to_numpy()[0]
-                data = _calculate_metrics(res_eos, wbm_struct, model_name, structure_id)
+                res_eos = row_results["eos"].iloc[0]
+                data = calculate_metrics(res_eos, wbm_struct, model_name, structure_id)
             except Exception:
                 data = {
                     "model": model_name,
