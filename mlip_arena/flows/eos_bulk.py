@@ -76,9 +76,7 @@ def eos_bulk_task(atoms: Atoms, model_name: str, model: str | BaseCalculator):
 
     calculator = model if isinstance(model, BaseCalculator) else get_calculator(model)
 
-    result = OPT.with_options(
-        refresh_cache=True,
-    )(
+    result = OPT(
         atoms,
         calculator,
         optimizer="FIRE",
@@ -86,9 +84,7 @@ def eos_bulk_task(atoms: Atoms, model_name: str, model: str | BaseCalculator):
             fmax=0.1,
         ),
     )
-    result = EOS.with_options(
-        refresh_cache=True,
-    )(
+    result = EOS(
         atoms=result["atoms"],
         calculator=calculator,
         optimizer="FIRE",
@@ -130,9 +126,7 @@ def wbm_eos_bulk(
     with connect(db_path) as db:
         for row in db.select():
             wbm_struct = row.toatoms(add_additional_information=True)
-            future = eos_bulk_task.with_options(refresh_cache=True).submit(
-                wbm_struct, model_name, model
-            )
+            future = eos_bulk_task.submit(wbm_struct, model_name, model)
             futures.append(future)
 
     results = [f.result(raise_on_failure=False) for f in futures]
