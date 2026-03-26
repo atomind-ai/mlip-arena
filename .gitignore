@@ -1,9 +1,8 @@
 *.out
 *.extxyz
 *.traj
+*.db
 mlip_arena/tasks/*/
-lab/
-manuscripts/
 datasets/
 
 # Byte-compiled / optimized / DLL files
