@@ -18,9 +18,7 @@ if TYPE_CHECKING:
     from ase import Atoms
 
 
-def calculate_metrics(
-    res_eos: dict, wbm_struct: Atoms, model_name: str, structure_id: str
-) -> dict:
+def calculate_metrics(res_eos: dict, wbm_struct: Atoms, model_name: str, structure_id: str) -> dict:
     """Calculate analysis metrics from E-V curves."""
     es = np.array(res_eos["energies"])
     vols = np.array(res_eos["volumes"])
@@ -52,18 +50,14 @@ def calculate_metrics(
         "energy-delta-per-atom": (es - emin) / len(wbm_struct),
         "energy-diff-flip-times": np.sum(ediff_flip).astype(int),
         "tortuosity": etv / (abs(es[0] - emin) + abs(es[-1] - emin)),
-        "spearman-compression-energy": stats.spearmanr(
-            vols[:imine], es[:imine]
-        ).statistic,
-        "spearman-compression-derivative": stats.spearmanr(
-            interpolated_volumes[:imine], ediff[:imine]
-        ).statistic,
+        "spearman-compression-energy": stats.spearmanr(vols[:imine], es[:imine]).statistic,
+        "spearman-compression-derivative": stats.spearmanr(interpolated_volumes[:imine], ediff[:imine]).statistic,
         "spearman-tension-energy": stats.spearmanr(vols[imine:], es[imine:]).statistic,
     }
 
 
 @flow
-def run(
+def run_db(
     model: str | BaseCalculator,
     run_dir: Path | None = None,
     dataset: str = "atomind/mlip-arena",
@@ -80,9 +74,7 @@ def run(
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    db_path = hf_hub_download(
-        repo_id=dataset, filename=dataset_file, repo_type="dataset"
-    )
+    db_path = hf_hub_download(repo_id=dataset, filename=dataset_file, repo_type="dataset")
 
     futures = []
 
@@ -144,9 +136,7 @@ def run(
                     "spearman-tension-energy": None,
                 }
 
-            df_analyzed = pd.concat(
-                [df_analyzed, pd.DataFrame([data])], ignore_index=True
-            )
+            df_analyzed = pd.concat([df_analyzed, pd.DataFrame([data])], ignore_index=True)
 
     df_analyzed.to_parquet(out_dir / f"{model_name}_processed.parquet")
 

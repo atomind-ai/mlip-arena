@@ -158,14 +158,9 @@ def run(
         atoms.calc = relaxed.calc
         stresses.append(atoms.get_stress(voigt=False))
 
-    strains = [
-        Strain.from_deformation(deformation)
-        for deformation in deformed_structure_set.deformations
-    ]
+    strains = [Strain.from_deformation(deformation) for deformation in deformed_structure_set.deformations]
 
-    fit = fit_elastic_tensor(
-        strains, stresses, eq_stress=relaxed.get_stress(voigt=False)
-    )
+    fit = fit_elastic_tensor(strains, stresses, eq_stress=relaxed.get_stress(voigt=False))
 
     return {
         "elastic_tensor": fit["elastic_tensor"],

@@ -12,22 +12,23 @@ from mlip_arena.models import MLIPEnum
 @pytest.mark.parametrize("model", MLIPEnum)
 def test_calculate(model: MLIPEnum):
     try:
-        calc = MLIPEnum[model.name].value()
+        calc = MLIPEnum[model.name].load()
     except (
         LocalTokenNotFoundError,
         GatedRepoError,
         HTTPError,
         HTTPStatusError,
         FileNotFoundError,
+        ImportError,
+        ModuleNotFoundError,
+        ValueError,
     ) as e:
         pytest.skip(str(e))
     except Exception as e:
         if model.name == "ALIGNN":
             pytest.xfail("ALIGNN has poor file download mechanism")
         elif model.name == "ORB":
-            pytest.xfail(
-                "Orbital Materials deprecated the model a month after its premature release in favor of ORBv2"
-            )
+            pytest.xfail("Orbital Materials deprecated the model a month after its premature release in favor of ORBv2")
         elif model.name == "M3GNet":
             pytest.xfail("Cache sometimes fails")
         else:
@@ -47,10 +48,10 @@ def test_calculate(model: MLIPEnum):
 
     energy = atoms.get_potential_energy()
 
-    assert isinstance(energy, (float, np.float64, np.float32))
+    assert isinstance(energy, float | np.float64 | np.float32)
 
     forces = atoms.get_forces()
-    assert isinstance(forces, (np.ndarray, list))
+    assert isinstance(forces, np.ndarray | list)
     assert len(forces) == len(atoms)
 
     try:
@@ -61,4 +62,4 @@ def test_calculate(model: MLIPEnum):
     if stress is None:
         pytest.xfail("Stress calculation is not supported by the model")
     else:
-        assert isinstance(stress, (np.ndarray, list))
+        assert isinstance(stress, np.ndarray | list)

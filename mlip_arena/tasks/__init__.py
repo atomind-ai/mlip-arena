@@ -1,10 +1,6 @@
 from pathlib import Path
 
 import yaml
-from huggingface_hub import HfApi, HfFileSystem, hf_hub_download
-
-# from mlip_arena.models import MLIP
-# from mlip_arena.models import REGISTRY as MODEL_REGISTRY
 
 try:
     from prefect.logging import get_run_logger
@@ -22,7 +18,7 @@ try:
     from .optimize import run as OPT
     from .phonon import run as PHONON
 
-    __all__ = ["OPT", "EOS", "MD", "NEB", "NEB_FROM_ENDPOINTS", "ELASTICITY", "PHONON"]
+    __all__ = ["ELASTICITY", "EOS", "MD", "NEB", "NEB_FROM_ENDPOINTS", "OPT", "PHONON"]
 except (ImportError, TypeError, NameError) as e:
     logger.warning(e)
 

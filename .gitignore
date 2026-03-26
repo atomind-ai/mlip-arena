@@ -2,7 +2,6 @@
 *.extxyz
 *.traj
 mlip_arena/tasks/*/
-benchmarks/
 lab/
 manuscripts/
 datasets/

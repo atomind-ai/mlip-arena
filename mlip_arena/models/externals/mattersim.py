@@ -18,9 +18,7 @@ class MatterSim(MatterSimCalculator):
         device=None,
         **kwargs,
     ):
-        super().__init__(
-            load_path=checkpoint, device=str(device or get_freer_device()), **kwargs
-        )
+        super().__init__(load_path=checkpoint, device=str(device or get_freer_device()), **kwargs)
 
     def get_potential_energy(self, atoms=None, force_consistent=False):
         return float(
@@ -28,7 +26,7 @@ class MatterSim(MatterSimCalculator):
                 atoms=atoms,
                 force_consistent=force_consistent,
             )
-        ) # mattersim return numpy float instead of python float
+        )  # mattersim return numpy float instead of python float
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -46,8 +44,8 @@ class MatterSim(MatterSimCalculator):
     # ):
     #     super().calculate(atoms, properties, system_changes)
 
-        # # convert unpicklizable atoms back to picklizable atoms to avoid prefect pickling error
-        # if isinstance(self.atoms, MSONAtoms):
-        #     atoms = self.atoms.copy()
-        #     strucutre = AseAtomsAdaptor().get_structure(atoms)
-        #     self.atoms = AseAtomsAdaptor().get_atoms(strucutre, msonable=False)
+    # # convert unpicklizable atoms back to picklizable atoms to avoid prefect pickling error
+    # if isinstance(self.atoms, MSONAtoms):
+    #     atoms = self.atoms.copy()
+    #     strucutre = AseAtomsAdaptor().get_structure(atoms)
+    #     self.atoms = AseAtomsAdaptor().get_atoms(strucutre, msonable=False)

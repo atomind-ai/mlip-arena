@@ -16,9 +16,7 @@ class MACE_MP_Medium(MLIPCalculator):
         directory=".",
         **kwargs,
     ):
-        self.device = device or torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
-        )
+        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         fpath = hf_hub_download(
             repo_id="cyrusyc/mace-universal",
@@ -29,16 +27,12 @@ class MACE_MP_Medium(MLIPCalculator):
 
         model = torch.load(fpath, map_location=self.device)
 
-        super().__init__(
-            model=model, restart=restart, atoms=atoms, directory=directory, **kwargs
-        )
+        super().__init__(model=model, restart=restart, atoms=atoms, directory=directory, **kwargs)
 
         self.name: str = self.__class__.__name__
         self.implemented_properties = ["energy", "forces", "stress"]
 
-    def calculate(
-        self, atoms: Atoms, properties: list[str], system_changes: list = all_changes
-    ):
+    def calculate(self, atoms: Atoms, properties: list[str], system_changes: list = all_changes):
         """Calculate energies and forces for the given Atoms object"""
         super().calculate(atoms, properties, system_changes)
 

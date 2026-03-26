@@ -36,9 +36,7 @@ def _generate_task_run_name():
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
 
-@task(
-    name="EOS", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS
-)
+@task(name="EOS", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS)
 def run(
     atoms: Atoms,
     calculator: BaseCalculator,
@@ -127,11 +125,7 @@ def run(
 
         wait(futures)
 
-        results = [
-            f.result(raise_on_failure=False)
-            for f in futures
-            if future.state.is_completed()
-        ]
+        results = [f.result(raise_on_failure=False) for f in futures if future.state.is_completed()]
     else:
         states = []
         for f in factors:

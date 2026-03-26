@@ -10,6 +10,7 @@ from ase.data import chemical_symbols, covalent_radii, vdw_alvarez
 from ase.io import read, write
 from prefect import flow, task
 from prefect.futures import wait
+from prefect.runtime import task_run
 from scipy import stats
 from tqdm.auto import tqdm
 
@@ -17,10 +18,12 @@ from mlip_arena.models import REGISTRY, MLIPEnum
 from mlip_arena.tasks.utils import get_calculator
 
 
-@task(refresh_cache=True)
-def homonuclear_diatomic(
-    symbol: str, calculator: str | MLIPEnum | BaseCalculator, out_dir: Path
-):
+@task(
+    task_run_name=lambda: (
+        f"{task_run.task_name}: {task_run.parameters['symbol']} - {task_run.parameters.get('calculator', 'Unknown')}"
+    ),
+)
+def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculator, out_dir: Path):
     """
     Calculate the potential energy curve for single homonuclear diatomic molecule.
 
@@ -37,8 +40,8 @@ def homonuclear_diatomic(
 
 
     Note:
-        - Minimum distance is set to 0.9× the covalent radius
-        - Maximum distance is set to 3.1× the van der Waals radius (or 6 Å if unknown)
+        - Minimum distance is set to 0.9 x the covalent radius
+        - Maximum distance is set to 3.1 x the van der Waals radius (or 6 Å if unknown)
         - Distance step size is fixed at 0.01 Å
         - If an existing trajectory file is found, the calculation will resume from where it left off
         - The atoms are placed in a periodic box large enough to avoid self-interaction
@@ -46,11 +49,7 @@ def homonuclear_diatomic(
 
     atom = Atom(symbol)
     rmin = 0.9 * covalent_radii[atom.number]
-    rvdw = (
-        vdw_alvarez.vdw_radii[atom.number]
-        if atom.number < len(vdw_alvarez.vdw_radii)
-        else np.nan
-    )
+    rvdw = vdw_alvarez.vdw_radii[atom.number] if atom.number < len(vdw_alvarez.vdw_radii) else np.nan
     rmax = 3.1 * rvdw if not np.isnan(rvdw) else 6
     rstep = 0.01
     npts = int((rmax - rmin) / rstep)
@@ -200,9 +199,7 @@ def analyze(out_dir: Path):
         fdiff_sign = fdiff_sign[mask]
         fdiff_flip = np.diff(fdiff_sign) != 0
         # force discontinuities
-        fjump = (
-            np.abs(fdiff[:-1][fdiff_flip]).sum() + np.abs(fdiff[1:][fdiff_flip]).sum()
-        )
+        fjump = np.abs(fdiff[:-1][fdiff_flip]).sum() + np.abs(fdiff[1:][fdiff_flip]).sum()
 
         ediff = np.diff(es)
         ediff[np.abs(ediff) < 1e-3] = 0  # 1 meV
@@ -212,9 +209,7 @@ def analyze(out_dir: Path):
         ediff_sign = ediff_sign[mask]
         ediff_flip = np.diff(ediff_sign) != 0
         # energy discontinuities
-        ejump = (
-            np.abs(ediff[:-1][ediff_flip]).sum() + np.abs(ediff[1:][ediff_flip]).sum()
-        )
+        ejump = np.abs(ediff[:-1][ediff_flip]).sum() + np.abs(ediff[1:][ediff_flip]).sum()
 
         # conservation deviation
         conservation_deviation = np.mean(np.abs(fs + de_dr))
@@ -239,18 +234,10 @@ def analyze(out_dir: Path):
             "energy-total-variation": etv,
             "tortuosity": etv / (abs(es[0] - es.min()) + (es[-1] - es.min())),
             "conservation-deviation": conservation_deviation,
-            "spearman-descending-force": stats.spearmanr(
-                rs[iminf:], fs[iminf:]
-            ).statistic,
-            "spearman-ascending-force": stats.spearmanr(
-                rs[:iminf], fs[:iminf]
-            ).statistic,
-            "spearman-repulsion-energy": stats.spearmanr(
-                rs[imine:], es[imine:]
-            ).statistic,
-            "spearman-attraction-energy": stats.spearmanr(
-                rs[:imine], es[:imine]
-            ).statistic,
+            "spearman-descending-force": stats.spearmanr(rs[iminf:], fs[iminf:]).statistic,
+            "spearman-ascending-force": stats.spearmanr(rs[:iminf], fs[:iminf]).statistic,
+            "spearman-repulsion-energy": stats.spearmanr(rs[imine:], es[imine:]).statistic,
+            "spearman-attraction-energy": stats.spearmanr(rs[:imine], es[:imine]).statistic,
         }
 
         df = pd.concat([df, pd.DataFrame([data])], ignore_index=True)
@@ -259,9 +246,7 @@ def analyze(out_dir: Path):
 
 
 @flow
-def homonuclear_diatomics(
-    model: BaseCalculator | str, run_dir: Path | None = None
-):
+def homonuclear_diatomics(model: BaseCalculator | str, run_dir: Path | None = None):
     if isinstance(model, BaseCalculator):
         model_name = model.__class__.__name__
     elif isinstance(model, str) and hasattr(MLIPEnum, model):
@@ -269,9 +254,7 @@ def homonuclear_diatomics(
     else:
         raise ValueError(f"Unsupported model: {model}")
 
-    family = (
-        REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
-    )
+    family = REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
 
     out_dir = run_dir if run_dir is not None else Path.cwd() / family / model_name
 
@@ -287,6 +270,6 @@ def homonuclear_diatomics(
 
     df = analyze(out_dir)
     df["method"] = model_name
-    df.to_json(out_dir.parents[1] / f"{model_name}.json", orient="records")
+    df.to_json(out_dir.parents[0] / f"{model_name}.json", orient="records")
 
     return [f.result(raise_on_failure=False) for f in futures]

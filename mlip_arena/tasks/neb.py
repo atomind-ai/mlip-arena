@@ -43,9 +43,19 @@ from typing import Any, Literal
 
 from ase import Atoms
 from ase.calculators.calculator import BaseCalculator
-from ase.filters import *  # type: ignore
 from ase.mep.neb import NEB, NEBTools
-from ase.optimize import *  # type: ignore
+from ase.optimize import (
+    BFGS,
+    FIRE,
+    FIRE2,
+    LBFGS,
+    ODE12r,
+    CellAwareBFGS,
+    GPMin,
+    LBFGSLineSearch,
+    MDMin,
+    QuasiNewton,
+)
 from ase.optimize.optimize import Optimizer
 from ase.utils.forcecurve import fit_images
 from prefect import task
@@ -69,7 +79,7 @@ _valid_optimizers: dict[str, Optimizer] = {
     "GPMin": GPMin,
     "CellAwareBFGS": CellAwareBFGS,
     "ODE12r": ODE12r,
-}  # type: ignore
+}
 
 
 def _generate_task_run_name():

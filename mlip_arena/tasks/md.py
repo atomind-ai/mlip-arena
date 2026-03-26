@@ -124,9 +124,7 @@ def _get_ensemble_schedule(
         p_schedule = np.full(n_steps + 1, pressure)
         return t_schedule, p_schedule
 
-    if isinstance(temperature, Sequence) or (
-        isinstance(temperature, np.ndarray) and temperature.ndim == 1
-    ):
+    if isinstance(temperature, Sequence) or (isinstance(temperature, np.ndarray) and temperature.ndim == 1):
         t_schedule = _interpolate_quantity(temperature, n_steps)
     # NOTE: In ASE Langevin dynamics, the temperature are normally
     # scalars, but in principle one quantity per atom could be specified by giving
@@ -139,9 +137,7 @@ def _get_ensemble_schedule(
         p_schedule = np.full(n_steps + 1, pressure)
         return t_schedule, p_schedule
 
-    if isinstance(pressure, Sequence) or (
-        isinstance(pressure, np.ndarray) and pressure.ndim == 1
-    ):
+    if isinstance(pressure, Sequence) or (isinstance(pressure, np.ndarray) and pressure.ndim == 1):
         p_schedule = _interpolate_quantity(pressure, n_steps)
     elif isinstance(pressure, np.ndarray) and pressure.ndim == 3:
         p_schedule = interp1d(np.arange(n_steps + 1), pressure, kind="linear")
@@ -192,9 +188,7 @@ def _generate_task_run_name():
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator}"
 
 
-@task(
-    name="MD", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS
-)
+@task(name="MD", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS)
 def run(
     atoms: Atoms,
     calculator: BaseCalculator,
@@ -283,9 +277,9 @@ def run(
         dynamics = dynamics.lower()
         if dynamics not in _valid_dynamics[ensemble]:
             raise ValueError(
-                f"{dynamics} thermostat not available for {ensemble}."
-                f"Available {ensemble} thermostats are:"
-                " ".join(_valid_dynamics[ensemble])
+                f"{dynamics} thermostat not available for {ensemble}.Available {ensemble} thermostats are: ".join(
+                    _valid_dynamics[ensemble]
+                )
             )
         if ensemble == "nve":
             dynamics = "velocityverlet"

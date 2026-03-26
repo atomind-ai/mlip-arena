@@ -3,24 +3,36 @@ from __future__ import annotations
 import importlib
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional, Type, TypeVar, Union
+from typing import TYPE_CHECKING, ClassVar
 
 import torch
 import yaml
-from ase import Atoms
 from ase.calculators.calculator import Calculator, all_changes
 from huggingface_hub import PyTorchModelHubMixin
 from torch import nn
 from typing_extensions import Self
+
+if TYPE_CHECKING:
+    from ase import Atoms
+
+# ASE 3.23 moved full_3x3_to_voigt_6_stress from constraints to stress,
+# breaking mattersim and potentially other models.
+import ase.constraints
+
+if not hasattr(ase.constraints, "full_3x3_to_voigt_6_stress"):
+    try:
+        import ase.stress
+
+        ase.constraints.full_3x3_to_voigt_6_stress = ase.stress.full_3x3_to_voigt_6_stress
+    except ImportError:
+        pass
 
 try:
     from mlip_arena.data.collate import collate_fn
 except ImportError:
     # Fallback to a dummy function if the import fails
     def collate_fn(batch: list[Atoms], cutoff: float) -> None:
-        raise ImportError(
-            "collate_fn import failed. Please install the required dependencies."
-        )
+        raise ImportError("collate_fn import failed. Please install the required dependencies.")
 
 
 try:
@@ -30,33 +42,82 @@ try:
 except (ImportError, RuntimeError):
     from loguru import logger
 
-T = TypeVar("T", bound="MLIP")
 
+_PACKAGE = __package__  # "mlip_arena.models"
 
 with open(Path(__file__).parent / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
 
-MLIPMap = {}
 
-for model, metadata in REGISTRY.items():
+def _make_mlip_enum() -> Enum:
+    """Build MLIPEnum from registry.yaml without importing any model packages.
+
+    Each member's *value* is the metadata dict straight from the registry.
+    Actual model classes are imported lazily on first ``.load()`` call.
+    Deprecated models (``deprecated: true`` in registry.yaml) are excluded.
+    """
+    members: dict[str, dict] = {}
+    deprecated: list[str] = []
+
+    for model_name, meta in REGISTRY.items():
+        if meta.get("deprecated", False):
+            deprecated.append(model_name)
+            continue
+        members[model_name] = meta
+
+    if deprecated:
+        logger.info(f"Skipping deprecated models: {deprecated}")
+
+    logger.info(f"Registered models: {list(members.keys())}")
+    return Enum("MLIPEnum", members)
+
+
+MLIPEnum = _make_mlip_enum()
+
+# ── Patch enum members with convenience methods ────────────────────────────────
+
+
+def _metadata(self) -> dict:
+    """Return the raw registry metadata dict for this model."""
+    return self.value
+
+
+def _load(self, **kwargs):
+    """Import the model class and return an instantiated calculator.
+
+    Parameters
+    ----------
+    **kwargs
+        Forwarded to the calculator's ``__init__``.
+
+    Returns
+    -------
+    An ASE-compatible calculator instance.
+    """
+    meta = self.value
     try:
-        module = importlib.import_module(
-            f"{__package__}.{metadata['module']}.{metadata['family']}"
-        )
-        MLIPMap[model] = getattr(module, metadata["class"])
-    except (
-        ModuleNotFoundError,
-        AttributeError,
-        ValueError,
-        ImportError,
-        Exception,
-    ) as e:
-        logger.warning(f"Failed to load model {model} due to {e.__class__.__name__}. Skipping.")
-        logger.debug(f"Error details: {e}")
-        continue
+        module = importlib.import_module(f"{_PACKAGE}.{meta['module']}.{meta['family']}")
+        cls = getattr(module, meta["class"])
+    except (ModuleNotFoundError, AttributeError, ImportError) as e:
+        raise ImportError(
+            f"Cannot load model '{self.name}': {e}. "
+            f"Make sure '{meta.get('package', 'the required package')}' is installed."
+        ) from e
+    return cls(**kwargs)
 
-MLIPEnum = Enum("MLIPEnum", MLIPMap)
-logger.info(f"Successfully loaded models: {list(MLIPEnum.__members__.keys())}")
+
+def _call(self, **kwargs):
+    """Shorthand: ``MLIPEnum['MACE-MP(M)']()`` → calls ``.load()``."""
+    return self.load(**kwargs)
+
+
+# Attach methods to every member of the dynamically created enum
+MLIPEnum.metadata = property(_metadata)  # type: ignore[attr-defined]
+MLIPEnum.load = _load  # type: ignore[attr-defined]
+MLIPEnum.__call__ = _call  # type: ignore[attr-defined]
+
+
+# ── Core model base classes (unchanged) ───────────────────────────────────────
 
 
 class MLIP(
@@ -66,9 +127,6 @@ class MLIP(
 ):
     def __init__(self, model: nn.Module) -> None:
         super().__init__()
-        # https://github.com/pytorch/pytorch/blob/3cbc8c54fd37eb590e2a9206aecf3ab568b3e63c/torch/_dynamo/config.py#L534
-        # torch._dynamo.config.compiled_autograd = True
-        # self.model = torch.compile(model)
         self.model = model
 
     def _save_pretrained(self, save_directory: Path) -> None:
@@ -106,7 +164,7 @@ class MLIP(
 
 class MLIPCalculator(MLIP, Calculator):
     name: str
-    implemented_properties: list[str] = ["energy", "forces", "stress"]
+    implemented_properties: ClassVar[list[str]] = ["energy", "forces", "stress"]
 
     def __init__(
         self,
@@ -117,33 +175,21 @@ class MLIPCalculator(MLIP, Calculator):
         restart=None,
         atoms=None,
         directory=".",
-        calculator_kwargs: dict = {},
+        calculator_kwargs: dict | None = None,
     ):
-        MLIP.__init__(self, model=model)  # Initialize MLIP part
+        MLIP.__init__(self, model=model)
         Calculator.__init__(
-            self, restart=restart, atoms=atoms, directory=directory, **calculator_kwargs
-        )  # Initialize ASE Calculator part
-        # Additional initialization if needed
-        # self.name: str = self.__class__.__name__
+            self,
+            restart=restart,
+            atoms=atoms,
+            directory=directory,
+            **(calculator_kwargs or {}),
+        )
         from mlip_arena.models.utils import get_freer_device
 
         self.device = device or get_freer_device()
         self.cutoff = cutoff
         self.model.to(self.device)
-        # self.device = device or torch.device(
-        #     "cuda" if torch.cuda.is_available() else "cpu"
-        # )
-        # self.model: MLIP = MLIP.from_pretrained(model_path, map_location=self.device)
-        # self.implemented_properties = ["energy", "forces", "stress"]
-
-    # def __getstate__(self):
-    #     state = self.__dict__.copy()
-    #     state["_modules"]["model"] = state["_modules"]["model"]._orig_mod
-    #     return state
-
-    # def __setstate__(self, state):
-    #     self.__dict__.update(state)
-    #     self.model = torch.compile(state["_modules"]["model"])
 
     def calculate(
         self,
@@ -154,11 +200,8 @@ class MLIPCalculator(MLIP, Calculator):
         """Calculate energies and forces for the given Atoms object"""
         super().calculate(atoms, properties, system_changes)
 
-        # TODO: move collate_fn to here in MLIPCalculator
         data = collate_fn([atoms], cutoff=self.cutoff).to(self.device)
         output = self.forward(data)
-
-        # TODO: decollate_fn
 
         self.results = {}
         if "energy" in properties:
@@ -167,15 +210,3 @@ class MLIPCalculator(MLIP, Calculator):
             self.results["forces"] = output["forces"].squeeze().cpu().detach().numpy()
         if "stress" in properties:
             self.results["stress"] = output["stress"].squeeze().cpu().detach().numpy()
-
-    # def forward(self, x: Atoms) -> dict[str, torch.Tensor]:
-    #     """Implement data conversion, graph creation, and model forward pass
-
-    #     Example implementation:
-    #     1. Use `ase.neighborlist.NeighborList` to get neighbor list
-    #     2. Create `torch_geometric.data.Data` object and copy the data
-    #     3. Pass the `Data` object to the model and return the output
-
-    #     """
-
-    #     raise NotImplementedError

@@ -18,7 +18,9 @@ if TYPE_CHECKING:
 
 @task(
     name="E-V Scan",
-    task_run_name=lambda: f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters.get('model_name', 'Unknown')}",
+    task_run_name=lambda: (
+        f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters.get('model', 'Unknown')}"
+    ),
     cache_policy=TASK_SOURCE + INPUTS,
 )
 def run(

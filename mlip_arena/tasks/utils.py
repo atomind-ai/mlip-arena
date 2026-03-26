@@ -32,8 +32,7 @@ def get_freer_device() -> torch.device:
     if device_count > 0:
         # If CUDA GPUs are available, select the one with the most free memory
         mem_free = [
-            torch.cuda.get_device_properties(i).total_memory
-            - torch.cuda.memory_allocated(i)
+            torch.cuda.get_device_properties(i).total_memory - torch.cuda.memory_allocated(i)
             for i in range(device_count)
         ]
         free_gpu_index = mem_free.index(max(mem_free))
@@ -70,21 +69,17 @@ def get_calculator(
     logger.info(f"Using device: {device}")
 
     if isinstance(calculator, MLIPEnum) and calculator in MLIPEnum:
-        calc = calculator.value(**calculator_kwargs)
+        calc = calculator.load(**calculator_kwargs)
         calc.__str__ = lambda: calculator.name
     elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
-        calc = MLIPEnum[calculator].value(**calculator_kwargs)
+        calc = MLIPEnum[calculator].load(**calculator_kwargs)
         calc.__str__ = lambda: calculator
-    elif isinstance(calculator, type) and issubclass(
-        calculator, BaseCalculator
-    ):
+    elif isinstance(calculator, type) and issubclass(calculator, BaseCalculator):
         logger.warning(f"Using custom calculator class: {calculator}")
         calc = calculator(**calculator_kwargs)
         calc.__str__ = lambda: f"{calc.__class__.__name__}"
     elif isinstance(calculator, BaseCalculator):
-        logger.warning(
-            f"Using custom calculator object (kwargs are ignored): {calculator}"
-        )
+        logger.warning(f"Using custom calculator object (kwargs are ignored): {calculator}")
         calc = calculator
         calc.__str__ = lambda: f"{calc.__class__.__name__}"
     else:
@@ -94,9 +89,7 @@ def get_calculator(
     if calculator_kwargs:
         logger.info(pformat(calculator_kwargs))
 
-    dispersion_kwargs = dispersion_kwargs or dict(
-        damping="bj", xc="pbe", cutoff=40.0 * units.Bohr
-    )
+    dispersion_kwargs = dispersion_kwargs or dict(damping="bj", xc="pbe", cutoff=40.0 * units.Bohr)
 
     dispersion_kwargs.update({"device": device})
 
@@ -104,9 +97,7 @@ def get_calculator(
         try:
             from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
         except ImportError as e:
-            raise ImportError(
-                "torch_dftd is required for dispersion but is not installed."
-            ) from e
+            raise ImportError("torch_dftd is required for dispersion but is not installed.") from e
 
         disp_calc = TorchDFTD3Calculator(
             **dispersion_kwargs,

@@ -131,9 +131,7 @@ def get_trajectory_entropy(
     return delta_entropy(descriptors, ref_descriptors, h=h), structures
 
 
-def run_simulations(
-    model: MLIPEnum | BaseCalculator | str, structures: list[Atoms], out_dir: Path
-):
+def run_simulations(model: MLIPEnum | BaseCalculator | str, structures: list[Atoms], out_dir: Path):
     """
     Runs simulations on a list of structures.
 
@@ -157,14 +155,10 @@ def run_simulations(
     for i, atoms in enumerate(structures):
         # Replicate the structure
         n_atoms = len(atoms)
-        rep_factor = int(
-            np.ceil((min_atoms / n_atoms) ** (1 / 3))
-        )  # cube root since it's a 3D replication
+        rep_factor = int(np.ceil((min_atoms / n_atoms) ** (1 / 3)))  # cube root since it's a 3D replication
         supercell_atoms = atoms.repeat((rep_factor, rep_factor, rep_factor))
         if len(supercell_atoms) > max_atoms:
-            logger.info(
-                f"Skipping structure {i} because it has too many atoms ({len(supercell_atoms)} > {max_atoms})"
-            )
+            logger.info(f"Skipping structure {i} because it has too many atoms ({len(supercell_atoms)} > {max_atoms})")
             continue  # skip if it becomes too large
 
         # Run NVE MD @ 1000K for 5 ps

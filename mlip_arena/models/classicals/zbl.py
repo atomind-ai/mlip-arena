@@ -6,7 +6,7 @@ from torch_geometric.data import Data
 
 from ase.data import covalent_radii
 from ase.units import _e, _eps0, m, pi
-from e3nn.util.jit import compile_mode # TODO: e3nn allows autograd in compiled model
+from e3nn.util.jit import compile_mode  # TODO: e3nn allows autograd in compiled model
 
 
 @compile_mode("script")
@@ -19,13 +19,11 @@ class ZBL(nn.Module):
         **kwargs,
     ) -> None:
         nn.Module.__init__(self, **kwargs)
-        
+
         torch.set_default_dtype(torch.double)
 
         self.a = torch.nn.parameter.Parameter(
-            torch.tensor(
-                [0.18175, 0.50986, 0.28022, 0.02817], dtype=torch.get_default_dtype()
-            ),
+            torch.tensor([0.18175, 0.50986, 0.28022, 0.02817], dtype=torch.get_default_dtype()),
             requires_grad=trianable,
         )
         self.b = torch.nn.parameter.Parameter(
@@ -57,28 +55,18 @@ class ZBL(nn.Module):
         return torch.einsum("i,ij->j", self.a, torch.exp(torch.outer(self.b, x)))
 
     def d_phi(self, x):
-        return torch.einsum(
-            "i,ij->j", self.a * self.b, torch.exp(torch.outer(self.b, x))
-        )
+        return torch.einsum("i,ij->j", self.a * self.b, torch.exp(torch.outer(self.b, x)))
 
     def dd_phi(self, x):
-        return torch.einsum(
-            "i,ij->j", self.a * self.b**2, torch.exp(torch.outer(self.b, x))
-        )
+        return torch.einsum("i,ij->j", self.a * self.b**2, torch.exp(torch.outer(self.b, x)))
 
-    def eij(
-        self, zi: torch.Tensor, zj: torch.Tensor, rij: torch.Tensor
-    ) -> torch.Tensor:  # [eV]
+    def eij(self, zi: torch.Tensor, zj: torch.Tensor, rij: torch.Tensor) -> torch.Tensor:  # [eV]
         return _e * m / (4 * pi * _eps0) * torch.div(torch.mul(zi, zj), rij)
 
-    def d_eij(
-        self, zi: torch.Tensor, zj: torch.Tensor, rij: torch.Tensor
-    ) -> torch.Tensor:  # [eV / A]
+    def d_eij(self, zi: torch.Tensor, zj: torch.Tensor, rij: torch.Tensor) -> torch.Tensor:  # [eV / A]
         return -_e * m / (4 * pi * _eps0) * torch.div(torch.mul(zi, zj), rij**2)
 
-    def dd_eij(
-        self, zi: torch.Tensor, zj: torch.Tensor, rij: torch.Tensor
-    ) -> torch.Tensor:  # [eV / A^2]
+    def dd_eij(self, zi: torch.Tensor, zj: torch.Tensor, rij: torch.Tensor) -> torch.Tensor:  # [eV / A^2]
         return _e * m / (2 * pi * _eps0) * torch.div(torch.mul(zi, zj), rij**3)
 
     def switch_fn(
@@ -96,9 +84,7 @@ class ZBL(nn.Module):
 
         energy = self.eij(zi, zj, router) * self.phi(xrouter)
 
-        grad1 = self.d_eij(zi, zj, router) * self.phi(xrouter) + self.eij(
-            zi, zj, router
-        ) * self.d_phi(xrouter)
+        grad1 = self.d_eij(zi, zj, router) * self.phi(xrouter) + self.eij(zi, zj, router) * self.d_phi(xrouter)
 
         grad2 = (
             self.dd_eij(zi, zj, router) * self.phi(xrouter)
@@ -109,11 +95,7 @@ class ZBL(nn.Module):
 
         A = (-3 * grad1 + (router - rinner) * grad2) / (router - rinner) ** 2
         B = (2 * grad1 - (router - rinner) * grad2) / (router - rinner) ** 3
-        C = (
-            -energy
-            + 1.0 / 2.0 * (router - rinner) * grad1
-            - 1.0 / 12.0 * (router - rinner) ** 2 * grad2
-        )
+        C = -energy + 1.0 / 2.0 * (router - rinner) * grad1 - 1.0 / 12.0 * (router - rinner) ** 2 * grad2
 
         switching = torch.where(
             rij < rinner,
@@ -148,11 +130,7 @@ class ZBL(nn.Module):
 
         edge_batch = data.batch[data.edge_index[0]]
 
-        stress = (
-            -0.5
-            * torch_scatter.scatter_sum(rfaxy, edge_batch, dim=0)
-            / volume.view(-1, 1)
-        )
+        stress = -0.5 * torch_scatter.scatter_sum(rfaxy, edge_batch, dim=0) / volume.view(-1, 1)
 
         return -egradi, stress
 
@@ -175,10 +153,7 @@ class ZBL(nn.Module):
             data.vij = positions[edge_dst] - positions[edge_src] + edge_shift
             data.rij = LA.norm(data.vij, dim=-1)
 
-        rbond = (
-            self.covalent_radii[numbers[edge_src]]
-            + self.covalent_radii[numbers[edge_dst]]
-        )
+        rbond = self.covalent_radii[numbers[edge_src]] + self.covalent_radii[numbers[edge_dst]]
 
         rij = data.rij
         zi = numbers[edge_src]  # (sum(E), )
@@ -187,9 +162,7 @@ class ZBL(nn.Module):
         aij = self.a0 / (torch.pow(zi, self.p) + torch.pow(zj, self.p))  # (sum(E), )
 
         energy_pairs = (
-            self.eij(zi, zj, rij)
-            * self.phi(rij / aij.to(rij))
-            * self.envelope(rij, torch.min(data.cutoff, rbond))
+            self.eij(zi, zj, rij) * self.phi(rij / aij.to(rij)) * self.envelope(rij, torch.min(data.cutoff, rbond))
         )
 
         energy_nodes = 0.5 * torch_scatter.scatter_add(

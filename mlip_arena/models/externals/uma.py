@@ -11,6 +11,7 @@ from mlip_arena.models.utils import get_freer_device
 with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
 
+
 class UMA_S_1P1(FAIRChemCalculator):
     def __init__(
         self,
@@ -20,10 +21,7 @@ class UMA_S_1P1(FAIRChemCalculator):
         **kwargs,
     ):
         device = get_freer_device() if not cpu else torch.device("cpu")
-        predict_unit = pretrained_mlip.get_predict_unit(
-            model_name, 
-            device=str(device).split(":")[0]
-        )
+        predict_unit = pretrained_mlip.get_predict_unit(model_name, device=str(device).split(":")[0])
         super().__init__(
             predict_unit=predict_unit,
             task_name=task_name,
