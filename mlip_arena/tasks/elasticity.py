@@ -49,11 +49,11 @@ from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 from prefect.states import State
-
-from mlip_arena.tasks.optimize import run as OPT
 from pymatgen.analysis.elasticity import DeformedStructureSet, ElasticTensor, Strain
 from pymatgen.analysis.elasticity.elastic import get_strain_state_dict
 from pymatgen.io.ase import AseAtomsAdaptor
+
+from mlip_arena.tasks.optimize import run as OPT
 
 if TYPE_CHECKING:
     from ase.filters import Filter
@@ -158,14 +158,9 @@ def run(
         atoms.calc = relaxed.calc
         stresses.append(atoms.get_stress(voigt=False))
 
-    strains = [
-        Strain.from_deformation(deformation)
-        for deformation in deformed_structure_set.deformations
-    ]
+    strains = [Strain.from_deformation(deformation) for deformation in deformed_structure_set.deformations]
 
-    fit = fit_elastic_tensor(
-        strains, stresses, eq_stress=relaxed.get_stress(voigt=False)
-    )
+    fit = fit_elastic_tensor(strains, stresses, eq_stress=relaxed.get_stress(voigt=False))
 
     return {
         "elastic_tensor": fit["elastic_tensor"],

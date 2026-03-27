@@ -12,9 +12,9 @@ Equation of state:
   last-update: 2025-04-29
 Energy-volume scans:
   category: Fundamentals
-  task-page: wbm_ev
+  task-page: ev
   task-layout: wide
-  rank-page: wbm_ev
+  rank-page: ev
   last-update: 2025-04-29
 Stability:
   category: Molecular Dynamics
@@ -35,4 +35,4 @@ Combustion:
 #   category: Properties and Physical Behaviors
 #   task-page: c2db
 #   task-layout: centered
-#   rank-page: 
+#   rank-page:

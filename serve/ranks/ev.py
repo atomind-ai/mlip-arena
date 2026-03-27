@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-DATA_DIR = Path("benchmarks/wbm_ev")
+DATA_DIR = Path("benchmarks/ev")
 
 
 table = pd.read_csv(DATA_DIR / "summary.csv")
@@ -23,7 +23,7 @@ table = table.rename(
     },
 )
 
-table.set_index("Model", inplace=True)
+table = table.set_index("Model")
 
 
 @st.cache_data

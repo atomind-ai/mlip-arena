@@ -15,7 +15,7 @@
 
 Foundation machine learning interatomic potentials (MLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations, have revolutionized molecular and materials modeling, but existing benchmarks suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific DFT references.
 
-We introduce MLIP Arena, a unified benchmark platform for evaluating foundation MLIP performance beyond conventional error metrics. It focuses on revealing the physical soundness learned by MLIPs and assessing their utilitarian performance agnostic to underlying model architecture and training dataset. 
+We introduce MLIP Arena, a unified benchmark platform for evaluating foundation MLIP performance beyond conventional error metrics. It focuses on revealing the physical soundness learned by MLIPs and assessing their utilitarian performance agnostic to underlying model architecture and training dataset.
 
 ***By moving beyond static DFT references and revealing the important failure modes*** of current foundation MLIPs in real-world settings, MLIP Arena provides a reproducible framework to guide the next-generation MLIP development toward improved predictive accuracy and runtime efficiency while maintaining physical consistency.
 
@@ -60,7 +60,7 @@ pip install mlip-arena
 
 ### From source (with integrated pretrained models)
 
-> [!CAUTION] 
+> [!CAUTION]
 > We strongly recommend clean build in a new virtual environment due to the compatibility issues between multiple popular MLIPs. We provide a single installation script using `uv` for minimal package conflicts and fast installation!
 
 > [!CAUTION]
@@ -105,7 +105,7 @@ Arena provides a unified interface to run all the compiled MLIPs. This can be ac
 
 ```python
 from mlip_arena.models import MLIPEnum
-from mlip_arena.tasks import MD 
+from mlip_arena.tasks import MD
 from mlip_arena.tasks.utils import get_calculator
 
 from ase import units
@@ -182,24 +182,41 @@ git lfs pull
 streamlit run serve/app.py
 ```
 
-### Add new MLIP models 
+### Add new MLIP models
 
 If you have pretrained MLIP models that you would like to contribute to the MLIP Arena and show benchmark in real-time, there are two ways:
 
 #### External ASE Calculator (easy)
 
-1. Implement new ASE Calculator class in [mlip_arena/models/externals](../mlip_arena/models/externals). 
+1. Implement new ASE Calculator class in [mlip_arena/models/externals](../mlip_arena/models/externals).
 2. Name your class with awesome model name and add the same name to [registry](../mlip_arena/models/registry.yaml) with metadata.
 
-> [!CAUTION] 
+> [!CAUTION]
 > Remove unneccessary outputs under `results` class attributes to avoid error for MD simulations. Please refer to [CHGNet](../mlip_arena/models/externals/chgnet.py) as an example.
 
 #### Hugging Face Model (recommended, difficult)
 
 0. Inherit Hugging Face [ModelHubMixin](https://huggingface.co/docs/huggingface_hub/en/package_reference/mixins) class to your awesome model class definition. We recommend [PytorchModelHubMixin](https://huggingface.co/docs/huggingface_hub/en/package_reference/mixins#huggingface_hub.PyTorchModelHubMixin).
 1. Create a new [Hugging Face Model](https://huggingface.co/new) repository and upload the model file using [push_to_hub function](https://huggingface.co/docs/huggingface_hub/en/package_reference/mixins#huggingface_hub.ModelHubMixin.push_to_hub).
-2. Follow the template to code the I/O interface for your model [here](../mlip_arena/models/README.md). 
+2. Follow the template to code the I/O interface for your model [here](../mlip_arena/models/README.md).
 3. Update model [registry](../mlip_arena/models/registry.yaml) with metadata
+
+#### Benchmark Evaluation Pipeline (Model Submission)
+
+Once your model is ready (either registered or initialized as a custom ASE Calculator), you can run the core benchmark suite on a SLURM cluster:
+
+1. Move into the `benchmarks/` directory:
+   ```bash
+   cd benchmarks
+   ```
+2. Open and modify the `submit_model.py` template script. Under the **USER CONFIGURATION** section:
+   - Provide your `MODEL` (as a registered string or custom ASE Calculator instance).
+   - Adjust the `SLURM_CONFIG` parameters for your specific HPC allocation (including any conda environments or module loads in the `job_script_prologue`).
+3. Submit the pipeline:
+   ```bash
+   python submit_model.py
+   ```
+   This will dynamically distribute and run the core benchmarks (diatomics, EOS bulk, and E-V scans) via a Dask-Jobqueue on your SLURM cluster.
 
 ### Add new benchmark
 

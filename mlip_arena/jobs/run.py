@@ -7,7 +7,6 @@ print(MODEL_REGISTRY)
 print(TASK_REGISTRY)
 
 for task, metadata in TASK_REGISTRY.items():
-
     print(f"mlip_arena.tasks.{task}")
     module = importlib.import_module(f"mlip_arena.tasks.{task}")
     module.whoami()

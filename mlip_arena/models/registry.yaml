@@ -16,7 +16,7 @@ MACE-MP(M):
     - stability
     - combustion
     - eos_bulk
-    - wbm_ev
+    - ev
   github: https://github.com/ACEsuit/mace
   doi: https://arxiv.org/abs/2401.00096
   date: 2023-12-29
@@ -41,7 +41,7 @@ CHGNet:
     - stability
     - combustion
     - eos_bulk
-    - wbm_ev
+    - ev
   github: https://github.com/CederGroupHub/chgnet
   doi: https://doi.org/10.1038/s42256-023-00716-3
   date: 2023-02-28
@@ -66,7 +66,7 @@ M3GNet:
     - combustion
     - stability
     - eos_bulk
-    - wbm_ev
+    - ev
   github: https://github.com/materialsvirtuallab/matgl
   doi: https://doi.org/10.1038/s43588-022-00349-3
   date: 2022-02-05
@@ -81,7 +81,7 @@ MatterSim:
   family: mattersim
   package: mattersim==1.0.0rc9
   checkpoint: MatterSim-v1.0.0-5M.pth
-  username: 
+  username:
   last-update: 2024-10-29T00:00:00
   datetime: 2024-10-29T00:00:00
   datasets:
@@ -95,7 +95,7 @@ MatterSim:
     - stability
     - combustion
     - eos_bulk
-    - wbm_ev
+    - ev
   github: https://github.com/microsoft/mattersim
   doi: https://arxiv.org/abs/2405.04967
   date: 2024-12-05
@@ -110,7 +110,7 @@ ORBv2:
   family: orb
   package: orb-models==0.4.0
   checkpoint: orb-v2-20241011.ckpt
-  username: 
+  username:
   last-update: 2024-10-29T00:00:00
   datetime: 2024-10-29T00:00:00
   datasets:
@@ -123,7 +123,7 @@ ORBv2:
     - combustion
     - stability
     - eos_bulk
-    - wbm_ev
+    - ev
   github: https://github.com/orbital-materials/orb-models
   doi: https://arxiv.org/abs/2410.22570
   date: 2024-10-15
@@ -140,15 +140,15 @@ SevenNet:
   checkpoint: 7net-0
   username: cyrusyc
   last-update: 2024-03-25T14:30:00
-  datetime: 2024-03-25T14:30:00 # TODO: Fake datetime
+  datetime: 2024-03-25T14:30:00
   datasets:
-    - MPTrj # TODO: fake HF dataset repo
+    - MPTrj
   gpu-tasks:
     - homonuclear-diatomics
     - stability
     - combustion
     - eos_bulk
-    - wbm_ev
+    - ev
   github: https://github.com/MDIL-SNU/SevenNet
   doi: https://doi.org/10.1021/acs.jctc.4c00190
   date: 2024-07-11
@@ -174,7 +174,7 @@ eqV2(OMat):
     - eos_alloy
   gpu-tasks:
     - homonuclear-diatomics
-    - wbm_ev
+    - ev
   prediction: EFS
   nvt: true
   npt: false # https://github.com/FAIR-Chem/fairchem/issues/888, https://github.com/atomind-ai/mlip-arena/issues/17
@@ -182,6 +182,8 @@ eqV2(OMat):
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2410.12771
   license: Modified Apache-2.0 (Meta)
+  deprecated: true
+
 
 MACE-MPA:
   module: externals
@@ -189,7 +191,7 @@ MACE-MPA:
   family: mace-mp
   package: mace-torch==0.3.9
   checkpoint: mace-mpa-0-medium.model
-  username: 
+  username:
   last-update: 2025-11-19T00:00:00
   datetime: 2024-12-09T00:00:00
   datasets:
@@ -199,7 +201,7 @@ MACE-MPA:
     - homonuclear-diatomics
     - stability
     - eos_bulk
-    - wbm_ev
+    - ev
     - combustion
   github: https://github.com/ACEsuit/mace
   doi: https://arxiv.org/abs/2401.00096
@@ -224,7 +226,7 @@ eSEN:
     - Alexandria
   gpu-tasks:
     - homonuclear-diatomics
-    - wbm_ev
+    - ev
     - eos_bulk
   prediction: EFS
   nvt: true
@@ -233,6 +235,7 @@ eSEN:
   github: https://github.com/FAIR-Chem/fairchem
   doi: https://arxiv.org/abs/2502.12147
   license: Modified Apache-2.0 (Meta)
+  deprecated: true
 
 EquiformerV2(OC22):
   module: externals
@@ -254,6 +257,7 @@ EquiformerV2(OC22):
   nvt: true
   npt: false
   license:
+  deprecated: true
 
 EquiformerV2(OC20):
   module: externals
@@ -275,6 +279,7 @@ EquiformerV2(OC20):
   prediction: EF
   nvt: true
   npt: false
+  deprecated: true  # OC20 surface model; not supported for bulk benchmarks
 
 eSCN(OC20):
   module: externals
@@ -297,6 +302,7 @@ eSCN(OC20):
   nvt: true
   npt: false
   license:
+  deprecated: true  # OC20 surface model; not supported for bulk benchmarks
 
 MACE-OFF(M):
   module: externals
@@ -354,7 +360,7 @@ ALIGNN:
   gpu-tasks:
     - homonuclear-diatomics
     - stability
-    - wbm_ev
+    - ev
     # - combustion
   prediction: EFS
   nvt: true
@@ -370,7 +376,7 @@ DeepMD:
   family: deepmd
   package: deepmd-kit==v3.0.0b4
   checkpoint: dp0808c_v024mixu.pth
-  username: 
+  username:
   last-update: 2024-10-09T00:00:00
   datetime: 2024-03-25T14:30:00
   datasets:
@@ -400,9 +406,58 @@ ORB:
     - combustion
     - stability
   github: https://github.com/orbital-materials/orb-models
-  doi: 
+  doi:
   date: 2024-09-03
   prediction: EFS
   nvt: true
   npt: true
   license: Apache-2.0
+  deprecated: true  # Superseded by ORBv2; prematurely released and no longer supported
+
+
+NequIP-OAM-L:
+  module: externals
+  class: NequIP_OAM_L
+  family: nequip
+  package: nequip==0.15.0
+  checkpoint: nequip.net:mir-group/NequIP-OAM-L:0.1
+  username: cw-tan
+  last-update:
+  datetime:
+  datasets:
+    - OMat
+    - MPTrj
+    - Alexandria
+  gpu-tasks:
+    - homonuclear-diatomics
+    - ev
+    - eos_bulk
+  github: https://github.com/mir-group/nequip
+  doi:
+  date: 2024-08-28
+  prediction: EFS
+  nvt: true
+  npt: true
+  license: MIT
+
+UMA-S-1P1:
+  module: externals
+  class: UMA_S_1P1
+  family: uma
+  package: fairchem-core==2.13.0
+  model_name: uma-s-1p1
+  task_name: omat
+  username: fairchem
+  last-update: 2025-11-17T00:00:00
+  datetime: 2025-11-17T00:00:00
+  datasets:
+    - OMat
+    - OMol
+    - OC20
+  github: https://github.com/facebookresearch/fairchem/tree/main
+  doi:
+  date: 2025-11-12
+  prediction: EFS
+  nvt: true
+  npt: true
+  license: MIT

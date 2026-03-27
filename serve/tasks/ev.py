@@ -10,7 +10,7 @@ from scipy import stats
 
 from mlip_arena.models import REGISTRY as MODELS
 
-DATA_DIR = Path("benchmarks/wbm_ev")
+DATA_DIR = Path("benchmarks/ev")
 
 st.markdown("""
 # Energy-volume scans
@@ -29,9 +29,7 @@ valid_models = [
 
 # Model selection
 selected_models = methods_container.multiselect(
-    "Select Models",
-    options=valid_models,
-    default=valid_models
+    "Select Models", options=valid_models, default=valid_models
 )
 
 # Visualization settings
@@ -98,7 +96,7 @@ def generate_dataframe(model_name):
 
         try:
             results = df_raw_results.loc[df_raw_results["id"] == structure_id]
-            results = results["eos"].values[0]
+            results = results["eos"].to_numpy()[0]
             es = np.array(results["energies"])
             vols = np.array(results["volumes"])
             vol0 = wbm_struct.get_volume()
@@ -170,7 +168,6 @@ def get_plots(selected_models):
     figs = []
 
     for model_name in selected_models:
-
         fpath = DATA_DIR / f"{model_name}_processed.parquet"
         if not fpath.exists():
             df = generate_dataframe(model_name)
@@ -207,7 +204,6 @@ def get_plots(selected_models):
                             "ΔEnergy: %{y:.3f} eV/atom<br>"
                             "<extra></extra>"
                         ),
-
                     )
                 )
                 valid_structures.append(structure_id)
@@ -232,7 +228,7 @@ all_plots = get_plots(selected_models)
 
 # Display plots in the specified column layout
 if all_plots:
-    for i, (model_name, fig, structures) in enumerate(all_plots):
+    for i, (_model_name, fig, _structures) in enumerate(all_plots):
         if i % ncols == 0:
             cols = st.columns(ncols)
         cols[i % ncols].plotly_chart(fig, use_container_width=True)

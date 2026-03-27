@@ -64,9 +64,7 @@ def get_phonopy(
     phonopy_kwargs: dict = {},
 ) -> Phonopy:
     if supercell_matrix is None and min_lengths is not None:
-        supercell_matrix = np.diag(
-            np.round(np.ceil(min_lengths / atoms.cell.lengths()))
-        )
+        supercell_matrix = np.diag(np.round(np.ceil(min_lengths / atoms.cell.lengths())))
 
     phonon = Phonopy(
         PhonopyAtoms(
@@ -141,9 +139,7 @@ def run(
     supercells_with_displacements = phonon.supercells_with_displacements
 
     phonon.forces = [
-        _get_forces(supercell, calculator)
-        for supercell in supercells_with_displacements
-        if supercell is not None
+        _get_forces(supercell, calculator) for supercell in supercells_with_displacements if supercell is not None
     ]
     phonon.produce_force_constants()
 
