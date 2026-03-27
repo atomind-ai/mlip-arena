@@ -38,9 +38,7 @@ for model, meta in MODELS.items():
         "First Release": meta.get("date"),
         "License": meta.get("license"),
     }
-    metadata_table = pd.concat(
-        [metadata_table, pd.DataFrame([new_row])], ignore_index=True
-    )
+    metadata_table = pd.concat([metadata_table, pd.DataFrame([new_row])], ignore_index=True)
 
 metadata_table.set_index("Model", inplace=True)
 
@@ -77,9 +75,7 @@ if not rank_df.empty:
     leaderboard["Meta Rank Agg"] = 0
 
     for col in rank_df.columns:
-        leaderboard["Meta Rank Agg"] += leaderboard[col].rank(
-            method="min", ascending=True, na_option="bottom"
-        )
+        leaderboard["Meta Rank Agg"] += leaderboard[col].rank(method="min", ascending=True, na_option="bottom")
         leaderboard[col] = leaderboard[col].astype("Int64")
         # rename column to indicate rank
         # leaderboard.rename(columns={col: col}, inplace=True)
@@ -87,19 +83,13 @@ if not rank_df.empty:
     # Final Arena Rank
     leaderboard["Meta Rank Agg"] = leaderboard["Meta Rank Agg"].astype("Int64")
     leaderboard["Arena Rank"] = (
-        leaderboard["Meta Rank Agg"]
-        .rank(method="min", ascending=True, na_option="bottom")
-        .astype("Int64")
+        leaderboard["Meta Rank Agg"].rank(method="min", ascending=True, na_option="bottom").astype("Int64")
     )
 
     # Reorder columns: Training Set → Arena Rank → task ranks → rest
-    rank_cols = [
-        c for c in leaderboard.columns if c.endswith("Rank") and c != "Arena Rank"
-    ]
+    rank_cols = [c for c in leaderboard.columns if c.endswith("Rank") and c != "Arena Rank"]
     first_cols = ["Training Set", "Arena Rank", "Meta Rank Agg"] + rank_cols
-    other_cols = [
-        c for c in leaderboard.columns if c not in first_cols
-    ]  # and c != "Meta Rank Agg"]
+    other_cols = [c for c in leaderboard.columns if c not in first_cols]  # and c != "Meta Rank Agg"]
     leaderboard = leaderboard.reindex(columns=first_cols + other_cols)
 
     # Optional: sort by Arena Rank
@@ -116,9 +106,7 @@ if not rank_df.empty:
 # style = leaderboard.drop(columns=["Meta Rank Agg"], errors="ignore").style
 style = leaderboard.style
 
-style = style.background_gradient(
-    cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"]
-)
+style = style.background_gradient(cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"])
 style = style.background_gradient(cmap="cividis_r", subset=list(rename_dict.values()))
 
 st.info(
@@ -181,6 +169,4 @@ for task, meta in TASKS.items():
     if hasattr(task_module, "render"):
         task_module.render()
     else:
-        st.write(
-            "Rank metrics are not available yet but the task has been implemented."
-        )
+        st.write("Rank metrics are not available yet but the task has been implemented.")

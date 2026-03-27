@@ -20,18 +20,10 @@ st.markdown("""
 st.markdown("### Methods")
 methods_container = st.container(border=True)
 
-valid_models = [
-    model
-    for model, metadata in MODELS.items()
-    if Path(__file__).stem in metadata.get("gpu-tasks", [])
-]
+valid_models = [model for model, metadata in MODELS.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 
 # Model selection
-selected_models = methods_container.multiselect(
-    "Select Models",
-    options=valid_models,
-    default=valid_models
-)
+selected_models = methods_container.multiselect("Select Models", options=valid_models, default=valid_models)
 
 # Visualization settings
 st.markdown("### Visualization settings")
@@ -70,6 +62,30 @@ def load_wbm_structures():
 
 @st.cache_data
 def generate_dataframe(model_name):
+    """
+    Build an analyzed DataFrame of EOS metrics for every WBM structure using results for the given model.
+    
+    Parameters:
+        model_name (str): Name of the model whose results are read from DATA_DIR/{model_name}.parquet.
+    
+    Returns:
+        pd.DataFrame: One row per WBM structure containing computed metrics and metadata. Columns:
+            - model: model_name string
+            - structure: WBM structure identifier
+            - formula: chemical formula of the structure
+            - volume-ratio: array of volumes normalized by the reference volume V0
+            - energy-delta-per-atom: energy per atom relative to the minimum energy
+            - energy-delta-per-volume-b0: relative energy normalized by (V0 * b0)
+            - energy-diff-flip-times: integer count of sign flips in consecutive energy differences
+            - tortuosity: ratio of total absolute energy variation to endpoint deviations
+            - spearman-compression-energy: Spearman correlation between compression-side volumes and energies
+            - spearman-compression-derivative: Spearman correlation between interpolated volumes and energy derivatives on the compression side
+            - spearman-tension-energy: Spearman correlation between tension-side volumes and energies
+            - missing: `False` if metrics were computed, `True` if the structure's metrics could not be computed
+    
+    Notes:
+        If DATA_DIR/{model_name}.parquet does not exist an empty DataFrame is returned. Rows with computation errors are included with `missing=True` and metric fields set to None.
+    """
     fpath = DATA_DIR / f"{model_name}.parquet"
     if not fpath.exists():
         return pd.DataFrame()  # Return empty dataframe instead of using continue
@@ -103,7 +119,6 @@ def generate_dataframe(model_name):
             results = results["eos"].values[0]
             es = np.array(results["energies"])
             vols = np.array(results["volumes"])
-            
 
             indices = np.argsort(vols)
             vols = vols[indices]
@@ -115,9 +130,7 @@ def generate_dataframe(model_name):
             emin = es[imine]
             vol0 = vols[imine]
 
-            interpolated_volumes = [
-                (vols[i] + vols[i + 1]) / 2 for i in range(len(vols) - 1)
-            ]
+            interpolated_volumes = [(vols[i] + vols[i + 1]) / 2 for i in range(len(vols) - 1)]
             ediff = np.diff(es)
             ediff_sign = np.sign(ediff)
             mask = ediff_sign != 0
@@ -137,15 +150,11 @@ def generate_dataframe(model_name):
                 "energy-diff-flip-times": np.sum(ediff_flip).astype(int),
                 "energy-delta-per-volume-b0": (es - emin) / (vol0 * b0),
                 "tortuosity": etv / (abs(es[0] - emin) + abs(es[-1] - emin)),
-                "spearman-compression-energy": stats.spearmanr(
-                    vols[:imine], es[:imine]
-                ).statistic,
+                "spearman-compression-energy": stats.spearmanr(vols[:imine], es[:imine]).statistic,
                 "spearman-compression-derivative": stats.spearmanr(
                     interpolated_volumes[:imine], ediff[:imine]
                 ).statistic,
-                "spearman-tension-energy": stats.spearmanr(
-                    vols[imine:], es[imine:]
-                ).statistic,
+                "spearman-tension-energy": stats.spearmanr(vols[imine:], es[imine:]).statistic,
             }
 
         except Exception:
@@ -171,11 +180,18 @@ def generate_dataframe(model_name):
 
 @st.cache_data
 def get_plots(selected_models):
-    """Generate one plot per model with all structures (legend disabled for each structure)."""
+    """
+    Create a Plotly figure for each model showing relative energy versus volume ratio for its structures.
+    
+    Parameters:
+    	selected_models (iterable): Iterable of model name strings to generate plots for.
+    
+    Returns:
+    	figs (list): List of tuples (model_name, figure, valid_structures) where `figure` is a Plotly Figure for the model and `valid_structures` is a list of structure IDs included in that figure.
+    """
     figs = []
 
     for model_name in selected_models:
-
         fpath = DATA_DIR / f"{model_name}_processed.parquet"
         if not fpath.exists():
             df = generate_dataframe(model_name)
@@ -212,7 +228,6 @@ def get_plots(selected_models):
                             "ΔE/(BV₀): %{y:.3f} eV/atom<br>"
                             "<extra></extra>"
                         ),
-
                     )
                 )
                 valid_structures.append(structure_id)

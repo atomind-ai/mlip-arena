@@ -13,6 +13,8 @@
 </a>
 </div>
 
+![Thumnail](../serve/assets/workflow.png)
+
 Foundation machine learning interatomic potentials (MLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations, have revolutionized molecular and materials modeling, but existing benchmarks suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific DFT references.
 
 We introduce MLIP Arena, a unified benchmark platform for evaluating foundation MLIP performance beyond conventional error metrics. It focuses on revealing the physical soundness learned by MLIPs and assessing their utilitarian performance agnostic to underlying model architecture and training dataset.
@@ -23,9 +25,9 @@ MLIP Arena leverages modern pythonic workflow orchestrator 💙
  [Prefect](https://www.prefect.io/) 💙
  to enable advanced task/flow chaining and caching.
 
-![Thumnail](../serve/assets/workflow.png)
+![Prefect](../serve/assets/prefect.png)
 
-- [Announcement](#announcement)
+<!-- - [Announcement](#announcement)
 - [Installation](#installation)
   - [From PyPI (prefect workflow only, *without* pretrained models)](#from-pypi-prefect-workflow-only-without-pretrained-models)
   - [From source (with integrated pretrained models)](#from-source-with-integrated-pretrained-models)
@@ -39,7 +41,7 @@ MLIP Arena leverages modern pythonic workflow orchestrator 💙
     - [External ASE Calculator (easy)](#external-ase-calculator-easy)
     - [Hugging Face Model (recommended, difficult)](#hugging-face-model-recommended-difficult)
   - [Add new benchmark](#add-new-benchmark)
-- [Citation](#citation)
+- [Citation](#citation) -->
 
 > [!NOTE]
 > Contributions of new tasks through PRs are very welcome! See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks, or propose new feature requests in [Discussion](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
@@ -93,13 +95,13 @@ source $HOME/.local/bin/env
 bash scripts/install-macosx.sh
 ```
 
-## Quickstart
+## ⏩ Quickstart
 
 Instruction for individual benchmark is provided in the README in each corresponding folder under [/benchmark](../benchmarks/).
 
-## Workflow Overview
+## ⚙️ Workflow Overview
 
-### ✅ The first Prefect workflow: molecular dynamics
+### ✅ The first Prefect task: molecular dynamics
 
 Arena provides a unified interface to run all the compiled MLIPs. This can be achieved simply by looping through `MLIPEnum`:
 
@@ -143,7 +145,7 @@ To run multiple benchmarks in parallel, add `.submit` before the task function a
 from prefect import flow
 
 @flow
-def run_all_tasks:
+def run_all_tasks():
 
     futures = []
     for model in MLIPEnum:
@@ -156,7 +158,7 @@ def run_all_tasks:
     return [f.result(raise_on_failure=False) for f in futures]
 ```
 
-For a more practical example using HPC resources, please now refer to [MD stability benchmark](../benchmarks/stability/temperature.ipynb).
+For a more practical example using HPC resources, please now refer to [submission script](../benchmarks/submit.py) or [MD stability benchmark](../benchmarks/stability/temperature.ipynb).
 
 ### List of modular tasks
 
@@ -201,7 +203,7 @@ If you have pretrained MLIP models that you would like to contribute to the MLIP
 2. Follow the template to code the I/O interface for your model [here](../mlip_arena/models/README.md).
 3. Update model [registry](../mlip_arena/models/registry.yaml) with metadata
 
-#### Benchmark Evaluation Pipeline (Model Submission)
+### Run benchmarks and submit model
 
 Once your model is ready (either registered or initialized as a custom ASE Calculator), you can run the core benchmark suite on a SLURM cluster:
 

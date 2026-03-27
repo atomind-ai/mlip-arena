@@ -17,11 +17,7 @@ st.markdown("""
 
 st.markdown("### Methods")
 container = st.container(border=True)
-valid_models = [
-    model
-    for model, metadata in MODELS.items()
-    if Path(__file__).stem in metadata.get("gpu-tasks", [])
-]
+valid_models = [model for model, metadata in MODELS.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 
 models = container.multiselect(
     "MLIPs",
@@ -36,7 +32,7 @@ models = container.multiselect(
         "EquiformerV2(OC20)",
         "eSCN(OC20)",
         "MatterSim",
-        "MACE-MPA"
+        "MACE-MPA",
     ],
 )
 
@@ -61,12 +57,18 @@ if not models:
     st.stop()
 
 
-
 @st.cache_data
 def get_data(models):
-    dfs = [
-        pd.read_json(DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json") for model in models
-    ]
+    """
+    Load and merge per-model benchmark JSON files for the specified models.
+    
+    Parameters:
+        models (Iterable[str]): Iterable of model identifiers whose JSON files should be read. Each model's file is expected under DATA_DIR / MODELS[model]["family"].lower() with a name formatted as "{model}_H256O128.json".
+    
+    Returns:
+        pandas.DataFrame: Concatenated DataFrame of all models' data with duplicate rows removed based on the `formula` and `method` columns.
+    """
+    dfs = [pd.read_json(DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json") for model in models]
     df = pd.concat(dfs, ignore_index=True)
     df.drop_duplicates(inplace=True, subset=["formula", "method"])
     return df
@@ -75,8 +77,7 @@ def get_data(models):
 df = get_data(models)
 
 method_color_mapping = {
-    method: color_sequence[i % len(color_sequence)]
-    for i, method in enumerate(df["method"].unique())
+    method: color_sequence[i % len(color_sequence)] for i, method in enumerate(df["method"].unique())
 }
 
 ###
@@ -254,9 +255,7 @@ st.plotly_chart(fig)
 fig = go.Figure()
 
 
-df["reaction_energy"] = (
-    df["energies"].apply(lambda x: x[-1] - x[0]) / nh2os * factor
-)  # kcal/mol
+df["reaction_energy"] = df["energies"].apply(lambda x: x[-1] - x[0]) / nh2os * factor  # kcal/mol
 
 df["reaction_energy_abs_err"] = np.abs(df["reaction_energy"] - exp_ref)
 
@@ -267,9 +266,7 @@ fig.add_traces(
         go.Bar(
             x=df["method"],
             y=df["reaction_energy"],
-            marker=dict(
-                color=[method_color_mapping[method] for method in df["method"]]
-            ),
+            marker=dict(color=[method_color_mapping[method] for method in df["method"]]),
             text=[f"{y:.2f}" for y in df["reaction_energy"]],
         ),
     ]
@@ -369,6 +366,17 @@ The center of mass (COM) drift is a measure of the stability of the simulation. 
 
 @st.cache_data
 def get_com_drifts(df):
+    """
+    Create a flattened DataFrame with separate center-of-mass drift components and their magnitudes for each timestep.
+    
+    Parameters:
+        df (pandas.DataFrame): Input DataFrame containing at least the columns
+            `timestep` (array-like per row) and `com_drifts` (array-like per row of length 3 representing x, y, z drift).
+    
+    Returns:
+        pandas.DataFrame: A DataFrame where rows are exploded by `timestep` and `com_drifts`, includes new columns
+        `com_drift_x`, `com_drift_y`, `com_drift_z` (the per-axis components) and `total_com_drift` (Euclidean norm of the three components).
+    """
     df_exploded = df.explode(["timestep", "com_drifts"]).reset_index(drop=True)
 
     # Convert the 'com_drifts' column (which are arrays) into separate columns for x, y, and z components
@@ -380,9 +388,7 @@ def get_com_drifts(df):
     df_flat = df_exploded.drop(columns=["com_drifts"])
 
     df_flat["total_com_drift"] = np.sqrt(
-        df_flat["com_drift_x"] ** 2
-        + df_flat["com_drift_y"] ** 2
-        + df_flat["com_drift_z"] ** 2
+        df_flat["com_drift_x"] ** 2 + df_flat["com_drift_y"] ** 2 + df_flat["com_drift_z"] ** 2
     )
 
     return df_flat
@@ -440,6 +446,11 @@ if "time_range" not in st.session_state:
 # @st.experimental_fragment(run_every=1e-3 if st.session_state.play else None)
 @st.experimental_fragment()
 def draw_com_drifts_plot():
+    """
+    Render the interactive 3D center-of-mass (COM) drift visualization and update the session time range slider.
+    
+    When called, this function optionally advances the displayed timestep window when playback is enabled, presents a slider for selecting a timestep range, filters the precomputed COM drift records to that range, and draws a 3D line plot of COM trajectories per method. The plot includes a marker at the origin and a marker+text for each method showing the last COM drift value within the selected range. The function updates `st.session_state.time_range` when playback advances and displays the resulting Plotly chart in Streamlit.
+    """
     if st.session_state.play:
         start, end = st.session_state.time_range
 
@@ -460,9 +471,7 @@ def draw_com_drifts_plot():
         # on_change=check_range,
     )
 
-    mask = (df_exploded["timestep"] >= start_timestep) & (
-        df_exploded["timestep"] <= end_timestep
-    )
+    mask = (df_exploded["timestep"] >= start_timestep) & (df_exploded["timestep"] <= end_timestep)
     df_filtered = df_exploded[mask]
     df_filtered.sort_values(["method", "timestep"], inplace=True)
 
@@ -477,9 +486,7 @@ def draw_com_drifts_plot():
             "com_drift_z": "𝚫z (Å)",
         },
         category_orders={"method": df_exploded["method"].unique()},
-        color_discrete_sequence=[
-            method_color_mapping[method] for method in df_exploded["method"].unique()
-        ],
+        color_discrete_sequence=[method_color_mapping[method] for method in df_exploded["method"].unique()],
         color="method",
         width=800,
         height=800,
@@ -534,6 +541,6 @@ st.markdown("""
 ### References
 
 [1] Hasche, A., Navid, A., Krause, H., & Eckart, S. (2023). Experimental and numerical assessment of the effects of hydrogen admixtures on premixed methane-oxygen flames. Fuel, 352, 128964.
-            
+
 [2] Lide, D. R. (Ed.). (2004). CRC handbook of chemistry and physics (Vol. 85). CRC press.
 """)

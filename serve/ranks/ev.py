@@ -6,7 +6,7 @@ import streamlit as st
 DATA_DIR = Path("benchmarks/ev")
 
 
-table = pd.read_csv(DATA_DIR / "summary.csv")
+table = pd.read_csv(DATA_DIR / "leaderboard.csv")
 
 
 table = table.rename(
@@ -23,7 +23,7 @@ table = table.rename(
     },
 )
 
-table = table.set_index("Model")
+table.set_index("Model", inplace=True)
 
 
 @st.cache_data

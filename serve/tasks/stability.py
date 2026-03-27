@@ -22,9 +22,7 @@ container = st.container(border=True)
 valid_models = [
     model
     for model, metadata in REGISTRY.items()
-    if (
-        DATA_DIR / REGISTRY[str(model)]["family"].lower() / f"{model}-heating.parquet"
-    ).exists()
+    if (DATA_DIR / REGISTRY[str(model)]["family"].lower() / f"{model}-heating.parquet").exists()
 ]
 
 models = container.multiselect(
@@ -53,9 +51,7 @@ color_palettes = {
 }
 color_palettes.pop("__all__", None)
 
-palette_name = vis.selectbox(
-    "Color sequence", options=list(color_palettes.keys()), index=22
-)
+palette_name = vis.selectbox("Color sequence", options=list(color_palettes.keys()), index=22)
 color_sequence = color_palettes[palette_name]
 
 if not models:
@@ -64,12 +60,20 @@ if not models:
 
 @st.cache_data
 def get_data(model_list, run_type: Literal["heating", "compression"]) -> pd.DataFrame:
-    """Load parquet files for selected models."""
+    """
+    Load and concatenate parquet files for the given models and run type.
+    
+    Parameters:
+        model_list (iterable): Iterable of model identifiers to load (elements convertible to str).
+        run_type (Literal["heating", "compression"]): Which run variant to load for each model.
+    
+    Returns:
+        pd.DataFrame: Concatenated dataframes from all found parquet files with an added
+        "method" column set to the model identifier; returns an empty DataFrame if no files were found.
+    """
     dfs = []
     for m in model_list:
-        fpath = (
-            DATA_DIR / REGISTRY[str(m)]["family"].lower() / f"{m}-{run_type}.parquet"
-        )
+        fpath = DATA_DIR / REGISTRY[str(m)]["family"].lower() / f"{m}-{run_type}.parquet"
         if not fpath.exists():
             continue
         df_local = pd.read_parquet(fpath)
@@ -83,8 +87,7 @@ df_npt = get_data(models, run_type="compression")
 
 # Map model → color
 method_color_mapping = {
-    method: color_sequence[i % len(color_sequence)]
-    for i, method in enumerate(df_nvt["method"].unique())
+    method: color_sequence[i % len(color_sequence)] for i, method in enumerate(df_nvt["method"].unique())
 }
 
 
@@ -111,13 +114,26 @@ def prepare_scatter_df(df_in: pd.DataFrame, max_points: int = 20000) -> pd.DataF
 
 @st.cache_data
 def compute_power_law_fits(df_in: pd.DataFrame) -> dict:
-    """Fit power-law scaling: steps/s ~ a * N^(-n)."""
+    """
+    Compute per-method power-law fits for inference speed as a function of system size.
+    
+    Groups rows by the "method" column and, for each method with at least three rows where
+    "natoms" and "steps_per_second" are present and greater than zero, fits a linear model
+    on log-transformed values to estimate parameters of the relation steps_per_second ≈ a * N^(-n).
+    
+    Parameters:
+        df_in (pd.DataFrame): DataFrame containing at minimum the columns
+            "method", "natoms", and "steps_per_second".
+    
+    Returns:
+        dict: Mapping from method name to a tuple `(a, n)` where `a` is the prefactor
+        and `n` is the exponent in the power law `steps_per_second ≈ a * N^(-n)`.
+        Methods with fewer than three valid rows or for which fitting fails are omitted.
+    """
     fits = {}
     for name, grp in df_in.groupby("method"):
         grp_clean = grp.dropna(subset=["natoms", "steps_per_second"])
-        grp_clean = grp_clean[
-            (grp_clean["natoms"] > 0) & (grp_clean["steps_per_second"] > 0)
-        ]
+        grp_clean = grp_clean[(grp_clean["natoms"] > 0) & (grp_clean["steps_per_second"] > 0)]
         if len(grp_clean) < 3:
             continue
         try:
@@ -131,10 +147,13 @@ def compute_power_law_fits(df_in: pd.DataFrame) -> dict:
 
 
 @st.cache_data
-def build_speed_figure(
-    df_in: pd.DataFrame, color_map: dict, show_scatter: bool
-) -> go.Figure:
-    """Build scatter plot of inference speed vs number of atoms with power-law fits."""
+def build_speed_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -> go.Figure:
+    """
+    Create a log-log Plotly figure showing steps per second versus number of atoms, optionally with scatter points and overlaid power-law fit lines per method.
+    
+    Returns:
+        go.Figure: A Plotly figure containing a log-scaled x-axis ("Number of atoms") and y-axis ("Steps per second"), with optional scatter traces (colored by method) and power-law fit lines for each method.
+    """
     fig = go.Figure()
 
     # Optionally add scatter points
@@ -165,9 +184,7 @@ def build_speed_figure(
         grp = df_in[df_in["method"] == method]
         if grp["natoms"].dropna().empty:
             continue
-        xs = np.logspace(
-            np.log10(grp["natoms"].min()), np.log10(grp["natoms"].max()), 200
-        )
+        xs = np.logspace(np.log10(grp["natoms"].min()), np.log10(grp["natoms"].max()), 200)
         ys = a * xs ** (-n)
 
         fig.add_trace(
@@ -194,10 +211,26 @@ def build_speed_figure(
 
 
 @st.cache_data
-def build_nvt_figure(
-    df_in: pd.DataFrame, color_map: dict, show_scatter: bool
-) -> go.Figure:
-    """Build subplot: NVT valid runs (cumulative) + speed scaling plot."""
+def build_nvt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -> go.Figure:
+    """
+    Create a 1x2 Plotly figure showing cumulative valid runs and inference speed scaling.
+
+    Left subplot shows the percentage of valid runs over normalized time for each method.
+    Right subplot shows inference speed (steps per second) versus number of atoms on log-log axes; the right panel includes scatter points and fitted power-law lines when `show_scatter` is enabled.
+
+    Parameters:
+        df_in (pd.DataFrame): Input dataframe containing run records. Expected columns include
+            'method', 'normalized_final_step', and 'formula' (used for the left subplot); the right
+            subplot expects 'natoms' and 'steps_per_second' to be present for speed data.
+        color_map (dict): Mapping from method identifier to a color string used for plotting.
+        show_scatter (bool): If true, include scatter points in the speed subplot; if false, only
+            fit lines are shown.
+
+    Returns:
+        fig (go.Figure): A Plotly Figure with two subplots:
+            - Left: "Valid runs" — Normalized time (0-1) vs valid runs percentage.
+            - Right: "Inference speed: steps/s vs N" — Number of atoms vs steps per second on log scales.
+    """
     fig = make_subplots(
         rows=1,
         cols=2,
@@ -213,9 +246,7 @@ def build_nvt_figure(
     # Left panel: cumulative valid runs
     for method, df_model in df_in.groupby("method"):
         df_model_grp = df_model.drop_duplicates(["formula"])
-        hist, bin_edges = np.histogram(
-            df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50)
-        )
+        hist, bin_edges = np.histogram(df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50))
         cumulative_population = np.cumsum(hist)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         fig.add_trace(
@@ -240,10 +271,20 @@ def build_nvt_figure(
 
 
 @st.cache_data
-def build_npt_figure(
-    df_in: pd.DataFrame, color_map: dict, show_scatter: bool
-) -> go.Figure:
-    """Build subplot: NPT valid runs (cumulative) + speed scaling plot."""
+def build_npt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -> go.Figure:
+    """
+    Create a 1x2 subplot for NPT data: cumulative valid runs (left) and inference speed vs number of atoms (right).
+    
+    The left panel plots the cumulative percentage of valid runs over normalized time using per-method deduplicated formulas and scales the result by a constant divisor of 80. The right panel contains the inference speed plot (steps/s vs number of atoms) and delegates scatter/fit rendering to the speed-building routine.
+    
+    Parameters:
+        df_in (pd.DataFrame): Input dataframe containing at least the columns `method`, `normalized_final_step`, and `formula`; also used by the speed plot (e.g., `natoms`, `steps_per_second`) when present.
+        color_map (dict): Mapping from method name to an HTML/CSS color string used for traces.
+        show_scatter (bool): If True, include scatter points in the right-hand inference speed panel; otherwise only show fit lines.
+    
+    Returns:
+        go.Figure: A Plotly Figure with two subplots: left shows "Valid runs (%)" over normalized time, right shows "Steps per second" vs "Number of atoms" (both axes on log scale).
+    """
     fig = make_subplots(
         rows=1,
         cols=2,
@@ -259,9 +300,7 @@ def build_npt_figure(
     # Left panel: cumulative valid runs
     for method, df_model in df_in.groupby("method"):
         df_model_grp = df_model.drop_duplicates(["formula"])
-        hist, bin_edges = np.histogram(
-            df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50)
-        )
+        hist, bin_edges = np.histogram(df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50))
         cumulative_population = np.cumsum(hist)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         fig.add_trace(
@@ -293,9 +332,7 @@ else:
     Isochoric-isothermal (NVT) MD simulations on RM24 structures, with temperature ramp from 300K to 3000K over 10 ps.
     """)
 
-    show_scatter_nvt = st.toggle(
-        "Show scatter points", key="show_scatter_nvt", value=True
-    )
+    show_scatter_nvt = st.toggle("Show scatter points", key="show_scatter_nvt", value=True)
     # Toggle for scatter points
     # show_scatter = vis.checkbox("Show scatter points", value=True)
     st.plotly_chart(
@@ -308,9 +345,7 @@ else:
     Isothermal-isobaric (NPT) MD simulations on RM24 structures, with pressure ramp from 0 GPa to 500 GPa and temperature ramp from 300K to 3000K over 10 ps.
     """)
 
-    show_scatter_npt = st.toggle(
-        "Show scatter points", key="show_scatter_npt", value=True
-    )
+    show_scatter_npt = st.toggle("Show scatter points", key="show_scatter_npt", value=True)
     # Toggle for scatter points
     # show_scatter = vis.checkbox("Show scatter points", value=True)
     st.plotly_chart(
