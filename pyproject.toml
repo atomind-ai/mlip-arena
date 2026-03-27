@@ -4,7 +4,7 @@ build-backend="flit_core.buildapi"
 
 [project]
 name="mlip-arena"
-version="0.2.0"
+version="0.2.1"
 authors=[
     {name="Yuan Chiang", email="cyrusyc@lbl.gov"},
 ]
@@ -46,7 +46,7 @@ dev = [
     "pre-commit",
 ]
 app = [
-    "streamlit==1.43.2",
+    "streamlit>=1.55.0",
     "plotly",
 ]
 test = [
@@ -63,8 +63,7 @@ test = [
     "pytest",
     "pytest-xdist",
     "pymatgen>=2025.1.9",
-    "MDAnalysis", # mof,
-    "streamlit==1.43.2",
+    "streamlit>=1.55.0",
 ]
 mace = [
     "mace-torch>=0.3.12",

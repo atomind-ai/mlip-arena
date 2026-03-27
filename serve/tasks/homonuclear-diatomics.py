@@ -11,7 +11,7 @@ from plotly.subplots import make_subplots
 from mlip_arena.models import REGISTRY
 
 st.markdown(
-"""
+    """
 # Homonuclear Diatomics
 
 Homonuclear diatomics are molecules composed of two atoms of the same element.
@@ -21,15 +21,11 @@ The potential energy curves of homonuclear diatomics are the most fundamental in
 
 st.markdown("### Methods")
 container = st.container(border=True)
-valid_models = [
-    model
-    for model, metadata in REGISTRY.items()
-    if Path(__file__).stem in metadata.get("gpu-tasks", [])
-]
+valid_models = [model for model, metadata in REGISTRY.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 mlip_methods = container.multiselect(
     "MLIPs",
     valid_models,
-    ["NequIP-OAM-L", "MACE-MP(M)", "MatterSim", "SevenNet", "ORBv2", "eqV2(OMat)", "ANI2x", "eSEN"],
+    ["MACE-MP(M)", "MatterSim", "SevenNet", "ORBv2", "eqV2(OMat)", "ANI2x", "eSEN"],
 )
 dft_methods = container.multiselect("DFT Methods", ["PBE"], ["PBE"])
 
@@ -67,12 +63,7 @@ if not mlip_methods and not dft_methods:
 def get_data(mlip_methods, dft_methods):
     DATA_DIR = Path("benchmarks/diatomics")
 
-    dfs = [
-        pd.read_json(
-            DATA_DIR / REGISTRY[method]["family"] / f"{method}.json"
-        )
-        for method in mlip_methods
-    ]
+    dfs = [pd.read_json(DATA_DIR / REGISTRY[method]["family"] / f"{method}.json") for method in mlip_methods]
     dfs.extend(
         [
             pd.read_json(Path("mlip_arena/tasks/diatomics") / "vasp" / "homonuclear-diatomics.json")
@@ -87,8 +78,7 @@ def get_data(mlip_methods, dft_methods):
 df = get_data(mlip_methods, dft_methods)
 
 method_color_mapping = {
-    method: color_sequence[i % len(color_sequence)]
-    for i, method in enumerate(df["method"].unique())
+    method: color_sequence[i % len(color_sequence)] for i, method in enumerate(df["method"].unique())
 }
 
 

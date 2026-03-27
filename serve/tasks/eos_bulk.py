@@ -20,18 +20,10 @@ st.markdown("""
 st.markdown("### Methods")
 methods_container = st.container(border=True)
 
-valid_models = [
-    model
-    for model, metadata in MODELS.items()
-    if Path(__file__).stem in metadata.get("gpu-tasks", [])
-]
+valid_models = [model for model, metadata in MODELS.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 
 # Model selection
-selected_models = methods_container.multiselect(
-    "Select Models",
-    options=valid_models,
-    default=valid_models
-)
+selected_models = methods_container.multiselect("Select Models", options=valid_models, default=valid_models)
 
 # Visualization settings
 st.markdown("### Visualization settings")
@@ -103,7 +95,6 @@ def generate_dataframe(model_name):
             results = results["eos"].values[0]
             es = np.array(results["energies"])
             vols = np.array(results["volumes"])
-            
 
             indices = np.argsort(vols)
             vols = vols[indices]
@@ -115,9 +106,7 @@ def generate_dataframe(model_name):
             emin = es[imine]
             vol0 = vols[imine]
 
-            interpolated_volumes = [
-                (vols[i] + vols[i + 1]) / 2 for i in range(len(vols) - 1)
-            ]
+            interpolated_volumes = [(vols[i] + vols[i + 1]) / 2 for i in range(len(vols) - 1)]
             ediff = np.diff(es)
             ediff_sign = np.sign(ediff)
             mask = ediff_sign != 0
@@ -137,15 +126,11 @@ def generate_dataframe(model_name):
                 "energy-diff-flip-times": np.sum(ediff_flip).astype(int),
                 "energy-delta-per-volume-b0": (es - emin) / (vol0 * b0),
                 "tortuosity": etv / (abs(es[0] - emin) + abs(es[-1] - emin)),
-                "spearman-compression-energy": stats.spearmanr(
-                    vols[:imine], es[:imine]
-                ).statistic,
+                "spearman-compression-energy": stats.spearmanr(vols[:imine], es[:imine]).statistic,
                 "spearman-compression-derivative": stats.spearmanr(
                     interpolated_volumes[:imine], ediff[:imine]
                 ).statistic,
-                "spearman-tension-energy": stats.spearmanr(
-                    vols[imine:], es[imine:]
-                ).statistic,
+                "spearman-tension-energy": stats.spearmanr(vols[imine:], es[imine:]).statistic,
             }
 
         except Exception:
@@ -175,7 +160,6 @@ def get_plots(selected_models):
     figs = []
 
     for model_name in selected_models:
-
         fpath = DATA_DIR / f"{model_name}_processed.parquet"
         if not fpath.exists():
             df = generate_dataframe(model_name)
@@ -212,7 +196,6 @@ def get_plots(selected_models):
                             "ΔE/(BV₀): %{y:.3f} eV/atom<br>"
                             "<extra></extra>"
                         ),
-
                     )
                 )
                 valid_structures.append(structure_id)

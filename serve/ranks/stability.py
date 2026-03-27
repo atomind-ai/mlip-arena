@@ -15,9 +15,7 @@ def get_data(model_list, run_type: Literal["heating", "compression"]) -> pd.Data
     """Load parquet files for selected models."""
     dfs = []
     for m in model_list:
-        fpath = (
-            DATA_DIR / REGISTRY[str(m)]["family"].lower() / f"{m}-{run_type}.parquet"
-        )
+        fpath = DATA_DIR / REGISTRY[str(m)]["family"].lower() / f"{m}-{run_type}.parquet"
         if not fpath.exists():
             continue
         df_local = pd.read_parquet(fpath)
@@ -53,9 +51,7 @@ def compute_power_law_fits(df_in: pd.DataFrame) -> dict:
     fits = {}
     for name, grp in df_in.groupby("method"):
         grp_clean = grp.dropna(subset=["natoms", "steps_per_second"])
-        grp_clean = grp_clean[
-            (grp_clean["natoms"] > 0) & (grp_clean["steps_per_second"] > 0)
-        ]
+        grp_clean = grp_clean[(grp_clean["natoms"] > 0) & (grp_clean["steps_per_second"] > 0)]
         if len(grp_clean) < 3:
             continue
         try:
@@ -76,9 +72,7 @@ def compute_auc(df: pd.DataFrame) -> dict:
         dfm = dfm.drop_duplicates(["formula"])
         if dfm.empty:
             continue
-        hist, bin_edges = np.histogram(
-            dfm["normalized_final_step"], bins=np.linspace(0, 1, 100)
-        )
+        hist, bin_edges = np.histogram(dfm["normalized_final_step"], bins=np.linspace(0, 1, 100))
         cumulative_population = np.cumsum(hist)
         valid_curve = (cumulative_population[-1] - cumulative_population) / len(dfm)
         aucs[method] = np.trapezoid(valid_curve, bin_edges[:-1])  # trapezoidal integration
@@ -112,12 +106,8 @@ table = pd.DataFrame(rows).set_index("Model")
 
 table["Rank"] = table["AUC (Heating)"].rank(ascending=False, na_option="bottom")
 table["Rank"] += table["AUC (Compression)"].rank(ascending=False, na_option="bottom")
-table["Rank"] += table["Scaling exponent (Heating)"].rank(
-    ascending=True, na_option="bottom"
-)
-table["Rank"] += table["Scaling exponent (Compression)"].rank(
-    ascending=True, na_option="bottom"
-)
+table["Rank"] += table["Scaling exponent (Heating)"].rank(ascending=True, na_option="bottom")
+table["Rank"] += table["Scaling exponent (Compression)"].rank(ascending=True, na_option="bottom")
 
 table.sort_values(["Rank"], ascending=True, inplace=True)
 
@@ -148,9 +138,7 @@ def render():
             cmap="Blues",
             subset=["Rank", "Rank aggr."],
         )
-        .background_gradient(
-            cmap="Greens_r", subset=["AUC (Heating)", "AUC (Compression)"]
-        )
+        .background_gradient(cmap="Greens_r", subset=["AUC (Heating)", "AUC (Compression)"])
         .background_gradient(
             cmap="Greens",
             subset=["Scaling exponent (Heating)", "Scaling exponent (Compression)"],

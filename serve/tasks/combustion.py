@@ -17,11 +17,7 @@ st.markdown("""
 
 st.markdown("### Methods")
 container = st.container(border=True)
-valid_models = [
-    model
-    for model, metadata in MODELS.items()
-    if Path(__file__).stem in metadata.get("gpu-tasks", [])
-]
+valid_models = [model for model, metadata in MODELS.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 
 models = container.multiselect(
     "MLIPs",
@@ -36,7 +32,7 @@ models = container.multiselect(
         "EquiformerV2(OC20)",
         "eSCN(OC20)",
         "MatterSim",
-        "MACE-MPA"
+        "MACE-MPA",
     ],
 )
 
@@ -61,12 +57,9 @@ if not models:
     st.stop()
 
 
-
 @st.cache_data
 def get_data(models):
-    dfs = [
-        pd.read_json(DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json") for model in models
-    ]
+    dfs = [pd.read_json(DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json") for model in models]
     df = pd.concat(dfs, ignore_index=True)
     df.drop_duplicates(inplace=True, subset=["formula", "method"])
     return df
@@ -75,8 +68,7 @@ def get_data(models):
 df = get_data(models)
 
 method_color_mapping = {
-    method: color_sequence[i % len(color_sequence)]
-    for i, method in enumerate(df["method"].unique())
+    method: color_sequence[i % len(color_sequence)] for i, method in enumerate(df["method"].unique())
 }
 
 ###
@@ -254,9 +246,7 @@ st.plotly_chart(fig)
 fig = go.Figure()
 
 
-df["reaction_energy"] = (
-    df["energies"].apply(lambda x: x[-1] - x[0]) / nh2os * factor
-)  # kcal/mol
+df["reaction_energy"] = df["energies"].apply(lambda x: x[-1] - x[0]) / nh2os * factor  # kcal/mol
 
 df["reaction_energy_abs_err"] = np.abs(df["reaction_energy"] - exp_ref)
 
@@ -267,9 +257,7 @@ fig.add_traces(
         go.Bar(
             x=df["method"],
             y=df["reaction_energy"],
-            marker=dict(
-                color=[method_color_mapping[method] for method in df["method"]]
-            ),
+            marker=dict(color=[method_color_mapping[method] for method in df["method"]]),
             text=[f"{y:.2f}" for y in df["reaction_energy"]],
         ),
     ]
@@ -380,9 +368,7 @@ def get_com_drifts(df):
     df_flat = df_exploded.drop(columns=["com_drifts"])
 
     df_flat["total_com_drift"] = np.sqrt(
-        df_flat["com_drift_x"] ** 2
-        + df_flat["com_drift_y"] ** 2
-        + df_flat["com_drift_z"] ** 2
+        df_flat["com_drift_x"] ** 2 + df_flat["com_drift_y"] ** 2 + df_flat["com_drift_z"] ** 2
     )
 
     return df_flat
@@ -460,9 +446,7 @@ def draw_com_drifts_plot():
         # on_change=check_range,
     )
 
-    mask = (df_exploded["timestep"] >= start_timestep) & (
-        df_exploded["timestep"] <= end_timestep
-    )
+    mask = (df_exploded["timestep"] >= start_timestep) & (df_exploded["timestep"] <= end_timestep)
     df_filtered = df_exploded[mask]
     df_filtered.sort_values(["method", "timestep"], inplace=True)
 
@@ -477,9 +461,7 @@ def draw_com_drifts_plot():
             "com_drift_z": "𝚫z (Å)",
         },
         category_orders={"method": df_exploded["method"].unique()},
-        color_discrete_sequence=[
-            method_color_mapping[method] for method in df_exploded["method"].unique()
-        ],
+        color_discrete_sequence=[method_color_mapping[method] for method in df_exploded["method"].unique()],
         color="method",
         width=800,
         height=800,
@@ -534,6 +516,6 @@ st.markdown("""
 ### References
 
 [1] Hasche, A., Navid, A., Krause, H., & Eckart, S. (2023). Experimental and numerical assessment of the effects of hydrogen admixtures on premixed methane-oxygen flames. Fuel, 352, 128964.
-            
+
 [2] Lide, D. R. (Ed.). (2004). CRC handbook of chemistry and physics (Vol. 85). CRC press.
 """)

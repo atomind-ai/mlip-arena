@@ -22,9 +22,7 @@ container = st.container(border=True)
 valid_models = [
     model
     for model, metadata in REGISTRY.items()
-    if (
-        DATA_DIR / REGISTRY[str(model)]["family"].lower() / f"{model}-heating.parquet"
-    ).exists()
+    if (DATA_DIR / REGISTRY[str(model)]["family"].lower() / f"{model}-heating.parquet").exists()
 ]
 
 models = container.multiselect(
@@ -53,9 +51,7 @@ color_palettes = {
 }
 color_palettes.pop("__all__", None)
 
-palette_name = vis.selectbox(
-    "Color sequence", options=list(color_palettes.keys()), index=22
-)
+palette_name = vis.selectbox("Color sequence", options=list(color_palettes.keys()), index=22)
 color_sequence = color_palettes[palette_name]
 
 if not models:
@@ -67,9 +63,7 @@ def get_data(model_list, run_type: Literal["heating", "compression"]) -> pd.Data
     """Load parquet files for selected models."""
     dfs = []
     for m in model_list:
-        fpath = (
-            DATA_DIR / REGISTRY[str(m)]["family"].lower() / f"{m}-{run_type}.parquet"
-        )
+        fpath = DATA_DIR / REGISTRY[str(m)]["family"].lower() / f"{m}-{run_type}.parquet"
         if not fpath.exists():
             continue
         df_local = pd.read_parquet(fpath)
@@ -83,8 +77,7 @@ df_npt = get_data(models, run_type="compression")
 
 # Map model → color
 method_color_mapping = {
-    method: color_sequence[i % len(color_sequence)]
-    for i, method in enumerate(df_nvt["method"].unique())
+    method: color_sequence[i % len(color_sequence)] for i, method in enumerate(df_nvt["method"].unique())
 }
 
 
@@ -115,9 +108,7 @@ def compute_power_law_fits(df_in: pd.DataFrame) -> dict:
     fits = {}
     for name, grp in df_in.groupby("method"):
         grp_clean = grp.dropna(subset=["natoms", "steps_per_second"])
-        grp_clean = grp_clean[
-            (grp_clean["natoms"] > 0) & (grp_clean["steps_per_second"] > 0)
-        ]
+        grp_clean = grp_clean[(grp_clean["natoms"] > 0) & (grp_clean["steps_per_second"] > 0)]
         if len(grp_clean) < 3:
             continue
         try:
@@ -131,9 +122,7 @@ def compute_power_law_fits(df_in: pd.DataFrame) -> dict:
 
 
 @st.cache_data
-def build_speed_figure(
-    df_in: pd.DataFrame, color_map: dict, show_scatter: bool
-) -> go.Figure:
+def build_speed_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -> go.Figure:
     """Build scatter plot of inference speed vs number of atoms with power-law fits."""
     fig = go.Figure()
 
@@ -165,9 +154,7 @@ def build_speed_figure(
         grp = df_in[df_in["method"] == method]
         if grp["natoms"].dropna().empty:
             continue
-        xs = np.logspace(
-            np.log10(grp["natoms"].min()), np.log10(grp["natoms"].max()), 200
-        )
+        xs = np.logspace(np.log10(grp["natoms"].min()), np.log10(grp["natoms"].max()), 200)
         ys = a * xs ** (-n)
 
         fig.add_trace(
@@ -194,9 +181,7 @@ def build_speed_figure(
 
 
 @st.cache_data
-def build_nvt_figure(
-    df_in: pd.DataFrame, color_map: dict, show_scatter: bool
-) -> go.Figure:
+def build_nvt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -> go.Figure:
     """Build subplot: NVT valid runs (cumulative) + speed scaling plot."""
     fig = make_subplots(
         rows=1,
@@ -213,9 +198,7 @@ def build_nvt_figure(
     # Left panel: cumulative valid runs
     for method, df_model in df_in.groupby("method"):
         df_model_grp = df_model.drop_duplicates(["formula"])
-        hist, bin_edges = np.histogram(
-            df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50)
-        )
+        hist, bin_edges = np.histogram(df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50))
         cumulative_population = np.cumsum(hist)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         fig.add_trace(
@@ -240,9 +223,7 @@ def build_nvt_figure(
 
 
 @st.cache_data
-def build_npt_figure(
-    df_in: pd.DataFrame, color_map: dict, show_scatter: bool
-) -> go.Figure:
+def build_npt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -> go.Figure:
     """Build subplot: NPT valid runs (cumulative) + speed scaling plot."""
     fig = make_subplots(
         rows=1,
@@ -259,9 +240,7 @@ def build_npt_figure(
     # Left panel: cumulative valid runs
     for method, df_model in df_in.groupby("method"):
         df_model_grp = df_model.drop_duplicates(["formula"])
-        hist, bin_edges = np.histogram(
-            df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50)
-        )
+        hist, bin_edges = np.histogram(df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50))
         cumulative_population = np.cumsum(hist)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         fig.add_trace(
@@ -293,9 +272,7 @@ else:
     Isochoric-isothermal (NVT) MD simulations on RM24 structures, with temperature ramp from 300K to 3000K over 10 ps.
     """)
 
-    show_scatter_nvt = st.toggle(
-        "Show scatter points", key="show_scatter_nvt", value=True
-    )
+    show_scatter_nvt = st.toggle("Show scatter points", key="show_scatter_nvt", value=True)
     # Toggle for scatter points
     # show_scatter = vis.checkbox("Show scatter points", value=True)
     st.plotly_chart(
@@ -308,9 +285,7 @@ else:
     Isothermal-isobaric (NPT) MD simulations on RM24 structures, with pressure ramp from 0 GPa to 500 GPa and temperature ramp from 300K to 3000K over 10 ps.
     """)
 
-    show_scatter_npt = st.toggle(
-        "Show scatter points", key="show_scatter_npt", value=True
-    )
+    show_scatter_npt = st.toggle("Show scatter points", key="show_scatter_npt", value=True)
     # Toggle for scatter points
     # show_scatter = vis.checkbox("Show scatter points", value=True)
     st.plotly_chart(
