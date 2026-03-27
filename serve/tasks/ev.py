@@ -64,7 +64,7 @@ def load_wbm_structures():
 @st.cache_data
 def generate_dataframe(model_name):
     """
-    Builds an analyzed DataFrame of energy–volume scan metrics for a given model.
+    Builds an analyzed DataFrame of energy-volume scan metrics for a given model.
     
     Parameters:
         model_name (str): Identifier of the model; used to locate the model's parquet results file in DATA_DIR.

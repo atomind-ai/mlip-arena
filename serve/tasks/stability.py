@@ -214,10 +214,10 @@ def build_speed_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool)
 def build_nvt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -> go.Figure:
     """
     Create a 1x2 Plotly figure showing cumulative valid runs and inference speed scaling.
-    
+
     Left subplot shows the percentage of valid runs over normalized time for each method.
-    Right subplot shows inference speed (steps per second) versus number of atoms on log‑log axes; the right panel includes scatter points and fitted power‑law lines when `show_scatter` is enabled.
-    
+    Right subplot shows inference speed (steps per second) versus number of atoms on log-log axes; the right panel includes scatter points and fitted power-law lines when `show_scatter` is enabled.
+
     Parameters:
         df_in (pd.DataFrame): Input dataframe containing run records. Expected columns include
             'method', 'normalized_final_step', and 'formula' (used for the left subplot); the right
@@ -225,10 +225,10 @@ def build_nvt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -
         color_map (dict): Mapping from method identifier to a color string used for plotting.
         show_scatter (bool): If true, include scatter points in the speed subplot; if false, only
             fit lines are shown.
-    
+
     Returns:
         fig (go.Figure): A Plotly Figure with two subplots:
-            - Left: "Valid runs" — Normalized time (0–1) vs valid runs percentage.
+            - Left: "Valid runs" — Normalized time (0-1) vs valid runs percentage.
             - Right: "Inference speed: steps/s vs N" — Number of atoms vs steps per second on log scales.
     """
     fig = make_subplots(

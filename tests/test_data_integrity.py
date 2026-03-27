@@ -19,14 +19,14 @@ RANK_TASKS = [
 
 @pytest.mark.parametrize("rank_module_name, task_key", RANK_TASKS)
 def test_rank_data_loading(rank_module_name, task_key):
-    # Import the rank module
     """
     Validate that a rank leaderboard module exposes a non-empty `table` and includes all models registered for the given task.
-    
+
     Parameters:
         rank_module_name (str): Name of the rank module under the `ranks` package to load.
         task_key (str): Task identifier used to determine which models should appear in the leaderboard (looked up in the `MODELS` registry).
     """
+    # Import the rank module
     import importlib
 
     try:
