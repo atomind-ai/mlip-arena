@@ -6,7 +6,7 @@ import streamlit as st
 DATA_DIR = Path("benchmarks/eos_bulk")
 
 
-table = pd.read_csv(DATA_DIR / "summary.csv")
+table = pd.read_csv(DATA_DIR / "leaderboard.csv")
 
 
 table = table.rename(

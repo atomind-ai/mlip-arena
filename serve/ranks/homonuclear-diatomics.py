@@ -10,128 +10,88 @@ valid_models = [model for model, metadata in MODELS.items() if Path(__file__).st
 
 DATA_DIR = Path("benchmarks/diatomics")
 
-dfs = [pd.read_json(DATA_DIR / MODELS[model].get("family") / f"{model}.json") for model in valid_models]
-df = pd.concat(dfs, ignore_index=True)
-
-# df = df[df["method"].isin([
-#     "SevenNet",
-#     "ORBv2",
-#     "ORB",
-#     "MatterSim",
-#     "MACE-MPA",
-#     "MACE-MP(M)",
-#     "M3GNet",
-#     "eSEN",
-#     "eSCN(OC20)",
-#     "eqV2(OMat)",
-#     "EquiformerV2(OC22)",
-#     "EquiformerV2(OC20)",
-#     "CHGNet",
-#     "ALIGNN"
-# ]
-# )]
-
-table = pd.DataFrame()
-
-for model in valid_models:
-    rows = df[df["method"] == model]
-    metadata = MODELS.get(model, {})
-
-    new_row = {
-        "Model": model,
-        "Conservation deviation [eV/Å]": rows["conservation-deviation"].mean(),
-        "Spearman's coeff. (E: repulsion)": rows["spearman-repulsion-energy"].mean(),
-        "Spearman's coeff. (F: descending)": rows["spearman-descending-force"].mean(),
-        "Tortuosity": rows["tortuosity"].mean(),
-        "Energy jump [eV]": rows["energy-jump"].mean(),
-        "Force flips": rows["force-flip-times"].mean(),
-        "Spearman's coeff. (E: attraction)": rows["spearman-attraction-energy"].mean(),
-        "Spearman's coeff. (F: ascending)": rows["spearman-ascending-force"].mean(),
-        "PBE energy MAE [eV]": rows["pbe-energy-mae"].mean(),
-        "PBE force MAE [eV/Å]": rows["pbe-force-mae"].mean(),
-    }
-
-    table = pd.concat([table, pd.DataFrame([new_row])], ignore_index=True)
-
-table.set_index("Model", inplace=True)
-
-table.sort_values("Conservation deviation [eV/Å]", ascending=True, inplace=True)
-table["Rank"] = np.argsort(table["Conservation deviation [eV/Å]"].to_numpy())
-
-table.sort_values("Spearman's coeff. (E: repulsion)", ascending=True, inplace=True)
-table["Rank"] += np.argsort(table["Spearman's coeff. (E: repulsion)"].to_numpy())
-
-table.sort_values("Spearman's coeff. (F: descending)", ascending=True, inplace=True)
-table["Rank"] += np.argsort(table["Spearman's coeff. (F: descending)"].to_numpy())
-
-# NOTE: it's not fair to models trained on different level of theory
-# table.sort_values("PBE energy MAE [eV]", ascending=True, inplace=True)
-# table["Rank"] += np.argsort(table["PBE energy MAE [eV]"].to_numpy())
-
-# table.sort_values("PBE force MAE [eV/Å]", ascending=True, inplace=True)
-# table["Rank"] += np.argsort(table["PBE force MAE [eV/Å]"].to_numpy())
-
-table.sort_values("Tortuosity", ascending=True, inplace=True)
-table["Rank"] += np.argsort(table["Tortuosity"].to_numpy())
-
-table.sort_values("Energy jump [eV]", ascending=True, inplace=True)
-table["Rank"] += np.argsort(table["Energy jump [eV]"].to_numpy())
-
-table.sort_values("Force flips", ascending=True, inplace=True)
-table["Rank"] += np.argsort(np.abs(table["Force flips"].to_numpy() - 1))
-
-table["Rank"] += 1
-
-table.sort_values(["Rank", "Conservation deviation [eV/Å]"], ascending=True, inplace=True)
-
-table["Rank aggr."] = table["Rank"]
-table["Rank"] = table["Rank aggr."].rank(method="min").astype(int)
-
-table = table.reindex(
-    columns=[
-        "Rank",
-        "Rank aggr.",
-        "Conservation deviation [eV/Å]",
-        "Spearman's coeff. (E: repulsion)",
-        "Spearman's coeff. (F: descending)",
-        "Energy jump [eV]",
-        "Force flips",
-        "Tortuosity",
-        "PBE energy MAE [eV]",
-        "PBE force MAE [eV/Å]",
-        "Spearman's coeff. (E: attraction)",
-        "Spearman's coeff. (F: ascending)",
-    ]
-)
-
-# cloned = table.copy()
-# cloned.drop(columns=[
-#     "PBE energy MAE [eV]",
-#     "PBE force MAE [eV/Å]",
-#     "Spearman's coeff. (E: attraction)",
-#     "Spearman's coeff. (F: ascending)",],
-#     inplace=True
-# )
-# cloned.to_latex(
-#     DATA_DIR / "homonuclear-diatomics.tex",
-#     float_format="%.3f",
-#     index=True,
-#     column_format="l" + "r" * (len(table.columns) - 1),
-# )
-
 
 @st.cache_data
-def get_table():
+def get_table(valid_models):
+    dfs = [pd.read_json(DATA_DIR / MODELS[model].get("family") / f"{model}.json") for model in valid_models]
+    df = pd.concat(dfs, ignore_index=True)
+
+    table = pd.DataFrame()
+
+    for model in valid_models:
+        rows = df[df["method"] == model]
+
+        new_row = {
+            "Model": model,
+            "Conservation deviation [eV/Å]": rows["conservation-deviation"].mean(),
+            "Spearman's coeff. (E: repulsion)": rows["spearman-repulsion-energy"].mean(),
+            "Spearman's coeff. (F: descending)": rows["spearman-descending-force"].mean(),
+            "Tortuosity": rows["tortuosity"].mean(),
+            "Energy jump [eV]": rows["energy-jump"].mean(),
+            "Force flips": rows["force-flip-times"].mean(),
+            "Spearman's coeff. (E: attraction)": rows["spearman-attraction-energy"].mean(),
+            "Spearman's coeff. (F: ascending)": rows["spearman-ascending-force"].mean(),
+            "PBE energy MAE [eV]": rows["pbe-energy-mae"].mean(),
+            "PBE force MAE [eV/Å]": rows["pbe-force-mae"].mean(),
+        }
+
+        table = pd.concat([table, pd.DataFrame([new_row])], ignore_index=True)
+
+    table.set_index("Model", inplace=True)
+
+    table.sort_values("Conservation deviation [eV/Å]", ascending=True, inplace=True)
+    table["Rank"] = np.argsort(table["Conservation deviation [eV/Å]"].to_numpy())
+
+    table.sort_values("Spearman's coeff. (E: repulsion)", ascending=True, inplace=True)
+    table["Rank"] += np.argsort(table["Spearman's coeff. (E: repulsion)"].to_numpy())
+
+    table.sort_values("Spearman's coeff. (F: descending)", ascending=True, inplace=True)
+    table["Rank"] += np.argsort(table["Spearman's coeff. (F: descending)"].to_numpy())
+
+    table.sort_values("Tortuosity", ascending=True, inplace=True)
+    table["Rank"] += np.argsort(table["Tortuosity"].to_numpy())
+
+    table.sort_values("Energy jump [eV]", ascending=True, inplace=True)
+    table["Rank"] += np.argsort(table["Energy jump [eV]"].to_numpy())
+
+    table.sort_values("Force flips", ascending=True, inplace=True)
+    table["Rank"] += np.argsort(np.abs(table["Force flips"].to_numpy() - 1))
+
+    table["Rank"] += 1
+
+    table.sort_values(["Rank", "Conservation deviation [eV/Å]"], ascending=True, inplace=True)
+
+    table["Rank aggr."] = table["Rank"]
+    table["Rank"] = table["Rank aggr."].rank(method="min").astype(int)
+
+    table = table.reindex(
+        columns=[
+            "Rank",
+            "Rank aggr.",
+            "Conservation deviation [eV/Å]",
+            "Spearman's coeff. (E: repulsion)",
+            "Spearman's coeff. (F: descending)",
+            "Energy jump [eV]",
+            "Force flips",
+            "Tortuosity",
+            "PBE energy MAE [eV]",
+            "PBE force MAE [eV/Å]",
+            "Spearman's coeff. (E: attraction)",
+            "Spearman's coeff. (F: ascending)",
+        ]
+    )
     return table
+
+
+table = get_table(valid_models)
 
 
 def render():
     s = (
-        get_table()
-        .style.background_gradient(
+        table.style.background_gradient(
             cmap="viridis_r",
             subset=["Conservation deviation [eV/Å]"],
-            gmap=np.log(get_table()["Conservation deviation [eV/Å]"].to_numpy()),
+            gmap=np.log(table["Conservation deviation [eV/Å]"].to_numpy()),
         )
         .background_gradient(
             cmap="Reds",

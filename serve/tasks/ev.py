@@ -90,7 +90,7 @@ def generate_dataframe(model_name):
 
         try:
             results = df_raw_results.loc[df_raw_results["id"] == structure_id]
-            results = results["eos"].values[0]
+            results = results["eos"].to_numpy()[0]
             es = np.array(results["energies"])
             vols = np.array(results["volumes"])
             vol0 = wbm_struct.get_volume()

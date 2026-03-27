@@ -359,7 +359,7 @@ ALIGNN:
     - MP22
   gpu-tasks:
     - homonuclear-diatomics
-    - stability
+    # - stability
     - ev
     # - combustion
   prediction: EFS
@@ -404,7 +404,7 @@ ORB:
   gpu-tasks:
     - homonuclear-diatomics
     - combustion
-    - stability
+    # - stability
   github: https://github.com/orbital-materials/orb-models
   doi:
   date: 2024-09-03
