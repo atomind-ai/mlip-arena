@@ -13,6 +13,17 @@ valid_models = [model for model, metadata in MODELS.items() if Path(__file__).st
 
 @st.cache_data
 def get_data(models):
+    """
+    Load and combine per-model JSON results into a single deduplicated DataFrame.
+    
+    Reads one JSON file for each model and concatenates them into a single DataFrame, dropping duplicate rows based on the combination of `formula` and `method`.
+    
+    Parameters:
+        models (Iterable[str]): Iterable of model names whose JSON result files should be loaded.
+    
+    Returns:
+        pandas.DataFrame: Combined DataFrame of all models' results with duplicates removed by `formula` and `method`.
+    """
     dfs = [pd.read_json(DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json") for model in models]
     df = pd.concat(dfs, ignore_index=True)
     df.drop_duplicates(inplace=True, subset=["formula", "method"])
@@ -24,6 +35,15 @@ df = get_data(valid_models)
 
 @st.cache_data
 def get_com_drifts(df):
+    """
+    Expand per-timestep COM drift arrays into individual rows and compute the total center-of-mass drift magnitude.
+    
+    Parameters:
+        df (pandas.DataFrame): DataFrame containing at least the columns `"timestep"`, `"energies"`, and `"com_drifts"`, where `"com_drifts"` contains iterable 3-element arrays or lists representing x, y, z components.
+    
+    Returns:
+        pandas.DataFrame: A new DataFrame with rows exploded by `"timestep"`, `"energies"`, and `"com_drifts"`, a new `total_com_drift` column containing the Euclidean norm of the COM drift for each row, and without the intermediate `com_drift_x`, `com_drift_y`, `com_drift_z`, or original `com_drifts` columns.
+    """
     df_exploded = df.explode(["timestep", "energies", "com_drifts"]).reset_index(drop=True)
 
     # Convert the 'com_drifts' column (which are arrays) into separate columns for x, y, and z components

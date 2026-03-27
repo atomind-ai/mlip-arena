@@ -63,6 +63,26 @@ def load_wbm_structures():
 
 @st.cache_data
 def generate_dataframe(model_name):
+    """
+    Builds an analyzed DataFrame of energy–volume scan metrics for a given model.
+    
+    Parameters:
+        model_name (str): Identifier of the model; used to locate the model's parquet results file in DATA_DIR.
+    
+    Returns:
+        pd.DataFrame: One row per WBM structure with the following columns:
+            - model: model identifier (same as `model_name`)
+            - structure: structure identifier from the WBM dataset
+            - formula: chemical formula of the structure
+            - volume-ratio: sequence of volumes normalized by the structure's relaxed volume (V / V0)
+            - energy-delta-per-atom: sequence of energies shifted by the midpoint minimum and normalized per atom
+            - energy-diff-flip-times: integer count of sign flips in adjacent energy differences (after removing zero-difference intervals)
+            - tortuosity: scalar measure of total variation relative to end deviations
+            - spearman-compression-energy: Spearman correlation statistic between volume and energy on the compression side
+            - spearman-compression-derivative: Spearman correlation statistic between interpolated volumes and energy differences on the compression side
+            - spearman-tension-energy: Spearman correlation statistic between volume and energy on the tension side
+            - missing: boolean flag; `True` if metrics could not be computed for the structure, in which case the metric fields are `None`
+    """
     fpath = DATA_DIR / f"{model_name}.parquet"
     if not fpath.exists():
         return pd.DataFrame()  # Return empty dataframe instead of using continue

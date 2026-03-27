@@ -59,6 +59,15 @@ if not models:
 
 @st.cache_data
 def get_data(models):
+    """
+    Load and merge per-model benchmark JSON files for the specified models.
+    
+    Parameters:
+        models (Iterable[str]): Iterable of model identifiers whose JSON files should be read. Each model's file is expected under DATA_DIR / MODELS[model]["family"].lower() with a name formatted as "{model}_H256O128.json".
+    
+    Returns:
+        pandas.DataFrame: Concatenated DataFrame of all models' data with duplicate rows removed based on the `formula` and `method` columns.
+    """
     dfs = [pd.read_json(DATA_DIR / MODELS[model]["family"].lower() / f"{model}_H256O128.json") for model in models]
     df = pd.concat(dfs, ignore_index=True)
     df.drop_duplicates(inplace=True, subset=["formula", "method"])
@@ -357,6 +366,17 @@ The center of mass (COM) drift is a measure of the stability of the simulation. 
 
 @st.cache_data
 def get_com_drifts(df):
+    """
+    Create a flattened DataFrame with separate center-of-mass drift components and their magnitudes for each timestep.
+    
+    Parameters:
+        df (pandas.DataFrame): Input DataFrame containing at least the columns
+            `timestep` (array-like per row) and `com_drifts` (array-like per row of length 3 representing x, y, z drift).
+    
+    Returns:
+        pandas.DataFrame: A DataFrame where rows are exploded by `timestep` and `com_drifts`, includes new columns
+        `com_drift_x`, `com_drift_y`, `com_drift_z` (the per-axis components) and `total_com_drift` (Euclidean norm of the three components).
+    """
     df_exploded = df.explode(["timestep", "com_drifts"]).reset_index(drop=True)
 
     # Convert the 'com_drifts' column (which are arrays) into separate columns for x, y, and z components
@@ -426,6 +446,11 @@ if "time_range" not in st.session_state:
 # @st.experimental_fragment(run_every=1e-3 if st.session_state.play else None)
 @st.experimental_fragment()
 def draw_com_drifts_plot():
+    """
+    Render the interactive 3D center-of-mass (COM) drift visualization and update the session time range slider.
+    
+    When called, this function optionally advances the displayed timestep window when playback is enabled, presents a slider for selecting a timestep range, filters the precomputed COM drift records to that range, and draws a 3D line plot of COM trajectories per method. The plot includes a marker at the origin and a marker+text for each method showing the last COM drift value within the selected range. The function updates `st.session_state.time_range` when playback advances and displays the resulting Plotly chart in Streamlit.
+    """
     if st.session_state.play:
         start, end = st.session_state.time_range
 
