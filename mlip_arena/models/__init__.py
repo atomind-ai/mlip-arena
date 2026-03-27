@@ -74,8 +74,6 @@ def _make_mlip_enum() -> Enum:
 
 MLIPEnum = _make_mlip_enum()
 
-# ── Patch enum members with convenience methods ────────────────────────────────
-
 
 def _metadata(self) -> dict:
     """Return the raw registry metadata dict for this model."""
@@ -115,9 +113,6 @@ def _call(self, **kwargs):
 MLIPEnum.metadata = property(_metadata)  # type: ignore[attr-defined]
 MLIPEnum.load = _load  # type: ignore[attr-defined]
 MLIPEnum.__call__ = _call  # type: ignore[attr-defined]
-
-
-# ── Core model base classes (unchanged) ───────────────────────────────────────
 
 
 class MLIP(

@@ -2,8 +2,8 @@
 *.extxyz
 *.traj
 *.db
-mlip_arena/tasks/*/
 datasets/
+benchmarks/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

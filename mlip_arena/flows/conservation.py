@@ -15,7 +15,7 @@ from ase import Atoms
 from ase.io import read, write
 from prefect import flow, task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
-from prefect.runtime import flow_run
+from prefect.runtime import flow_run, task_run
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.md import run as MD
@@ -131,6 +131,30 @@ def get_trajectory_entropy(
     return delta_entropy(descriptors, ref_descriptors, h=h), structures
 
 
+@task(
+    task_run_name=lambda: (
+        f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['model_name']}"
+    ),
+    cache_policy=TASK_SOURCE + INPUTS,
+)
+def run_nve_md(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, traj_file: Path):
+    return MD.with_options(
+        refresh_cache=True,
+    )(
+        atoms,
+        calculator=get_calculator(model),  # wrap calculater inside task for separate calculator instances
+        ensemble="nve",
+        dynamics="velocityverlet",
+        time_step=1.0,  # fs
+        total_time=5000,  # 5 ps = 5000 fs
+        temperature=1000.0,
+        traj_file=traj_file,
+        traj_interval=1,
+        zero_linear_momentum=True,
+        zero_angular_momentum=True,
+    )
+
+
 def run_simulations(model: MLIPEnum | BaseCalculator | str, structures: list[Atoms], out_dir: Path):
     """
     Runs simulations on a list of structures.
@@ -155,25 +179,17 @@ def run_simulations(model: MLIPEnum | BaseCalculator | str, structures: list[Ato
     for i, atoms in enumerate(structures):
         # Replicate the structure
         n_atoms = len(atoms)
-        rep_factor = int(np.ceil((min_atoms / n_atoms) ** (1 / 3)))  # cube root since it's a 3D replication
+        rep_factor = int(np.floor((min_atoms / n_atoms) ** (1 / 3)))  # cube root since it's a 3D replication
         supercell_atoms = atoms.repeat((rep_factor, rep_factor, rep_factor))
         if len(supercell_atoms) > max_atoms:
             logger.info(f"Skipping structure {i} because it has too many atoms ({len(supercell_atoms)} > {max_atoms})")
             continue  # skip if it becomes too large
 
         # Run NVE MD @ 1000K for 5 ps
-        future = MD.submit(
+        future = run_nve_md.submit(
             supercell_atoms,
-            calculator=get_calculator(model),
-            ensemble="nve",
-            dynamics="velocityverlet",
-            time_step=1.0,  # fs
-            total_time=5000,  # 5 ps = 5000 fs
-            temperature=1000.0,
-            traj_file=f"{out_dir}/{i}.traj",
-            traj_interval=100,
-            zero_linear_momentum=True,
-            zero_angular_momentum=True,
+            model=model,
+            traj_file=out_dir / f"{i}.traj",
         )
         futures.append(future)
 
@@ -185,7 +201,7 @@ def _generate_flow_run_name():
     parameters = flow_run.parameters
 
     model = parameters["model"]
-    reference_path = parameters["reference_path"]
+    reference_path = parameters["reference_path"].stem
 
     return f"{name}: {model} - {reference_path}"
 
@@ -195,8 +211,8 @@ def _generate_flow_run_name():
     flow_run_name=_generate_flow_run_name,
 )
 def differential_entropy_along_nve_trajectory(
-    model: MLIPEnum | str,
-    structures: list[Atoms],
+    model: MLIPEnum | BaseCalculator | str,
+    input_path: Path,
     reference_path: Path,
     start_idx: int,
     end_idx: int,
@@ -212,7 +228,7 @@ def differential_entropy_along_nve_trajectory(
 
     Arguments:
         model (MLIPEnum | BaseCalculator | str): Model to use.
-        structures (list[ase.Atoms]): List of structures to simulate.
+        input_path (Path): Path to the directory containing the trajectory files.
         reference_path (Path): Path to the file containing the descriptors of the full dataset of structures without the subset.
         start_idx (int): Starting index of the subset of structures to select from each trajectory.
         end_idx (int): Ending index of the subset of structures to select from each trajectory.
@@ -239,6 +255,8 @@ def differential_entropy_along_nve_trajectory(
 
     # Run simulations
     out_dir = work_dir / model_name if work_dir is not None else Path.cwd() / model_name
+
+    structures = read(input_path, index=":")
     run_simulations(model, structures, out_dir)
 
     # Get entropy for structures along trajectories

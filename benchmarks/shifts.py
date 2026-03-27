@@ -1,65 +1,45 @@
-"""
-================================================================================
-MLIP Arena - Benchmark Job Submission Template
-================================================================================
-This script configures and submits the MLIP Arena core benchmarks
-via a Dask-Jobqueue on a SLURM cluster.
-
-INSTRUCTIONS:
-1. Provide your model as a registered string OR an ASE calculator instance.
-2. Adjust the cluster allocation parameters below.
-3. Run directly: `python asymptotes.py`
-================================================================================
-"""
-
 from pathlib import Path
 
 from ase.calculators.calculator import BaseCalculator
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
+from huggingface_hub import hf_hub_download
 from prefect import flow
 from prefect.context import FlowRunContext
 from prefect_dask import DaskTaskRunner
 
-from mlip_arena.flows.diatomics import homonuclear_diatomics
-from mlip_arena.flows.eos_bulk import run_db as EOSFlow
-from mlip_arena.flows.ev import run_db as EVFlow
+from mlip_arena.flows.conservation import differential_entropy_along_nve_trajectory
 from mlip_arena.models import REGISTRY, MLIPEnum
 
 
 @flow
-def asymptotic_behaviors(model: str | BaseCalculator):
+def distribution_shifts(model: str | BaseCalculator):
     ctx = FlowRunContext.get()
     parent_task_runner = ctx.task_runner
 
     if isinstance(model, BaseCalculator):
         model_name = model.__class__.__name__
         family = "custom"
-    elif model_name in MLIPEnum.__members__:
+    elif model in MLIPEnum.__members__:
         model_name = model
         family = REGISTRY[model_name]["family"] if model_name in REGISTRY else "custom"
     else:
         raise ValueError(f"{model} is not supported.")
 
-    # 1. Diatomics
-    print(f"Starting homonuclear diatomics benchmark for {model_name}...")
-    out_dir_diatomics = Path(__file__).parent / "diatomics" / family / model_name
-    homonuclear_diatomics.with_options(name=f"diatomics-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_diatomics
-    )
+    work_dir = Path(__file__).parent / "energy_conservation" / family / model_name
 
-    # 2. EOS Bulk
-    print(f"Starting EOS bulk benchmark for {model_name}...")
-    out_dir_eos = Path(__file__).parent / "eos_bulk"
-    EOSFlow.with_options(name=f"eos_bulk-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
-    )
-
-    # 3. E-V
-    print(f"Starting E-V scan benchmark for {model_name}...")
-    out_dir_ev = Path(__file__).parent / "ev"
-    EVFlow.with_options(name=f"ev-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
+    dH, sampled_structures = differential_entropy_along_nve_trajectory.with_options(
+        task_runner=parent_task_runner,
+    )(
+        model=model,
+        input_path=Path(__file__).parent / "mptrj_eq_test.extxyz",
+        reference_path=hf_hub_download(
+            repo_id="atomind/mlip-arena", filename="mptrj_subset.extxyz", repo_type="dataset"
+        ),
+        start_idx=0,
+        end_idx=-1,
+        step=100,
+        work_dir=work_dir,
     )
 
 
@@ -69,7 +49,7 @@ if __name__ == "__main__":
     # ==============================================================================
 
     # Example A: Registered string model (e.g., "MACE-MP(M)", "CHGNet")
-    MODEL = "NequIP-OAM-L"
+    MODEL = "ORBv2"
 
     # Example B: Custom ASE Calculator
     # from mace.calculators import mace_mp
@@ -118,7 +98,7 @@ if __name__ == "__main__":
     print(f"Generating SLURM cluster jobs with script:\n{cluster.job_script()}")
     print("--------------------------------------------------------------------------------")
 
-    cluster.adapt(minimum_jobs=1, maximum_jobs=100)
+    cluster.adapt(minimum_jobs=1, maximum_jobs=50)
     client = Client(cluster)
 
     print(f"Dask dashboard available at: {client.dashboard_link}")
@@ -127,7 +107,7 @@ if __name__ == "__main__":
     # 2. JOB EXECUTION
     # ==============================================================================
 
-    asymptotic_behaviors.with_options(
+    distribution_shifts.with_options(
         task_runner=DaskTaskRunner(address=client.scheduler.address),
         log_prints=True,
     )(model=MODEL)
