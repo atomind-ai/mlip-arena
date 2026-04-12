@@ -11,7 +11,7 @@ References
 
 from collections import defaultdict
 from pathlib import Path
-from typing import IO, Any
+from typing import Any
 
 import numpy as np
 from prefect import flow, task
@@ -22,7 +22,6 @@ from prefect.states import State
 from tqdm.auto import tqdm
 
 from ase import Atoms, units
-from ase.atoms import Atoms
 from ase.build import molecule
 from ase.filters import Filter
 from ase.io.trajectory import Trajectory, TrajectoryWriter
@@ -62,7 +61,7 @@ def add_molecule(gas: Atoms, rotate: bool = True, translate: tuple = None) -> At
     Examples
     --------
     >>> from ml_mc.utils import molecule, add_gas
-    >>> gas = molecule('H2O')
+    >>> gas = molecule("H2O")
     >>> gas = add_gas(gas, rotate=True, translate=(0, 0, 0))
     """
     gas = gas.copy()
@@ -197,7 +196,7 @@ def widom_insertion(
 
         if state.is_failed():
             return state
-        
+
         result = state.result(raise_on_failure=False)
         structure = result["atoms"]
         if result["converged"]:
@@ -233,9 +232,7 @@ def widom_insertion(
     idx_accessible_pos = ret["idx_accessible_pos"]
     structure = ret["structure"]  # supercell structure if necessary
 
-    logger.info(
-        f"Number of accessible positions: {len(idx_accessible_pos)} out of total {len(pos_grid)}"
-    )
+    logger.info(f"Number of accessible positions: {len(idx_accessible_pos)} out of total {len(pos_grid)}")
 
     calc = calculator
     # Calculate energies for structure and gas
@@ -256,10 +253,9 @@ def widom_insertion(
         traj = None
 
     # Run Widom insertion algorithm
-    
+
     results = defaultdict(list)
     for ifold in range(fold):
-
         nsteps = 0
 
         np.random.shuffle(idx_accessible_pos)
@@ -283,17 +279,13 @@ def widom_insertion(
             total_energy = structure_with_gas.get_potential_energy()  # [eV]
             interaction_energy = total_energy - energy_structure - energy_gas  # [eV]
 
-            boltzmann_factor = np.exp(
-                -interaction_energy / (temperature * units._k / units._e)
-            )
+            boltzmann_factor = np.exp(-interaction_energy / (temperature * units._k / units._e))
 
             # Handle exponential overflow that can cause numerical instability
 
             max_exp_arg = 700  # np.exp(700) is close to the max float64
             if boltzmann_factor > np.exp(max_exp_arg):
-                logger.warning(
-                    f"Exponential overflow detected. Rejecting this step and retrying."
-                )
+                logger.warning("Exponential overflow detected. Rejecting this step and retrying.")
                 continue
 
             interaction_energies[nsteps] = interaction_energy
@@ -310,9 +302,7 @@ def widom_insertion(
 
         # Calculate ensemble averages properties
         # units._e [J/eV], units._k [J/K], units._k / units._e # [eV/K]
-        boltzmann_factors = np.exp(
-            -interaction_energies / (temperature * units._k / units._e)
-        )
+        boltzmann_factors = np.exp(-interaction_energies / (temperature * units._k / units._e))
 
         # KH = <exp(-E/RT)> / (R * T)
         atomic_density = get_atomic_density(structure)  # [kg / m^3]
@@ -333,7 +323,7 @@ def widom_insertion(
         results["henry_coefficient"].append(kh)
         results["averaged_interaction_energy"].append(u)
         results["heat_of_adsorption"].append(qst)
-        
+
     return results
 
 

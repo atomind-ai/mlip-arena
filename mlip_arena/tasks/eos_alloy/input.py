@@ -46,12 +46,12 @@ def save_to_db(
 
     if upload and hf_token is None:
         raise ValueError("HF_TOKEN is required to upload the database.")
-    
+
     db_path = Path(db_path)
 
     if isinstance(atoms_list, Atoms):
         atoms_list = [atoms_list]
-    
+
     with connect(db_path) as db:
         for atoms in atoms_list:
             if not isinstance(atoms, Atoms):
@@ -67,8 +67,9 @@ def save_to_db(
             repo_type=repo_type,
         )
         print(f"{db_path.name} uploaded to {repo_id}/{subfolder}")
-    
+
     return db_path
+
 
 @task
 def get_atoms_from_db(
@@ -107,9 +108,7 @@ def generate_sqs(structure_template, elements, counts):
     """
     import structuretoolkit as stk
 
-    mole_fractions = {
-        el: c / len(structure_template) for el, c in zip(elements, counts)
-    }
+    mole_fractions = {el: c / len(structure_template) for el, c in zip(elements, counts)}
     return stk.build.sqs_structures(
         structure=structure_template,
         mole_fractions=mole_fractions,
@@ -133,10 +132,9 @@ def generate_alloy_db(
     repo_id: str = "atomind/mlip-arena",
     repo_type: str = "dataset",
 ) -> Path:
-    
     if upload and hf_token is None:
         raise ValueError("HF_TOKEN is required to upload the database.")
-    
+
     num_atoms = len(structure_template)
     num_species = len(elements)
 
@@ -144,15 +142,11 @@ def generate_alloy_db(
     configurations = np.array(body_order(n=num_atoms, b=num_species))
 
     # Prepare the database
-    db_path = (
-        Path(db_path) or Path(__file__).resolve().parent / f"sqs_{'-'.join(elements)}.db"
-    )
+    db_path = Path(db_path) or Path(__file__).resolve().parent / f"sqs_{'-'.join(elements)}.db"
     db_path.unlink(missing_ok=True)
 
     atoms_list = []
-    for i, composition in tqdm(
-        enumerate(configurations), total=len(configurations)
-    ):
+    for i, composition in tqdm(enumerate(configurations), total=len(configurations)):
         # Skip trivial cases where only one element is present
         if sum(composition == 0) != len(elements) - 1:
             atoms = generate_sqs(
@@ -167,7 +161,6 @@ def generate_alloy_db(
                 elements=elements,
             )
         atoms_list.append(atoms)
-
 
     return save_to_db(
         atoms_list=atoms_list,

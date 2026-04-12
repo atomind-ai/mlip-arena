@@ -64,10 +64,10 @@ def load_wbm_structures():
 def generate_dataframe(model_name):
     """
     Build an analyzed DataFrame of EOS metrics for every WBM structure using results for the given model.
-    
+
     Parameters:
         model_name (str): Name of the model whose results are read from DATA_DIR/{model_name}.parquet.
-    
+
     Returns:
         pd.DataFrame: One row per WBM structure containing computed metrics and metadata. Columns:
             - model: model_name string
@@ -82,7 +82,7 @@ def generate_dataframe(model_name):
             - spearman-compression-derivative: Spearman correlation between interpolated volumes and energy derivatives on the compression side
             - spearman-tension-energy: Spearman correlation between tension-side volumes and energies
             - missing: `False` if metrics were computed, `True` if the structure's metrics could not be computed
-    
+
     Notes:
         If DATA_DIR/{model_name}.parquet does not exist an empty DataFrame is returned. Rows with computation errors are included with `missing=True` and metric fields set to None.
     """
@@ -182,12 +182,12 @@ def generate_dataframe(model_name):
 def get_plots(selected_models):
     """
     Create a Plotly figure for each model showing relative energy versus volume ratio for its structures.
-    
+
     Parameters:
-    	selected_models (iterable): Iterable of model name strings to generate plots for.
-    
+        selected_models (iterable): Iterable of model name strings to generate plots for.
+
     Returns:
-    	figs (list): List of tuples (model_name, figure, valid_structures) where `figure` is a Plotly Figure for the model and `valid_structures` is a list of structure IDs included in that figure.
+        figs (list): List of tuples (model_name, figure, valid_structures) where `figure` is a Plotly Figure for the model and `valid_structures` is a list of structure IDs included in that figure.
     """
     figs = []
 

@@ -14,11 +14,11 @@ DATA_DIR = Path(__file__).parents[2] / "benchmarks" / "stability"
 def get_data(model_list, run_type: Literal["heating", "compression"]) -> pd.DataFrame:
     """
     Load benchmarking data for the given models and run type.
-    
+
     Parameters:
         model_list (Iterable): An iterable of model identifiers (used to locate each model's data file).
         run_type (Literal["heating", "compression"]): Which run dataset to load for each model.
-    
+
     Returns:
         pd.DataFrame: Concatenated dataframe of all found model datasets with a `method` column set to the model identifier; returns an empty DataFrame if no files were found.
     """
@@ -58,16 +58,16 @@ def prepare_scatter_df(df_in: pd.DataFrame, max_points: int = 20000) -> pd.DataF
 def compute_power_law_fits(df_in: pd.DataFrame) -> dict:
     """
     Estimate per-method power-law scaling of throughput (steps per second) as a function of system size.
-    
+
     For each group in `df_in` grouped by the `method` column, fits a power law of the form
     steps/s ≈ a * N^(-n) using a linear fit on log-transformed `natoms` and `steps_per_second`.
     Groups with fewer than 3 valid rows or with nonpositive/missing `natoms` or `steps_per_second`
     are skipped.
-    
+
     Parameters:
         df_in (pd.DataFrame): DataFrame containing at minimum the columns
             `method`, `natoms`, and `steps_per_second`.
-    
+
     Returns:
         dict: Mapping from `method` to a tuple `(a, n)` where `a` is the prefactor and `n`
         is the positive scaling exponent in the relation steps/s ≈ a * N^(-n).
@@ -92,10 +92,10 @@ def compute_power_law_fits(df_in: pd.DataFrame) -> dict:
 def compute_auc(df: pd.DataFrame) -> dict:
     """
     Compute the area under the "valid run" curve for each method.
-    
+
     For each method this function drops duplicate runs by `formula`, builds a distribution of `normalized_final_step`,
     constructs the corresponding valid-run curve, and returns the area under that curve.
-    
+
     Returns:
         dict: Mapping from method identifier to the computed AUC (float).
     """
@@ -167,7 +167,7 @@ def render():
     # Style
     """
     Apply visual styling to the module-level summary table and render it in Streamlit.
-    
+
     Applies a blue background gradient to the rank columns, a reversed-green gradient to the AUC columns,
     and a green gradient to the scaling-exponent columns. Formats the metric columns to three decimal
     places and represents missing values with a hyphen, then displays the resulting styled table via

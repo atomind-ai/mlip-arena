@@ -18,13 +18,20 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
 
     - name: Run pre-commit
-      uses: pre-commit/action@v3.0.1
+      run: uvx pre-commit run --all-files --show-diff-on-failure
+      env:
+        PRE_COMMIT_USE_UV: 1
 
   test:
     needs: lint

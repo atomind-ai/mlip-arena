@@ -27,7 +27,7 @@ def save_to_db(
 
     if isinstance(atoms_list, Atoms):
         atoms_list = [atoms_list]
-    
+
     with connect(db_path) as db:
         for atoms in atoms_list:
             if not isinstance(atoms, Atoms):
@@ -45,6 +45,7 @@ def save_to_db(
         logger.info(f"{db_path.name} uploaded to {repo_id}/{subfolder}")
 
     return db_path
+
 
 @task
 def get_atoms_from_db(

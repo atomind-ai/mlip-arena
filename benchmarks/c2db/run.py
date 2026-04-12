@@ -7,7 +7,6 @@ from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks import ELASTICITY, OPT, PHONON
-from mlip_arena.tasks.optimize import run as OPT
 from mlip_arena.tasks.utils import get_calculator
 from numpy import linalg as LA
 from prefect import flow, task
@@ -61,7 +60,7 @@ def elastic_tensor_to_voigt(C):
     for i in range(3):
         for j in range(3):
             for k in range(3):
-                for l in range(3):
+                for l in range(3):  # noqa: E741
                     alpha = voigt_map[(i, j)]
                     beta = voigt_map[(k, l)]
 
@@ -119,9 +118,7 @@ def run_one(model, row):
     elastic_tensor = elastic_tensor_to_voigt(result_elastic["elastic_tensor"])
     eigenvalues, eigenvectors = LA.eig(elastic_tensor)
 
-    outdir = Path(f"{model.name}") / row.key_value_pairs.get(
-        "uid", atoms.get_chemical_formula()
-    )
+    outdir = Path(f"{model.name}") / row.key_value_pairs.get("uid", atoms.get_chemical_formula())
     outdir.mkdir(parents=True, exist_ok=True)
 
     np.savez(outdir / "elastic.npz", tensor=elastic_tensor, eigenvalues=eigenvalues)
@@ -161,9 +158,7 @@ def run_all():
     futures = []
     with connect("c2db.db") as db:
         random_indices = random.sample(range(1, len(db) + 1), 1000)
-        for row, model in tqdm(
-            product(db.select(filter=lambda r: r["id"] in random_indices), MLIPEnum)
-        ):
+        for row, model in tqdm(product(db.select(filter=lambda r: r["id"] in random_indices), MLIPEnum)):
             if model.name not in select_models:
                 continue
             future = run_one.submit(model, row)
@@ -209,6 +204,4 @@ if __name__ == "__main__":
     client = Client(cluster)
     # -
 
-    run_all.with_options(
-        task_runner=DaskTaskRunner(address=client.scheduler.address), log_prints=True
-    )()
+    run_all.with_options(task_runner=DaskTaskRunner(address=client.scheduler.address), log_prints=True)()

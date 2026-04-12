@@ -59,9 +59,7 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
             except Exception:
                 Ps.append(np.nan)
 
-            com_drifts.append(
-                (atoms.get_center_of_mass() - atoms0.get_center_of_mass()).tolist()
-            )
+            com_drifts.append((atoms.get_center_of_mass() - atoms0.get_center_of_mass()).tolist())
             nproducts.append(identify_water_molecules(atoms))
         except Exception:
             continue
@@ -93,15 +91,9 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
         "natoms": natoms,
         "total_time_seconds": total_time_seconds,
         "total_steps": total_steps,
-        "steps_per_second": total_steps / total_time_seconds
-        if total_time_seconds != 0
-        else 0,
-        "seconds_per_step": total_time_seconds / total_steps
-        if total_steps != 0
-        else float("inf"),
-        "seconds_per_step_per_atom": total_time_seconds / total_steps / natoms
-        if total_steps != 0
-        else float("inf"),
+        "steps_per_second": total_steps / total_time_seconds if total_time_seconds != 0 else 0,
+        "seconds_per_step": total_time_seconds / total_steps if total_steps != 0 else float("inf"),
+        "seconds_per_step_per_atom": total_time_seconds / total_steps / natoms if total_steps != 0 else float("inf"),
         "energies": PEs,
         "kinetic_energies": KEs,
         "temperatures": Ts,
@@ -145,9 +137,7 @@ def hydrogen_combustion(model: str | BaseCalculator, run_dir: Path):
 
     traj = io.read(traj_file, index=":")
 
-    assert len(traj) >= 2000, (
-        f"Trajectory has only {len(traj)} frames and is not complete."
-    )
+    assert len(traj) >= 2000, f"Trajectory has only {len(traj)} frames and is not complete."
 
     assert np.allclose(traj[0].positions, atoms.positions), "Initial positions do not match."
 

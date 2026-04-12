@@ -29,9 +29,7 @@ def get_atoms_from_db(db_path: Path | str):
             yield row.toatoms()
 
 
-def save_to_hdf(
-    tsk: Task, run: TaskRun, state: State, fpath: Path | str, table_name: str
-):
+def save_to_hdf(tsk: Task, run: TaskRun, state: State, fpath: Path | str, table_name: str):
     """
     Define a hook on completion of EOS task to save results to HDF5 file.
     """
@@ -46,9 +44,7 @@ def save_to_hdf(
 
     try:
         atoms = result["atoms"]
-        calculator_name = (
-            run.task_inputs["calculator_name"] or result["calculator_name"]
-        )
+        calculator_name = run.task_inputs["calculator_name"] or result["calculator_name"]
 
         energies = [float(e) for e in result["eos"]["energies"]]
 
@@ -88,9 +84,7 @@ def save_to_hdf(
         print(e)
 
 
-@flow(
-    name="EOS Alloy"
-)
+@flow(name="EOS Alloy")
 def run(
     db_path: Path | str,
     out_path: Path | str,
@@ -115,8 +109,7 @@ def run(
             if not REGISTRY[mlip.name]["npt"]:
                 continue
             if Path(__file__).parent.name not in (
-                REGISTRY[mlip.name].get("cpu-tasks", [])
-                + REGISTRY[mlip.name].get("gpu-tasks", [])
+                REGISTRY[mlip.name].get("cpu-tasks", []) + REGISTRY[mlip.name].get("gpu-tasks", [])
             ):
                 continue
             future = EOS_.submit(
@@ -138,8 +131,4 @@ def run(
 
     wait(futures)
 
-    return [
-        f.result(timeout=None, raise_on_failure=False)
-        for f in futures
-        if f.state.is_completed()
-    ]
+    return [f.result(timeout=None, raise_on_failure=False) for f in futures if f.state.is_completed()]

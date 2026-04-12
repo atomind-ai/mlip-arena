@@ -8,9 +8,7 @@ from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks import NEB_FROM_ENDPOINTS
 from mlip_arena.tasks.utils import get_calculator
 
-pristine = crystal(
-    "Al", [(0, 0, 0)], spacegroup=225, cellpar=[4.05, 4.05, 4.05, 90, 90, 90]
-) * (3, 3, 3)
+pristine = crystal("Al", [(0, 0, 0)], spacegroup=225, cellpar=[4.05, 4.05, 4.05, 90, 90, 90]) * (3, 3, 3)
 
 atoms = pristine.copy()
 del atoms[0]

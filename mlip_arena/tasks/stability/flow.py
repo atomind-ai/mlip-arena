@@ -110,9 +110,7 @@ def npt_compress_one(atoms: Atoms, model: MLIPEnum | BaseCalculator, run_dir: Pa
         ensemble="npt",
         dynamics="nose-hoover",
         time_step=None,
-        dynamics_kwargs=dict(
-            ttime=25 * units.fs, pfactor=((75 * units.fs) ** 2) * 1e2 * units.GPa
-        ),
+        dynamics_kwargs=dict(ttime=25 * units.fs, pfactor=((75 * units.fs) ** 2) * 1e2 * units.GPa),
         total_time=1e4,  # 5e4, # fs
         temperature=[300, 3000],
         pressure=[0, 5e2 * units.GPa],  # 500 GPa / 10 ps = 50 GPa / 1 ps
@@ -123,9 +121,7 @@ def npt_compress_one(atoms: Atoms, model: MLIPEnum | BaseCalculator, run_dir: Pa
 
 
 @flow
-def heating(
-    model: MLIPEnum | BaseCalculator, run_dir: Path, hf_token: str | None = HF_TOKEN
-):
+def heating(model: MLIPEnum | BaseCalculator, run_dir: Path, hf_token: str | None = HF_TOKEN):
     """Prefect flow to run NVT heating tasks for many database structures.
 
     This flow iterates over structures from the 'random-mixture.db' dataset
@@ -141,29 +137,21 @@ def heating(
 
     futures = []
     # To download the database automatically, `huggingface_hub login` or provide HF_TOKEN
-    for i, atoms in enumerate(
-        get_atoms_from_db("random-mixture.db", hf_token=hf_token, force_download=False)
-    ):
+    for i, atoms in enumerate(get_atoms_from_db("random-mixture.db", hf_token=hf_token, force_download=False)):
         if i >= 200:
             break
-        future = nvt_heat_one.with_options(
-            timeout_seconds=600, retries=2, refresh_cache=False
-        ).submit(atoms.copy(), model, run_dir)
+        future = nvt_heat_one.with_options(timeout_seconds=600, retries=2, refresh_cache=False).submit(
+            atoms.copy(), model, run_dir
+        )
         futures.append(future)
 
     wait(futures)
 
-    return [
-        f.result(timeout=None, raise_on_failure=False)
-        for f in futures
-        if f.state.is_completed()
-    ]
+    return [f.result(timeout=None, raise_on_failure=False) for f in futures if f.state.is_completed()]
 
 
 @flow
-def compression(
-    model: MLIPEnum | BaseCalculator, run_dir: Path, hf_token: str | None = HF_TOKEN
-):
+def compression(model: MLIPEnum | BaseCalculator, run_dir: Path, hf_token: str | None = HF_TOKEN):
     """Prefect flow to run NPT compression tasks for many database structures.
 
     This flow iterates over structures from the 'random-mixture.db' dataset
@@ -179,20 +167,14 @@ def compression(
 
     futures = []
     # To download the database automatically, `huggingface_hub login` or provide HF_TOKEN
-    for i, atoms in enumerate(
-        get_atoms_from_db("random-mixture.db", hf_token=hf_token, force_download=False)
-    ):
+    for i, atoms in enumerate(get_atoms_from_db("random-mixture.db", hf_token=hf_token, force_download=False)):
         if i >= 200:
             break
-        future = npt_compress_one.with_options(
-            timeout_seconds=600, retries=2, refresh_cache=False
-        ).submit(atoms.copy(), model, run_dir)
+        future = npt_compress_one.with_options(timeout_seconds=600, retries=2, refresh_cache=False).submit(
+            atoms.copy(), model, run_dir
+        )
         futures.append(future)
 
     wait(futures)
 
-    return [
-        f.result(timeout=None, raise_on_failure=False)
-        for f in futures
-        if f.state.is_completed()
-    ]
+    return [f.result(timeout=None, raise_on_failure=False) for f in futures if f.state.is_completed()]

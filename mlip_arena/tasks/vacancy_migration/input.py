@@ -58,10 +58,11 @@ fcc_elements = [
     "W",
     "Xe",
     "Y",
-    "Zr"
+    "Zr",
 ]
 
-def get_fcc_pristine(mp_api_key = None):
+
+def get_fcc_pristine(mp_api_key=None):
     for element in fcc_elements:
         with MPRester(mp_api_key) as mpr:
             docs = mpr.materials.summary.search(
@@ -72,28 +73,29 @@ def get_fcc_pristine(mp_api_key = None):
 
             if len(docs) != 0:
                 pristine = docs[0].structure.to_conventional().to_ase_atoms(msonable=False) * (3, 3, 3)
-            
+
                 if len(pristine) != 108:
                     v = pristine.get_volume() / len(pristine)
-                    r = v**(1/3)
-                    a = 2*(2**0.5)*r
+                    r = v ** (1 / 3)
+                    a = 2 * (2**0.5) * r
 
                     pristine = crystal(
-                        symbols=[element]*4,
+                        symbols=[element] * 4,
                         basis=[(0, 0, 0), (0.5, 0.5, 0), (0.5, 0, 0.5), (0, 0.5, 0.5)],
                         spacegroup=225,
                         cellpar=[a, a, a, 90, 90, 90],
                     ) * (3, 3, 3)
             else:
                 r = covalent_radii[Atom(element).number] or 4
-                a = 2*(2**0.5)*r
+                a = 2 * (2**0.5) * r
                 pristine = crystal(
-                    symbols=[element]*4,
+                    symbols=[element] * 4,
                     basis=[(0, 0, 0), (0.5, 0.5, 0), (0.5, 0, 0.5), (0, 0.5, 0.5)],
                     spacegroup=225,
                     cellpar=[a, a, a, 90, 90, 90],
                 ) * (3, 3, 3)
         yield pristine
+
 
 hcp_elements = [
     "Ag",
@@ -151,10 +153,11 @@ hcp_elements = [
     "Xe",
     "Y",
     "Zn",
-    "Zr"
+    "Zr",
 ]
 
-def get_hcp_pristine(mp_api_key = None):
+
+def get_hcp_pristine(mp_api_key=None):
     for element in hcp_elements:
         with MPRester(mp_api_key) as mpr:
             docs = mpr.materials.summary.search(
@@ -165,12 +168,12 @@ def get_hcp_pristine(mp_api_key = None):
 
             if len(docs) != 0:
                 pristine = docs[0].structure.to_conventional().to_ase_atoms(msonable=False) * (3, 3, 1)
-            
+
                 if len(pristine) != 36:
                     v = pristine.get_volume() / len(pristine)
-                    r = v**(1/3)
-                    a = 2*r
-                    c = 4 * ((2/3) ** 0.5) * r
+                    r = v ** (1 / 3)
+                    a = 2 * r
+                    c = 4 * ((2 / 3) ** 0.5) * r
 
                     pristine = crystal(
                         [element],
@@ -180,8 +183,8 @@ def get_hcp_pristine(mp_api_key = None):
                     ) * (3, 3, 2)
             else:
                 r = covalent_radii[Atom(element).number] or 4
-                a = 2*r
-                c = 4 * ((2/3) ** 0.5) * r
+                a = 2 * r
+                c = 4 * ((2 / 3) ** 0.5) * r
 
                 pristine = crystal(
                     [element],

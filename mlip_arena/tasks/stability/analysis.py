@@ -71,9 +71,7 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
             Ps.append(atoms.get_stress()[:3].mean())
         except Exception:
             Ps.append(np.nan)
-        com_drifts.append(
-            (atoms.get_center_of_mass() - atoms0.get_center_of_mass()).tolist()
-        )
+        com_drifts.append((atoms.get_center_of_mass() - atoms0.get_center_of_mass()).tolist())
 
     restarts = np.array(restarts)
     times = np.array(times)
@@ -102,15 +100,9 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
         "natoms": natoms,
         "total_time_seconds": total_time_seconds,
         "total_steps": total_steps,
-        "steps_per_second": total_steps / total_time_seconds
-        if total_time_seconds != 0
-        else 0,
-        "seconds_per_step": total_time_seconds / total_steps
-        if total_steps != 0
-        else float("inf"),
-        "seconds_per_step_per_atom": total_time_seconds / total_steps / natoms
-        if total_steps != 0
-        else float("inf"),
+        "steps_per_second": total_steps / total_time_seconds if total_time_seconds != 0 else 0,
+        "seconds_per_step": total_time_seconds / total_steps if total_steps != 0 else float("inf"),
+        "seconds_per_step_per_atom": total_time_seconds / total_steps / natoms if total_steps != 0 else float("inf"),
         "energies": Es,
         "kinetic_energies": KEs,
         "temperatures": Ts,
@@ -122,9 +114,7 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
     }
 
 
-def gather_results(
-    run_dir: Path, prefix: str, run_type: Literal["nvt", "npt"]
-) -> pd.DataFrame:
+def gather_results(run_dir: Path, prefix: str, run_type: Literal["nvt", "npt"]) -> pd.DataFrame:
     df = pd.DataFrame()
 
     run_dir = Path(run_dir)
@@ -146,10 +136,8 @@ def gather_results(
                         {
                             # "model": model_name,
                             "formula": traj[0].get_chemical_formula(),
-                            "normalized_timestep": stats["timestep"]
-                            / stats["target_steps"],
-                            "normalized_final_step": stats["final_step"]
-                            / stats["target_steps"],
+                            "normalized_timestep": stats["timestep"] / stats["target_steps"],
+                            "normalized_final_step": stats["final_step"] / stats["target_steps"],
                             "pressure": np.array(stats["pressures"]) / units.GPa,
                         }
                         | stats
