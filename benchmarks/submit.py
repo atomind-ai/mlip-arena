@@ -1,7 +1,9 @@
-from asymptotes import asymptotic_behaviors
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
 from prefect_dask import DaskTaskRunner
+
+from asymptotes import asymptotic_behaviors
+from shifts import distribution_shifts
 
 # ==============================================================================
 # 1. JOB CONFIGURATION
@@ -76,4 +78,13 @@ asymptotic_behaviors.with_options(
     # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
 )
 
-# TODO: Add Distribution Shift, Stability and Reactivity
+distribution_shifts.with_options(
+    task_runner=DaskTaskRunner(address=client.scheduler.address),
+    log_prints=True,
+    persist_result=False,
+)(
+    calculator=calculator,
+    # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
+)
+
+# TODO: Add Stability and Reactivity
