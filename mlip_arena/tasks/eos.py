@@ -13,7 +13,6 @@ from ase import Atoms
 from ase.calculators.calculator import BaseCalculator
 from ase.optimize.optimize import Optimizer
 from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
 from prefect.results import ResultRecord
 from prefect.runtime import task_run
@@ -21,6 +20,7 @@ from prefect.states import State
 from pymatgen.analysis.eos import BirchMurnaghan
 
 from mlip_arena.tasks.optimize import run as OPT
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY
 
 if TYPE_CHECKING:
     from ase.filters import Filter
@@ -36,7 +36,7 @@ def _generate_task_run_name():
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
 
-@task(name="EOS", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS)
+@task(name="EOS", task_run_name=_generate_task_run_name, cache_policy=ARENA_TASK_CACHE_POLICY)
 def run(
     atoms: Atoms,
     calculator: BaseCalculator,

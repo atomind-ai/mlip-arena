@@ -77,11 +77,13 @@ from ase.md.velocitydistribution import (
 )
 from ase.md.verlet import VelocityVerlet
 from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
+
 from prefect.runtime import task_run
 from scipy.interpolate import interp1d
 from scipy.linalg import schur
 from tqdm.auto import tqdm
+
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY
 
 _valid_dynamics: dict[str, tuple[str, ...]] = {
     "nve": ("velocityverlet",),
@@ -188,7 +190,11 @@ def _generate_task_run_name():
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator}"
 
 
-@task(name="MD", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS)
+@task(
+    name="MD",
+    task_run_name=_generate_task_run_name,
+    cache_policy=ARENA_TASK_CACHE_POLICY,
+)
 def run(
     atoms: Atoms,
     calculator: BaseCalculator,

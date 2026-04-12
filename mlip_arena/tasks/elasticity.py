@@ -46,7 +46,6 @@ from ase.calculators.calculator import BaseCalculator
 from ase.optimize.optimize import Optimizer
 from numpy.typing import ArrayLike
 from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 from prefect.states import State
 from pymatgen.analysis.elasticity import DeformedStructureSet, ElasticTensor, Strain
@@ -54,6 +53,7 @@ from pymatgen.analysis.elasticity.elastic import get_strain_state_dict
 from pymatgen.io.ase import AseAtomsAdaptor
 
 from mlip_arena.tasks.optimize import run as OPT
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY
 
 if TYPE_CHECKING:
     from ase.filters import Filter
@@ -72,8 +72,7 @@ def _generate_task_run_name():
 @task(
     name="Elasticity",
     task_run_name=_generate_task_run_name,
-    cache_policy=TASK_SOURCE + INPUTS,
-    # cache_key_fn=task_input_hash,
+    cache_policy=ARENA_TASK_CACHE_POLICY,
 )
 def run(
     atoms: Atoms,

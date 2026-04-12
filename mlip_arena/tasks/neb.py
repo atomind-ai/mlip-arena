@@ -65,7 +65,7 @@ from prefect.states import State
 from pymatgen.io.ase import AseAtomsAdaptor
 
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import logger, pformat
+from mlip_arena.tasks.utils import logger, pformat, ARENA_TASK_CACHE_POLICY
 
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
@@ -101,7 +101,7 @@ def _generate_task_run_name():
 @task(
     name="NEB from images",
     task_run_name=_generate_task_run_name,
-    cache_policy=TASK_SOURCE + INPUTS,
+    cache_policy=ARENA_TASK_CACHE_POLICY,
 )
 def run(
     images: list[Atoms],

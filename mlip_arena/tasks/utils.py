@@ -11,6 +11,8 @@ from ase.calculators.mixing import SumCalculator
 
 from mlip_arena.models import MLIPEnum
 
+from prefect.cache_policies import INPUTS, TASK_SOURCE, CacheKeyFnPolicy
+
 try:
     from prefect.logging import get_run_logger
 
@@ -111,3 +113,14 @@ def get_calculator(
 
     assert isinstance(calc, BaseCalculator)
     return calc
+
+
+def _calculator_key_fn(context, parameters):
+    """
+    Generate a cache key for the calculator using its string representation
+    instead of hashing the entire object (which can be very large).
+    """
+    return {"calculator": str(parameters["calculator"])}
+
+
+ARENA_TASK_CACHE_POLICY = TASK_SOURCE + INPUTS.exclude("calculator") + CacheKeyFnPolicy(cache_key_fn=_calculator_key_fn)

@@ -42,7 +42,7 @@ from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 
-from mlip_arena.tasks.utils import logger
+from mlip_arena.tasks.utils import logger, ARENA_TASK_CACHE_POLICY
 
 try:
     from phonopy import Phonopy
@@ -111,7 +111,7 @@ def _generate_task_run_name():
 @task(
     name="PHONON",
     task_run_name=_generate_task_run_name,
-    cache_policy=TASK_SOURCE + INPUTS,
+    cache_policy=ARENA_TASK_CACHE_POLICY,
 )
 def run(
     atoms: Atoms,

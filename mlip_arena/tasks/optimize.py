@@ -23,10 +23,9 @@ from ase.optimize import (
 )
 from ase.optimize.optimize import Optimizer
 from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 
-from mlip_arena.tasks.utils import logger, pformat
+from mlip_arena.tasks.utils import logger, pformat, ARENA_TASK_CACHE_POLICY
 
 _valid_filters: dict[str, Filter] = {
     "Filter": Filter,
@@ -61,7 +60,7 @@ def _generate_task_run_name():
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
 
-@task(name="OPT", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS)
+@task(name="OPT", task_run_name=_generate_task_run_name, cache_policy=ARENA_TASK_CACHE_POLICY)
 def run(
     atoms: Atoms,
     calculator: BaseCalculator,
