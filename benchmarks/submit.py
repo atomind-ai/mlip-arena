@@ -8,11 +8,12 @@ from prefect_dask import DaskTaskRunner
 # ==============================================================================
 
 # Example A: Registered string model (e.g., "MACE-MP(M)", "CHGNet")
-MODEL = "NequIP-OAM-L"
+calculator = "NequIP-OAM-L"
 
-# Example B: Custom ASE Calculator
-# from mace.calculators import mace_mp
-# MODEL = mace_mp(model="medium", dispersion=False, default_dtype="float64", device="cuda")
+# Example B: Custom ASE Calculator class and arguments (e.g., custom MLIP)
+# from ase.calculators.lj import LennardJones
+# calculator = LennardJones
+# calculator_kwargs = dict(rc=10.0, sigma=1.0, epsilon=0.01)
 
 # SLURM environment configuration
 SLURM_CONFIG = {
@@ -30,7 +31,7 @@ SLURM_CONFIG = {
     ],
 }
 
-job_model_name = MODEL if isinstance(MODEL, str) else MODEL.__class__.__name__
+job_model_name = calculator if isinstance(calculator, str) else calculator.__class__.__name__
 
 cluster_kwargs = dict(
     cores=1,
@@ -69,6 +70,10 @@ print(f"Dask dashboard available at: {client.dashboard_link}")
 asymptotic_behaviors.with_options(
     task_runner=DaskTaskRunner(address=client.scheduler.address),
     log_prints=True,
-)(model=MODEL)
+    persist_result=False,
+)(
+    calculator=calculator,
+    # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
+)
 
 # TODO: Add Distribution Shift, Stability and Reactivity

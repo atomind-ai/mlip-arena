@@ -14,6 +14,7 @@ import numpy as np
 from ase import Atoms
 from ase.io import read, write
 from prefect import flow, task
+from prefect.futures import wait
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import flow_run, task_run
 
@@ -133,16 +134,20 @@ def get_trajectory_entropy(
 
 @task(
     task_run_name=lambda: (
-        f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['model_name']}"
+        f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['calculator']}"
     ),
     cache_policy=TASK_SOURCE + INPUTS,
 )
-def run_nve_md(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, traj_file: Path):
+def run_nve_md(
+    atoms: Atoms, calculator: MLIPEnum | BaseCalculator | str, calculator_kwargs: dict | None, traj_file: Path
+):
     return MD.with_options(
         refresh_cache=True,
     )(
         atoms,
-        calculator=get_calculator(model),  # wrap calculater inside task for separate calculator instances
+        calculator=get_calculator(
+            calculator, calculator_kwargs
+        ),  # wrap calculater inside task for separate calculator instances
         ensemble="nve",
         dynamics="velocityverlet",
         time_step=1.0,  # fs
@@ -155,12 +160,14 @@ def run_nve_md(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, traj_file: 
     )
 
 
-def run_simulations(model: MLIPEnum | BaseCalculator | str, structures: list[Atoms], out_dir: Path):
+def run_simulations(
+    calculator: MLIPEnum | BaseCalculator | str, calculator_kwargs: dict | None, structures: list[Atoms], out_dir: Path
+):
     """
     Runs simulations on a list of structures.
 
     Parameters:
-        model (MLIPEnum | BaseCalculator | str): Model to use.
+        calculator (MLIPEnum | BaseCalculator | str): Model to use.
         structures (list[ase.Atoms]): List of structures to simulate.
         out_dir (str): Directory to save the simulation trajectories to.
 
@@ -188,10 +195,12 @@ def run_simulations(model: MLIPEnum | BaseCalculator | str, structures: list[Ato
         # Run NVE MD @ 1000K for 5 ps
         future = run_nve_md.submit(
             supercell_atoms,
-            model=model,
+            calculator=calculator,
+            calculator_kwargs=calculator_kwargs,
             traj_file=out_dir / f"{i}.traj",
         )
         futures.append(future)
+    wait(futures)
 
     return [f.result(raise_on_failure=False) for f in futures]
 
@@ -211,7 +220,8 @@ def _generate_flow_run_name():
     flow_run_name=_generate_flow_run_name,
 )
 def differential_entropy_along_nve_trajectory(
-    model: MLIPEnum | BaseCalculator | str,
+    calculator: MLIPEnum | BaseCalculator | str,
+    calculator_kwargs: dict | None,
     input_path: Path,
     reference_path: Path,
     start_idx: int,
@@ -244,20 +254,20 @@ def differential_entropy_along_nve_trajectory(
         sampled_structures (list[ase.Atoms]): List of structures selected from the trajectory.
     """
 
-    if isinstance(model, MLIPEnum):
-        model_name = model.name
-    elif isinstance(model, BaseCalculator):
-        model_name = model.__class__.__name__
-    elif isinstance(model, str) and hasattr(MLIPEnum, model):
-        model_name = model
+    if isinstance(calculator, MLIPEnum):
+        model_name = calculator.name
+    elif isinstance(calculator, BaseCalculator):
+        model_name = calculator.__class__.__name__
+    elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
+        model_name = calculator
     else:
-        raise ValueError(f"Unsupported model: {model}")
+        raise ValueError(f"Unsupported calculator: {calculator}")
 
     # Run simulations
     out_dir = work_dir / model_name if work_dir is not None else Path.cwd() / model_name
 
     structures = read(input_path, index=":")
-    run_simulations(model, structures, out_dir)
+    run_simulations(calculator, calculator_kwargs, structures, out_dir)
 
     # Get entropy for structures along trajectories
     dH, sampled_structures = get_trajectory_entropy(
