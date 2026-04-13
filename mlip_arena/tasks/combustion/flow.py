@@ -43,7 +43,8 @@ def identify_water_molecules(atoms):
 
 @task
 def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
-    """Analyze trajectory for runtime statistics, thermodynamics, and reaction progress.
+    """Analyze trajectory for runtime statistics, thermodynamics, and reaction
+    progress.
 
     Args:
         traj (list[Atoms]): List of ASE Atoms from trajectory.

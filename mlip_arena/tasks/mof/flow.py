@@ -1,5 +1,5 @@
-"""Widom insertion workflow to calculate Henry coefficient and heat of adsorption for a given MOF structure and gas
-molecule.
+"""Widom insertion workflow to calculate Henry coefficient and heat of
+adsorption for a given MOF structure and gas molecule.
 
 This script is heavily adapted from the `DAC-SIM <https://github.com/hspark1212/DAC-SIM>`_ package. Please cite the original work if you use this script.
 
@@ -130,7 +130,8 @@ def widom_insertion(
     fold: int = 3,
     random_seed: int | None = None,
 ) -> dict[str, Any] | State:
-    """Run the Widom insertion algorithm to calculate the Henry coefficient and heat of adsorption.
+    """Run the Widom insertion algorithm to calculate the Henry coefficient and
+    heat of adsorption.
 
     Parameters
     ----------
@@ -326,7 +327,8 @@ def widom_insertion(
 def run(
     db_path: Path | str = "mofs.db",
 ):
-    """Run Widom insertion calculations for MOFs in a database using all registered MLIPs.
+    """Run Widom insertion calculations for MOFs in a database using all
+    registered MLIPs.
 
     Args:
         db_path (Path | str, optional): Path to the MOF database. Defaults to "mofs.db".

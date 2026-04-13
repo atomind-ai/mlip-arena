@@ -1,5 +1,5 @@
-"""Task for running MD simulations and computing the differential entropy of the simulated structures with respect to a
-reference dataset.
+"""Task for running MD simulations and computing the differential entropy of
+the simulated structures with respect to a reference dataset.
 
 See https://github.com/dskoda/quests for differential entropy details.
 """
@@ -74,7 +74,8 @@ def get_entropy_from_path(
     cutoff: float = 5.0,
     h: float = 0.015,
 ):
-    """Computes the differential entropy of a subset of structures with respect to a reference dataset.
+    """Computes the differential entropy of a subset of structures with respect
+    to a reference dataset.
 
     Arguments:
         subset_path (Path): Path to the file containing the subset of structures.
@@ -101,7 +102,8 @@ def get_trajectory_entropy(
     cutoff=5.0,
     h=0.015,
 ):
-    """Computes the differential entropy of a subset of structures in a trajectory with respect to a reference dataset.
+    """Computes the differential entropy of a subset of structures in a
+    trajectory with respect to a reference dataset.
 
     Arguments:
         trajectory_dir (str): Path to the directory containing the trajectory files.
@@ -247,7 +249,8 @@ def differential_entropy_along_nve_trajectory(
     h: float = 0.015,
     work_dir: Path | None = None,
 ):
-    """Computes the differential entropy of a subset of structures in a trajectory with respect to a reference dataset.
+    """Computes the differential entropy of a subset of structures in a
+    trajectory with respect to a reference dataset.
 
     Arguments:
         model (MLIPEnum | BaseCalculator | str): Model to use.

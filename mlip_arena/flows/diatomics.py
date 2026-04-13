@@ -24,7 +24,8 @@ from mlip_arena.tasks.utils import get_calculator
     ),
 )
 def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculator, out_dir: Path):
-    """Calculate the potential energy curve for single homonuclear diatomic molecule.
+    """Calculate the potential energy curve for single homonuclear diatomic
+    molecule.
 
     This function computes the potential energy of a diatomic molecule (two atoms of
     the same element) across a range of interatomic distances. The distance range is
@@ -103,7 +104,8 @@ def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculato
 
 
 def analyze(out_dir: Path):
-    """Analyze potential energy curves (PEC) for diatomic molecules in a directory.
+    """Analyze potential energy curves (PEC) for diatomic molecules in a
+    directory.
 
     Args:
         out_dir (Path): Path to the directory containing .extxyz trajectory files.
@@ -253,7 +255,8 @@ def analyze(out_dir: Path):
 
 @flow
 def homonuclear_diatomics(model: BaseCalculator | str, run_dir: Path | None = None):
-    """Run homonuclear diatomic calculations for all elements using a specific model.
+    """Run homonuclear diatomic calculations for all elements using a specific
+    model.
 
     Args:
         model (BaseCalculator | str): The model or ASE calculator to use.

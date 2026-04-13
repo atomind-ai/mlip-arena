@@ -16,7 +16,8 @@ from mlip_arena.tasks.eos import run as EOS
 
 @task
 def get_atoms_from_db(db_path: Path | str):
-    """Load atoms from an ASE database. Downloads from HuggingFace if not local.
+    """Load atoms from an ASE database. Downloads from HuggingFace if not
+    local.
 
     Args:
         db_path (Path | str): Path to the database file.

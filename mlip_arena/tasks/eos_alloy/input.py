@@ -1,4 +1,5 @@
-"""Generates a database of special quasi-random structures (SQS) from a template structure.
+"""Generates a database of special quasi-random structures (SQS) from a
+template structure.
 
 This script utilizes the `structuretoolkit <https://github.com/pyiron/structuretoolkit/tree/main>`_
 to call `sqsgenerator <https://sqsgenerator.readthedocs.io/en/latest/index.html#>`_ to generate
@@ -20,8 +21,8 @@ Authors
 """
 
 import os
+from collections.abc import Generator, Iterable
 from pathlib import Path
-from typing import Generator, Iterable
 
 import numpy as np
 from ase import Atoms
@@ -40,7 +41,9 @@ def save_to_db(
     repo_type: str = "dataset",
     subfolder: str = Path(__file__).parent.name,
 ):
-    """Save ASE Atoms objects to an ASE database and optionally upload to Hugging Face Hub."""
+    """Save ASE Atoms objects to an ASE database and optionally upload to
+    Hugging Face Hub.
+    """
     if upload and hf_token is None:
         raise ValueError("HF_TOKEN is required to upload the database.")
 
@@ -90,14 +93,18 @@ def get_atoms_from_db(
 
 
 def body_order(n=32, b=5):
-    """Generate all possible combinations of atomic counts for `b` species that sum to `n`."""
+    """Generate all possible combinations of atomic counts for `b` species that
+    sum to `n`.
+    """
     if b == 2:
         return [[i, n - i] for i in range(n + 1)]
     return [[i] + j for i in range(n + 1) for j in body_order(n=n - i, b=b - 1)]
 
 
 def generate_sqs(structure_template, elements, counts):
-    """Generate a special quasi-random structure (SQS) based on mole fractions."""
+    """Generate a special quasi-random structure (SQS) based on mole
+    fractions.
+    """
     import structuretoolkit as stk
 
     mole_fractions = {el: c / len(structure_template) for el, c in zip(elements, counts)}
@@ -108,7 +115,9 @@ def generate_sqs(structure_template, elements, counts):
 
 
 def get_endmember(structure, conc_lst, elements):
-    """Assign a single element to all atoms in the structure to create an endmember."""
+    """Assign a single element to all atoms in the structure to create an
+    endmember.
+    """
     structure.symbols[:] = np.array(elements)[conc_lst != 0][0]
     return structure
 

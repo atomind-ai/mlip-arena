@@ -125,8 +125,9 @@ def get_calculator(
 
 
 def _calculator_key_fn(context, parameters):
-    """Generate a cache key for the calculator using its string representation instead of hashing the entire object
-    (which can be very large)."""
+    """Generate a cache key for the calculator using its string representation
+    instead of hashing the entire object (which can be very large).
+    """
     return {"calculator": str(parameters["calculator"])}
 
 

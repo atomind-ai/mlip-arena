@@ -28,7 +28,8 @@ def run(
     max_abs_strain: float = 0.2,
     npoints: int = 21,
 ):
-    """Perform an energy-volume (E-V) scan by applying uniform strain to the cell.
+    """Perform an energy-volume (E-V) scan by applying uniform strain to the
+    cell.
 
     Args:
         atoms (Atoms): ASE Atoms object.
