@@ -11,7 +11,7 @@ from ase.calculators.mixing import SumCalculator
 
 from mlip_arena.models import MLIPEnum
 
-from prefect.cache_policies import INPUTS, TASK_SOURCE, CacheKeyFnPolicy
+from prefect.cache_policies import INPUTS, TASK_SOURCE  # , CacheKeyFnPolicy
 
 try:
     from prefect.logging import get_run_logger
@@ -23,12 +23,11 @@ except (ImportError, RuntimeError):
 
 def get_freer_device() -> torch.device:
     """Get the GPU with the most free memory, or use MPS if available.
-    s
-        Returns:
-            torch.device: The selected GPU device or MPS.
+    Returns:
+        torch.device: The selected GPU device or MPS.
 
-        Raises:
-            ValueError: If no GPU or MPS is available.
+    Raises:
+        ValueError: If no GPU or MPS is available.
     """
     device_count = torch.cuda.device_count()
     if device_count > 0:
@@ -123,4 +122,6 @@ def _calculator_key_fn(context, parameters):
     return {"calculator": str(parameters["calculator"])}
 
 
-ARENA_TASK_CACHE_POLICY = TASK_SOURCE + INPUTS.exclude("calculator") + CacheKeyFnPolicy(cache_key_fn=_calculator_key_fn)
+ARENA_TASK_CACHE_POLICY = (
+    TASK_SOURCE + INPUTS
+)  # .exclude("calculator") + CacheKeyFnPolicy(cache_key_fn=_calculator_key_fn)
