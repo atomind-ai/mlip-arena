@@ -1,109 +1,112 @@
 <div align="center">
     <h1>⚔️ MLIP Arena ⚔️</h1>
+    <p><b>Fair and transparent benchmark of foundation machine learning interatomic potentials (MLIPs)</b></p>
     <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
+    <a href="https://atomind-ai-mlip-arena.mintlify.app/introduction"><img src="https://img.shields.io/badge/📖%20Documentation-Alpha-2dd4bf" alt="Documentation"></a>
     <a href="https://neurips.cc/virtual/2025/poster/121648"><img alt="Static Badge" src="https://img.shields.io/badge/NeurIPS-Spotlight-magenta"></a>
     <a href="https://arxiv.org/abs/2509.20630"><img src="https://img.shields.io/badge/arXiv-2509.20630-b31b1b"></a>
-    <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR AI4Mat-Spotlight-purple"></a>
+    <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR_AI4Mat-Spotlight-purple"></a>
     <br>
     <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/ci.yaml"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/mlip-arena"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mlip-arena"></a>
     <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>
     <!-- <a href="https://discord.gg/W8WvdQtT8T"><img alt="Discord" src="https://img.shields.io/discord/1299613474820984832?logo=discord"> -->
-</a>
 </div>
 
-![Thumnail](../serve/assets/workflow.png)
+---
 
-Foundation machine learning interatomic potentials (MLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations, have revolutionized molecular and materials modeling, but existing benchmarks suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific DFT references.
+![Thumbnail](../serve/assets/workflow.png)
 
-We introduce MLIP Arena, a unified benchmark platform for evaluating foundation MLIP performance beyond conventional error metrics. It focuses on revealing the physical soundness learned by MLIPs and assessing their utilitarian performance agnostic to underlying model architecture and training dataset.
+🚀 **The Future of Atomistic Modeling and Simulation Benchmarks for MLIPs**
 
-***By moving beyond static DFT references and revealing the important failure modes*** of current foundation MLIPs in real-world settings, MLIP Arena provides a reproducible framework to guide the next-generation MLIP development toward improved predictive accuracy and runtime efficiency while maintaining physical consistency.
+Foundation machine learning interatomic potentials (MLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations, have revolutionized molecular and materials modeling. However, existing benchmarks often suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific DFT references.
 
-MLIP Arena leverages modern pythonic workflow orchestrator 💙
- [Prefect](https://www.prefect.io/) 💙
- to enable advanced task/flow chaining and caching.
+**MLIP Arena** introduces a unified, cutting-edge benchmark platform for evaluating foundation MLIP performance far beyond conventional error metrics. It focuses on revealing the physical soundness learned by MLIPs and assessing their practical utility, remaining completely agnostic to the underlying model architectures and training datasets.
+
+***By moving beyond static DFT references and revealing the critical failure modes*** of current foundation MLIPs in real-world settings, MLIP Arena provides a reproducible framework to guide next-generation MLIP development. We aim to drive improvements in predictive accuracy and runtime efficiency while maintaining robust physical consistency!
+
+⚡ MLIP Arena leverages modern pythonic workflow orchestration with 💙 [Prefect](https://www.prefect.io/) 💙 to enable advanced task/flow chaining, scaling, and caching.
 
 ![Prefect](../serve/assets/prefect.png)
 
-<!-- - [Announcement](#announcement)
-- [Installation](#installation)
-  - [From PyPI (prefect workflow only, *without* pretrained models)](#from-pypi-prefect-workflow-only-without-pretrained-models)
-  - [From source (with integrated pretrained models)](#from-source-with-integrated-pretrained-models)
-- [Quickstart](#quickstart)
-- [Workflow Overview](#workflow-overview)
-  - [✅ The first Prefect workflow: molecular dynamics](#-the-first-prefect-workflow-molecular-dynamics)
-  - [🚀 Parallelize benchmarks at scale](#-parallelize-benchmarks-at-scale)
-  - [List of modular tasks](#list-of-modular-tasks)
-- [Contribute and Development](#contribute-and-development)
-  - [Add new MLIP models](#add-new-mlip-models)
-    - [External ASE Calculator (easy)](#external-ase-calculator-easy)
-    - [Hugging Face Model (recommended, difficult)](#hugging-face-model-recommended-difficult)
-  - [Add new benchmark](#add-new-benchmark)
-- [Citation](#citation) -->
-
 > [!NOTE]
-> Contributions of new tasks through PRs are very welcome! See [project page](https://github.com/orgs/atomind-ai/projects/1) for some outstanding tasks, or propose new feature requests in [Discussion](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
+> Contributions of new tasks via PRs are highly welcome! See our [Project Page](https://github.com/orgs/atomind-ai/projects/1) for outstanding tasks, or propose new feature requests in [Discussions](https://github.com/atomind-ai/mlip-arena/discussions/new?category=ideas).
 
-## Announcement
+---
 
-- **[Sep 18, 2025]** [🎊 **MLIP Arena is accepted as a Spotlight (top 3.5%) at NeurIPS!** 🎊](https://neurips.cc/virtual/2025/poster/121648)
-- **[Apr 8, 2025]** [🎉 **MLIP Arena is accepted as an ICLR AI4Mat Spotlight!** 🎉](https://openreview.net/forum?id=ysKfIavYQE#discussion) Huge thanks to all co-authors for their contributions!
+## 📖 Official Documentation
 
+For comprehensive guides, API references, and advanced usage, please visit our **[Official Documentation Site](https://atomind-ai-mlip-arena.mintlify.app/introduction)**!
 
-## Installation
+---
 
-### From PyPI (prefect workflow only, *without* pretrained models)
+## 📢 Announcements
+
+- **[Sep 18, 2025]** 🎊 **[MLIP Arena is accepted as a Spotlight (top 3.5%) at NeurIPS!](https://neurips.cc/virtual/2025/poster/121648)** 🎊
+- **[Apr 8, 2025]** 🎉 **[MLIP Arena is accepted as an ICLR AI4Mat Spotlight!](https://openreview.net/forum?id=ysKfIavYQE#discussion)** 🎉 Huge thanks to all co-authors for their contributions!
+
+---
+
+## 🛠️ Installation
+
+### Option 1: From PyPI (Prefect workflow only, *without* pretrained models)
 
 ```bash
 pip install mlip-arena
 ```
 
-### From source (with integrated pretrained models)
+### Option 2: From Source (with Integrated Pretrained Models)
 
 > [!CAUTION]
-> We strongly recommend clean build in a new virtual environment due to the compatibility issues between multiple popular MLIPs. We provide a single installation script using `uv` for minimal package conflicts and fast installation!
+> We strongly recommend a **clean build in a new virtual environment** due to compatibility issues between multiple popular MLIPs. We provide a single installation script using `uv` for minimal package conflicts and blazing fast installation!
 
-> [!CAUTION]
-> To automatically download fairchem model checkpoints, please make sure you have gained downloading access to their HuggingFace [***model repo (e.g. OMAT24)***](https://huggingface.co/facebook/OMAT24) (not dataset repo), and login locally on your machine through `hf auth login` (see [HF hub authentication](https://huggingface.co/docs/huggingface_hub/en/quick-start#authentication))
+> [!IMPORTANT]
+> To automatically download Fairchem model checkpoints, please ensure you have downloading access to their Hugging Face [***model repo (e.g., OMAT24)***](https://huggingface.co/facebook/OMAT24) (not the dataset repo). You must also log in locally on your machine via `hf auth login` (see [HF Hub authentication](https://huggingface.co/docs/huggingface_hub/en/quick-start#authentication)).
 
-**Linux**
+**🐧 Linux**
 
 ```bash
-# (Optional) Install uv, way faster than pip, why not? :)
+# (Optional) Install uv (it's much faster than pip!)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 
 git clone https://github.com/atomind-ai/mlip-arena.git
 cd mlip-arena
 
-# One script uv pip installation
+# One-script uv pip installation
 bash scripts/install.sh
 ```
 
 > [!TIP]
-> Sometimes installing all compiled models takes all the available local storage. Optional pip flag `--no-cache` could be uesed. `uv cache clean` will be helpful too.
+> Installing all compiled models can consume significant local storage. You can use the pip flag `--no-cache`, and running `uv cache clean` is extremely helpful for freeing up space.
 
-**Mac**
+**🍎 Mac OS**
 
 ```bash
 # (Optional) Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
-# One script uv pip installation
+
+# One-script uv pip installation
 bash scripts/install-macosx.sh
 ```
 
+---
+
 ## ⏩ Quickstart
 
-Instruction for individual benchmark is provided in the README in each corresponding folder under [/benchmark](../benchmarks/).
+Instructions for individual benchmarks are provided in the README within each corresponding folder under [`/benchmarks`](../benchmarks/).
+
+For a complete benchmark sweep using HPC resources, see the [`benchmarks/submit.py`](../benchmarks/submit.py) script. Refer to the [Run Benchmarks and Submit Model](#️-run-benchmarks-and-submit-model) section for usage instructions.
+
+---
 
 ## ⚙️ Workflow Overview
 
-### ✅ The first Prefect task: molecular dynamics
+### ✅ The first Prefect task: Molecular Dynamics
 
-Arena provides a unified interface to run all the compiled MLIPs. This can be achieved simply by looping through `MLIPEnum`:
+Arena provides a unified interface to run all compiled MLIPs. This can be achieved by simply iterating over `MLIPEnum`:
 
 ```python
 from mlip_arena.models import MLIPEnum
@@ -122,13 +125,13 @@ for model in MLIPEnum:
         atoms=atoms,
         calculator=get_calculator(
             model,
-            calculator_kwargs=dict(), # passing into calculator
+            calculator_kwargs=dict(), # directly passing to the calculator
             dispersion=True,
             dispersion_kwargs=dict(
                 damping='bj', xc='pbe', cutoff=40.0 * units.Bohr
-            ), # passing into TorchDFTD3Calculator
-        ), # compatible with custom ASE Calculator
-        ensemble="nve", # nvt, nvt available
+            ), # passing to TorchDFTD3Calculator
+        ), # compatible with custom ASE Calculators
+        ensemble="nve", # nvt and npt are also available
         dynamics="velocityverlet", # compatible with any ASE Dynamics objects and their class names
         total_time=1e3, # 1 ps = 1e3 fs
         time_step=2, # fs
@@ -136,74 +139,74 @@ for model in MLIPEnum:
     results.append(result)
 ```
 
-### 🚀 Parallelize benchmarks at scale
+### 🚀 Parallelize Benchmarks at Scale
 
-To run multiple benchmarks in parallel, add `.submit` before the task function and wrap all the tasks into a flow to dispatch the tasks to worker for concurrent execution. See Prefect Doc on [tasks](https://docs.prefect.io/v3/develop/write-tasks) and [flow](https://docs.prefect.io/v3/develop/write-flows) for more details.
+To run multiple benchmarks in parallel, append `.submit` to the task function and wrap your tasks in a flow. This dispatches them to a local or remote worker for concurrent execution. See the Prefect documentation on [tasks](https://docs.prefect.io/v3/develop/write-tasks) and [flows](https://docs.prefect.io/v3/develop/write-flows) for more details.
 
 ```python
-...
 from prefect import flow
 
 @flow
 def run_all_tasks():
-
     futures = []
     for model in MLIPEnum:
         future = MD.submit(
             atoms=atoms,
             ...
         )
-        future.append(future)
+        futures.append(future)
 
     return [f.result(raise_on_failure=False) for f in futures]
 ```
 
-For a more practical example using HPC resources, please now refer to [submission script](../benchmarks/submit.py) or [MD stability benchmark](../benchmarks/stability/temperature.ipynb).
+For a more practical example using HPC resources, please refer to the [submission script](../benchmarks/submit.py) or our [MD stability benchmark](../benchmarks/stability/temperature.ipynb).
 
-### List of modular tasks
+### 🧰 List of Modular Tasks
 
-The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `from mlip_arena.tasks import *` for convenient imports (currently doesn't work if [phonopy](https://phonopy.github.io/phonopy/install.html) is not installed).
+The implemented tasks are available under `mlip_arena.tasks.<module>.run` or via `from mlip_arena.tasks import *` for convenient imports (note: this currently requires [phonopy](https://phonopy.github.io/phonopy/install.html) to be installed).
 
-- [OPT](../mlip_arena/tasks/optimize.py#L56): Structure optimization
-- [EOS](../mlip_arena/tasks/eos.py#L42): Equation of state (energy-volume scan)
-- [MD](../mlip_arena/tasks/md.py#L200): Molecular dynamics with flexible dynamics (NVE, NVT, NPT) and temperature/pressure scheduling (annealing, shearing, *etc*)
-- [PHONON](../mlip_arena/tasks/phonon.py#L110): Phonon calculation driven by [phonopy](https://phonopy.github.io/phonopy/install.html)
-- [NEB](../mlip_arena/tasks/neb.py#L96): Nudged elastic band
-- [NEB_FROM_ENDPOINTS](../mlip_arena/tasks/neb.py#L164): Nudge elastic band with convenient image interpolation (linear or IDPP)
-- [ELASTICITY](../mlip_arena/tasks/elasticity.py#L78): Elastic tensor calculation
+- **[OPT](../mlip_arena/tasks/optimize.py#L56)**: Structure optimization
+- **[EOS](../mlip_arena/tasks/eos.py#L42)**: Equation of state (energy-volume scan)
+- **[MD](../mlip_arena/tasks/md.py#L200)**: Molecular dynamics with flexible dynamics (NVE, NVT, NPT) and temperature/pressure scheduling (annealing, shearing, *etc.*)
+- **[PHONON](../mlip_arena/tasks/phonon.py#L110)**: Phonon calculation driven by [phonopy](https://phonopy.github.io/phonopy/install.html)
+- **[NEB](../mlip_arena/tasks/neb.py#L96)**: Nudged elastic band
+- **[NEB_FROM_ENDPOINTS](../mlip_arena/tasks/neb.py#L164)**: Nudged elastic band with convenient image interpolation (linear or IDPP)
+- **[ELASTICITY](../mlip_arena/tasks/elasticity.py#L78)**: Elastic tensor calculation
 
-## Contribute and Development
+---
 
-PRs are welcome. Please clone the repo and submit PRs with changes.
+## 🤝 Contribute and Development
 
-To make change to huggingface space, fetch large files from git lfs first and run streamlit:
+PRs are welcome! Please clone the repo and submit PRs with your changes.
 
-```
+To make changes to the Hugging Face Space, fetch large files from git LFS first, and then run Streamlit:
+
+```bash
 git lfs fetch --all
 git lfs pull
 streamlit run serve/app.py
 ```
 
-### Add new MLIP models
+### ➕ Add New MLIP Models
 
-If you have pretrained MLIP models that you would like to contribute to the MLIP Arena and show benchmark in real-time, there are two ways:
+If you have pretrained MLIP models that you would like to contribute to MLIP Arena and evaluate in real-time benchmarks, you have two options:
 
-#### External ASE Calculator (easy)
+#### External ASE Calculator (Easy / Fast)
 
-1. Implement new ASE Calculator class in [mlip_arena/models/externals](../mlip_arena/models/externals).
-2. Name your class with awesome model name and add the same name to [registry](../mlip_arena/models/registry.yaml) with metadata.
+1. Implement a new ASE Calculator class in [`mlip_arena/models/externals`](../mlip_arena/models/externals).
+2. Name your class with your awesome model name and add the exact same name to the [`registry`](../mlip_arena/models/registry.yaml) with your metadata.
 
 > [!CAUTION]
-> Remove unneccessary outputs under `results` class attributes to avoid error for MD simulations. Please refer to [CHGNet](../mlip_arena/models/externals/chgnet.py) as an example.
+> Remove unnecessary outputs from the `results` class attributes to avoid errors during MD simulations. Please refer to [CHGNet](../mlip_arena/models/externals/chgnet.py) as an example.
 
-#### Hugging Face Model (recommended, difficult)
+#### Hugging Face Model (Recommended / High Impact)
 
-0. Inherit Hugging Face [ModelHubMixin](https://huggingface.co/docs/huggingface_hub/en/package_reference/mixins) class to your awesome model class definition. We recommend [PytorchModelHubMixin](https://huggingface.co/docs/huggingface_hub/en/package_reference/mixins#huggingface_hub.PyTorchModelHubMixin).
-1. Create a new [Hugging Face Model](https://huggingface.co/new) repository and upload the model file using [push_to_hub function](https://huggingface.co/docs/huggingface_hub/en/package_reference/mixins#huggingface_hub.ModelHubMixin.push_to_hub).
+0. Inherit the Hugging Face [ModelHubMixin](https://huggingface.co/docs/huggingface_hub/en/package_reference/mixins) class in your model class definition. We recommend [PytorchModelHubMixin](https://huggingface.co/docs/huggingface_hub/en/package_reference/mixins#huggingface_hub.PyTorchModelHubMixin).
+1. Create a new [Hugging Face Model](https://huggingface.co/new) repository and upload the model file using the [push_to_hub function](https://huggingface.co/docs/huggingface_hub/en/package_reference/mixins#huggingface_hub.ModelHubMixin.push_to_hub).
 2. Follow the template to code the I/O interface for your model [here](../mlip_arena/models/README.md).
-3. Update model [registry](../mlip_arena/models/registry.yaml) with metadata
+3. Update the model [`registry`](../mlip_arena/models/registry.yaml) with the necessary metadata.
 
-### Run benchmarks and submit model
+### 🏃‍♂️ Run Benchmarks and Submit Model
 
 Once your model is ready (either registered or initialized as a custom ASE Calculator), you can run the core benchmark suite on a SLURM cluster:
 
@@ -211,23 +214,25 @@ Once your model is ready (either registered or initialized as a custom ASE Calcu
    ```bash
    cd benchmarks
    ```
-2. Open and modify the `submit_model.py` template script. Under the **USER CONFIGURATION** section:
+2. Open and modify the `submit.py` template script. Under the **USER CONFIGURATION** section:
    - Provide your `MODEL` (as a registered string or custom ASE Calculator instance).
    - Adjust the `SLURM_CONFIG` parameters for your specific HPC allocation (including any conda environments or module loads in the `job_script_prologue`).
 3. Submit the pipeline:
    ```bash
-   python submit_model.py
+   python submit.py
    ```
    This will dynamically distribute and run the core benchmarks (diatomics, EOS bulk, and E-V scans) via a Dask-Jobqueue on your SLURM cluster.
 
-### Add new benchmark
+### ➕ Add New Benchmark
 
 > [!NOTE]
-> Please reuse, extend, or chain the general tasks defined [above](#list-of-modular-tasks) and add new folder and script under [/benchmarks](../benchmarks/)
+> Please reuse, extend, or chain the general tasks defined [above](#list-of-modular-tasks) and add your new folder and scripts under [`/benchmarks`](../benchmarks/).
 
-## Citation
+---
 
-If you find the work useful, please consider citing the following:
+## 📜 Citation
+
+If you find this work and platform useful, please consider citing the following:
 
 ```bibtex
 @inproceedings{
