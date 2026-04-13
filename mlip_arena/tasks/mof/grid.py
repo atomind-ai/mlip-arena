@@ -1,17 +1,14 @@
-"""
-Grid search for accessible positions
-
+"""Grid search for accessible positions.
 
 This script is heavily adapted from the `DAC-SIM <https://github.com/hspark1212/DAC-SIM>`_ package. Please cite the original work if you use this script.
 
-References
+References:
 ~~~~~~~~~~~
 - Lim, Y., Park, H., Walsh, A., & Kim, J. (2024). Accelerating CO₂ Direct Air Capture Screening for Metal-Organic Frameworks with a Transferable Machine Learning Force Field.
 """
 
 import MDAnalysis as mda
 import numpy as np
-
 from ase import Atoms
 
 

@@ -1,9 +1,12 @@
+import sys
 from pathlib import Path
 
 import pytest
 from streamlit.testing.v1 import AppTest
 
 path = Path(__file__).parents[1] / "serve"
+if str(path) not in sys.path:
+    sys.path.insert(0, str(path))
 
 
 @pytest.fixture

@@ -25,10 +25,7 @@ end = atoms.copy()
 )
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 def test_neb(model: MLIPEnum):
-    """
-    Test NEB prefect workflow with a simple cubic lattice.
-    """
-
+    """Test NEB prefect workflow with a simple cubic lattice."""
     with prefect_test_harness():
         result = NEB_FROM_ENDPOINTS(
             start=start.copy(),

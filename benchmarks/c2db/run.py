@@ -3,17 +3,17 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from ase.db import connect
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
-from mlip_arena.models import MLIPEnum
-from mlip_arena.tasks import ELASTICITY, OPT, PHONON
-from mlip_arena.tasks.utils import get_calculator
 from numpy import linalg as LA
 from prefect import flow, task
 from prefect_dask import DaskTaskRunner
 from tqdm.auto import tqdm
 
-from ase.db import connect
+from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks import ELASTICITY, OPT, PHONON
+from mlip_arena.tasks.utils import get_calculator
 
 select_models = [
     "ALIGNN",
@@ -28,8 +28,7 @@ select_models = [
 
 
 def elastic_tensor_to_voigt(C):
-    """
-    Convert a rank-4 (3x3x3x3) elastic tensor into a rank-2 (6x6) tensor using Voigt notation.
+    """Convert a rank-4 (3x3x3x3) elastic tensor into a rank-2 (6x6) tensor using Voigt notation.
 
     Parameters:
     C (numpy.ndarray): A 3x3x3x3 elastic tensor.

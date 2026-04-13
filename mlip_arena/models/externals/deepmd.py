@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
 import requests
+import yaml
 from deepmd.calculator import DP as DPCalculator
 
 from mlip_arena.models.utils import get_freer_device

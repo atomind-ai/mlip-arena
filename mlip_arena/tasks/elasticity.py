@@ -1,5 +1,4 @@
-"""
-Defines the tasks for computing the elastic tensor.
+"""Defines the tasks for computing the elastic tensor.
 
 This module has been modified from MatCalc
 https://github.com/materialsvirtuallab/matcalc/blob/main/src/matcalc/elasticity.py
@@ -87,27 +86,24 @@ def run(
     persist_opt: bool = True,
     cache_opt: bool = False,
 ) -> dict[str, Any] | State:
-    """
-    Compute the elastic tensor for the given structure and calculator.
+    """Compute the elastic tensor for the given structure and calculator.
 
     Args:
         atoms (Atoms): The input structure.
         calculator (BaseCalculator): The calculator.
         optimizer (Optimizer | str, optional): The optimizer. Defaults to "BFGSLineSearch".
         optimizer_kwargs (dict, optional): The optimizer kwargs. Defaults to None.
-        filter (Filter | str, optional): The filter. Defaults to "FrechetCell".
+        filter (Filter | str, optional): The filter to use for relaxation. Defaults to "FrechetCell".
         filter_kwargs (dict, optional): The filter kwargs. Defaults to None.
-        criterion (dict, optional): The criterion. Defaults to None.
+        criterion (dict, optional): The convergence criterion. Defaults to None.
         normal_strains (list[float] | np.ndarray, optional): The normal strains. Defaults to np.linspace(-0.01, 0.01, 4).
         shear_strains (list[float] | np.ndarray, optional): The shear strains. Defaults to np.linspace(-0.06, 0.06, 4).
-        concurrent (bool, optional): Whether to run concurrently. Defaults to True.
         persist_opt (bool, optional): Whether to persist the optimizer results. Defaults to True.
-        cache_opt (bool, optional): Whether to cache the optimizer results. Defaults to True.
+        cache_opt (bool, optional): Whether to cache the optimizer results. Defaults to False.
 
     Returns:
-        dict[str, Any] | State: The elastic tensor.
+        dict[str, Any] | State: A dictionary containing 'elastic_tensor' and 'residuals_sum'.
     """
-
     atoms = atoms.copy()
 
     OPT_ = OPT.with_options(
@@ -174,8 +170,7 @@ def fit_elastic_tensor(
     eq_stress: ArrayLike | None = None,
     tolerance: float = 1e-7,
 ):
-    """
-    Compute the elastic tensor from the given strains and stresses.
+    """Compute the elastic tensor from the given strains and stresses.
 
     Args:
         strains (ArrayLike): The strains.
@@ -185,7 +180,6 @@ def fit_elastic_tensor(
     Returns:
         ElasticTensor: The elastic tensor.
     """
-
     strain_states = [tuple(ss) for ss in np.eye(6)]
     ss_dict = get_strain_state_dict(
         strains,

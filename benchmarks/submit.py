@@ -1,8 +1,7 @@
+from asymptotes import asymptotic_behaviors
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
 from prefect_dask import DaskTaskRunner
-
-from asymptotes import asymptotic_behaviors
 from shifts import distribution_shifts
 
 # ==============================================================================

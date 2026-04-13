@@ -63,6 +63,17 @@ def run_db(
     dataset: str = "atomind/mlip-arena",
     dataset_file: str = "wbm_subset.db",
 ):
+    """Run bulk E-V scan calculations over a database.
+
+    Args:
+        model (str | BaseCalculator): Model name or ASE calculator.
+        run_dir (Path, optional): Directory to save outputs. Defaults to None.
+        dataset (str, optional): HuggingFace dataset ID. Defaults to "atomind/mlip-arena".
+        dataset_file (str, optional): Database filename. Defaults to "wbm_subset.db".
+
+    Returns:
+        pd.DataFrame: Analyzed results for all structures in the database.
+    """
     if isinstance(model, BaseCalculator):
         model_name = model.__class__.__name__
     elif isinstance(model, str) and hasattr(MLIPEnum, model):

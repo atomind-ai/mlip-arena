@@ -16,10 +16,7 @@ from mlip_arena.tasks.utils import get_calculator
 )
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 def test_elasticity(model: MLIPEnum):
-    """
-    Test elasticity prefect workflow with a simple cubic lattice.
-    """
-
+    """Test elasticity prefect workflow with a simple cubic lattice."""
     with prefect_test_harness():
         result = ELASTICITY(
             atoms=bulk("Cu", "fcc", a=3.6),

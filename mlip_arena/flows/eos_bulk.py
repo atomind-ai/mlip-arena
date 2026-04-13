@@ -69,6 +69,16 @@ def calculate_metrics(res_eos: dict, b0: float, atoms: Atoms, model_name: str, s
     cache_policy=TASK_SOURCE + INPUTS,
 )
 def run(atoms: Atoms, model_name: str, model: str | BaseCalculator):
+    """Run EOS bulk task for a single structure and model.
+
+    Args:
+        atoms (Atoms): ASE Atoms structure.
+        model_name (str): Human-readable name of the model.
+        model (str | BaseCalculator): The model or ASE calculator.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the raw EOS results.
+    """
     calculator = model if isinstance(model, BaseCalculator) else get_calculator(model)
 
     result = OPT(
@@ -102,6 +112,17 @@ def run_db(
     dataset: str = "atomind/mlip-arena",
     dataset_file: str = "wbm_subset.db",
 ):
+    """Run bulk EOS calculations over a database of structures.
+
+    Args:
+        model (str | BaseCalculator): Model name or ASE calculator.
+        run_dir (Path, optional): Directory to save outputs (parquet files). Defaults to None.
+        dataset (str, optional): HuggingFace dataset ID. Defaults to "atomind/mlip-arena".
+        dataset_file (str, optional): Database filename in the dataset. Defaults to "wbm_subset.db".
+
+    Returns:
+        pd.DataFrame: A DataFrame containing analyzed results for all structures in the database.
+    """
     if isinstance(model, BaseCalculator):
         model_name = model.__class__.__name__
     elif isinstance(model, str) and hasattr(MLIPEnum, model):

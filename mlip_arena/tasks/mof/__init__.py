@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from loguru import logger
 
 license_path = Path(__file__).parent / "LICENSE"

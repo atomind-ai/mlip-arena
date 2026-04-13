@@ -2,16 +2,15 @@ import torch
 import torch.linalg as LA
 import torch.nn as nn
 import torch_scatter
-from torch_geometric.data import Data
-
 from ase.data import covalent_radii
 from ase.units import _e, _eps0, m, pi
 from e3nn.util.jit import compile_mode  # TODO: e3nn allows autograd in compiled model
+from torch_geometric.data import Data
 
 
 @compile_mode("script")
 class ZBL(nn.Module):
-    """Ziegler-Biersack-Littmark (ZBL) screened nuclear repulsion"""
+    """Ziegler-Biersack-Littmark (ZBL) screened nuclear repulsion."""
 
     def __init__(
         self,

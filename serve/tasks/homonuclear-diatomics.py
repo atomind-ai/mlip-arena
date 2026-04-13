@@ -61,8 +61,7 @@ if not mlip_methods and not dft_methods:
 
 @st.cache_data
 def get_data(mlip_methods, dft_methods):
-    """
-    Load benchmark JSON data for the selected MLIP and DFT methods and return a single concatenated DataFrame.
+    """Load benchmark JSON data for the selected MLIP and DFT methods and return a single concatenated DataFrame.
 
     Parameters:
         mlip_methods (list[str]): Names of MLIP methods whose JSON benchmark files (located under benchmarks/diatomics/<family>/<method>.json) will be loaded and included.

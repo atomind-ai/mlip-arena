@@ -1,5 +1,4 @@
-"""
-Define molecular dynamics task.
+"""Define molecular dynamics task.
 
 This script has been adapted from Atomate2 MLFF MD workflow written by Aaron Kaplan and Yuan Chiang
 https://github.com/materialsproject/atomate2/blob/main/src/atomate2/forcefields/md.py
@@ -77,7 +76,6 @@ from ase.md.velocitydistribution import (
 )
 from ase.md.verlet import VelocityVerlet
 from prefect import task
-
 from prefect.runtime import task_run
 from scipy.interpolate import interp1d
 from scipy.linalg import schur
@@ -157,7 +155,7 @@ def _get_ensemble_defaults(
     p_schedule: np.ndarray,
     dynamics_kwargs: dict | None = None,
 ) -> dict:
-    """Update ASE MD kwargs"""
+    """Update ASE MD kwargs."""
     dynamics_kwargs = dynamics_kwargs or {}
 
     if ensemble == "nve":
@@ -212,8 +210,7 @@ def run(
     traj_interval: int = 1,
     restart: bool = True,
 ):
-    """
-    Run a molecular dynamics (MD) simulation using ASE.
+    """Run a molecular dynamics (MD) simulation using ASE.
 
     Parameters:
         atoms (Atoms): The atomic structure to simulate.
@@ -249,7 +246,6 @@ def run(
         - For NPT dynamics, the atomic cell is transformed to an upper triangular form to meet ASE's requirements.
         - Temperature and pressure schedules can be specified as sequences or arrays for time-dependent control.
     """
-
     atoms = atoms.copy()
 
     atoms.calc = calculator

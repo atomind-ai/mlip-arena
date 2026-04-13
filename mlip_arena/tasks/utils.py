@@ -8,10 +8,9 @@ import torch
 from ase import units
 from ase.calculators.calculator import BaseCalculator
 from ase.calculators.mixing import SumCalculator
+from prefect.cache_policies import INPUTS, TASK_SOURCE  # , CacheKeyFnPolicy
 
 from mlip_arena.models import MLIPEnum
-
-from prefect.cache_policies import INPUTS, TASK_SOURCE  # , CacheKeyFnPolicy
 
 try:
     from prefect.logging import get_run_logger
@@ -23,6 +22,7 @@ except (ImportError, RuntimeError):
 
 def get_freer_device() -> torch.device:
     """Get the GPU with the most free memory, or use MPS if available.
+
     Returns:
         torch.device: The selected GPU device or MPS.
 
@@ -60,8 +60,18 @@ def get_calculator(
     dispersion_kwargs: dict | None = None,
     device: str | None = None,
 ) -> BaseCalculator:
-    """Get a calculator with optional dispersion correction."""
+    """Get an ASE calculator instance for a given model.
 
+    Args:
+        calculator (str | MLIPEnum | BaseCalculator): Model name, MLIPEnum, or calculator instance.
+        calculator_kwargs (dict, optional): Keyword arguments for calculator initialization.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
+        device (str, optional): Device to run the model on (e.g. 'cuda:0', 'cpu'). If None, tries to find the freest device.
+
+    Returns:
+        BaseCalculator: An ASE calculator instance.
+    """
     device = device or str(get_freer_device())
 
     calculator_kwargs = calculator_kwargs or {}
@@ -115,10 +125,8 @@ def get_calculator(
 
 
 def _calculator_key_fn(context, parameters):
-    """
-    Generate a cache key for the calculator using its string representation
-    instead of hashing the entire object (which can be very large).
-    """
+    """Generate a cache key for the calculator using its string representation instead of hashing the entire object
+    (which can be very large)."""
     return {"calculator": str(parameters["calculator"])}
 
 

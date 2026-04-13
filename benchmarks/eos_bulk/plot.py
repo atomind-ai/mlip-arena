@@ -17,9 +17,7 @@ valid_models = [model for model, metadata in MODELS.items() if "eos_bulk" in met
 
 
 def load_wbm_structures():
-    """
-    Load the WBM structures from a ASE DB file.
-    """
+    """Load the WBM structures from a ASE DB file."""
     with connect(DATA_DIR.parent / "wbm_structures.db") as db:
         for row in db.select():
             yield row.toatoms(add_additional_information=True)

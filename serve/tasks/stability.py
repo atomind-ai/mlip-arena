@@ -60,8 +60,7 @@ if not models:
 
 @st.cache_data
 def get_data(model_list, run_type: Literal["heating", "compression"]) -> pd.DataFrame:
-    """
-    Load and concatenate parquet files for the given models and run type.
+    """Load and concatenate parquet files for the given models and run type.
 
     Parameters:
         model_list (iterable): Iterable of model identifiers to load (elements convertible to str).
@@ -114,8 +113,7 @@ def prepare_scatter_df(df_in: pd.DataFrame, max_points: int = 20000) -> pd.DataF
 
 @st.cache_data
 def compute_power_law_fits(df_in: pd.DataFrame) -> dict:
-    """
-    Compute per-method power-law fits for inference speed as a function of system size.
+    """Compute per-method power-law fits for inference speed as a function of system size.
 
     Groups rows by the "method" column and, for each method with at least three rows where
     "natoms" and "steps_per_second" are present and greater than zero, fits a linear model
@@ -148,8 +146,7 @@ def compute_power_law_fits(df_in: pd.DataFrame) -> dict:
 
 @st.cache_data
 def build_speed_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -> go.Figure:
-    """
-    Create a log-log Plotly figure showing steps per second versus number of atoms, optionally with scatter points and overlaid power-law fit lines per method.
+    """Create a log-log Plotly figure showing steps per second versus number of atoms, optionally with scatter points and overlaid power-law fit lines per method.
 
     Returns:
         go.Figure: A Plotly figure containing a log-scaled x-axis ("Number of atoms") and y-axis ("Steps per second"), with optional scatter traces (colored by method) and power-law fit lines for each method.
@@ -212,8 +209,7 @@ def build_speed_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool)
 
 @st.cache_data
 def build_nvt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -> go.Figure:
-    """
-    Create a 1x2 Plotly figure showing cumulative valid runs and inference speed scaling.
+    """Create a 1x2 Plotly figure showing cumulative valid runs and inference speed scaling.
 
     Left subplot shows the percentage of valid runs over normalized time for each method.
     Right subplot shows inference speed (steps per second) versus number of atoms on log-log axes; the right panel includes scatter points and fitted power-law lines when `show_scatter` is enabled.
@@ -272,8 +268,7 @@ def build_nvt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -
 
 @st.cache_data
 def build_npt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -> go.Figure:
-    """
-    Create a 1x2 subplot for NPT data: cumulative valid runs (left) and inference speed vs number of atoms (right).
+    """Create a 1x2 subplot for NPT data: cumulative valid runs (left) and inference speed vs number of atoms (right).
 
     The left panel plots the cumulative percentage of valid runs over normalized time using per-method deduplicated formulas and scales the result by a constant divisor of 80. The right panel contains the inference speed plot (steps/s vs number of atoms) and delegates scatter/fit rendering to the speed-building routine.
 

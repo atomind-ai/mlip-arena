@@ -17,8 +17,7 @@ from mlip_arena.tasks.utils import get_calculator
 
 @task
 def load_wbm_structures():
-    """
-    Load the WBM structures from an ASE database file.
+    """Load the WBM structures from an ASE database file.
 
     Reads structures from 'wbm_structures.db' and yields them as ASE Atoms objects
     with additional metadata preserved from the database.

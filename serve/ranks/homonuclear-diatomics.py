@@ -13,8 +13,7 @@ DATA_DIR = Path("benchmarks/diatomics")
 
 @st.cache_data
 def get_table(valid_models):
-    """
-    Builds a summary DataFrame of benchmark metrics and aggregated ranks for the provided models.
+    """Builds a summary DataFrame of benchmark metrics and aggregated ranks for the provided models.
 
     Loads per-model JSON benchmark records, computes per-model mean metrics (conservation deviation, Spearman coefficients, tortuosity, energy jump, force flips, and PBE MAEs), and produces an ordered table with both aggregated and final integer ranks.
 
@@ -100,8 +99,7 @@ table = get_table(valid_models)
 
 
 def render():
-    """
-    Render the benchmark comparison table in Streamlit with column-wise visual styling and an explanatory expander.
+    """Render the benchmark comparison table in Streamlit with column-wise visual styling and an explanatory expander.
 
     Creates a pandas Styler that applies color gradients and numeric formatting to the table's metric columns, displays the styled table via Streamlit, and adds an "Explanation" expander that defines the reported metrics (Conservation deviation, Spearman coefficients, Tortuosity, Energy jump, Force flips) along with an informational note that PBE energies/forces are provided for reference and excluded from rank aggregation.
     """

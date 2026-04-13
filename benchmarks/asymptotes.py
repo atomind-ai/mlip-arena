@@ -1,6 +1,5 @@
-"""
-================================================================================
-MLIP Arena - Benchmark Job Submission Template
+"""================================================================================
+MLIP Arena - Benchmark Job Submission Template.
 ================================================================================
 This script configures and submits the MLIP Arena core benchmarks
 via a Dask-Jobqueue on a SLURM cluster.

@@ -2,13 +2,13 @@ from functools import partial
 from pathlib import Path
 
 import pandas as pd
+from ase.db import connect
 from huggingface_hub import hf_hub_download
 from prefect import Task, flow, task
 from prefect.client.schemas.objects import TaskRun
 from prefect.futures import wait
 from prefect.states import State
 
-from ase.db import connect
 from mlip_arena.data.local import SafeHDFStore
 from mlip_arena.models import REGISTRY, MLIPEnum
 from mlip_arena.tasks.eos import run as EOS
@@ -16,6 +16,14 @@ from mlip_arena.tasks.eos import run as EOS
 
 @task
 def get_atoms_from_db(db_path: Path | str):
+    """Load atoms from an ASE database. Downloads from HuggingFace if not local.
+
+    Args:
+        db_path (Path | str): Path to the database file.
+
+    Yields:
+        Atoms: ASE Atoms structures.
+    """
     db_path = Path(db_path)
     if not db_path.exists():
         db_path = hf_hub_download(
@@ -30,10 +38,7 @@ def get_atoms_from_db(db_path: Path | str):
 
 
 def save_to_hdf(tsk: Task, run: TaskRun, state: State, fpath: Path | str, table_name: str):
-    """
-    Define a hook on completion of EOS task to save results to HDF5 file.
-    """
-
+    """Define a hook on completion of EOS task to save results to HDF5 file."""
     if run.state.is_failed():
         return
 
@@ -98,6 +103,24 @@ def run(
     concurrent=False,
     cache=True,
 ):
+    """Run EOS calculations for alloy structures in a database.
+
+    Args:
+        db_path (Path | str): Path to the alloy database.
+        out_path (Path | str): Path to save HDF5 results.
+        table_name (str): Table name in HDF5 file.
+        optimizer (str, optional): Optimizer to use. Defaults to "FIRE".
+        optimizer_kwargs (dict, optional): Additional optimizer kwargs. Defaults to None.
+        filter (str, optional): Filter to use. Defaults to "FrechetCell".
+        filter_kwargs (dict, optional): Additional filter kwargs. Defaults to None.
+        criterion (dict, optional): Convergence criterion. Defaults to dict(fmax=0.1, steps=1000).
+        max_abs_strain (float, optional): Maximum absolute strain. Defaults to 0.20.
+        concurrent (bool, optional): Whether to run concurrently. Defaults to False.
+        cache (bool, optional): Whether to cache results. Defaults to True.
+
+    Returns:
+        list: Results from the EOS tasks.
+    """
     EOS_ = EOS.with_options(
         on_completion=[partial(save_to_hdf, fpath=out_path, table_name=table_name)],
         refresh_cache=not cache,

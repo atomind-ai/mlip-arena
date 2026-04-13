@@ -1,5 +1,4 @@
-"""
-Define equation of state task.
+"""Define equation of state task.
 
 https://github.com/materialsvirtuallab/matcalc/blob/main/matcalc/eos.py
 """
@@ -50,29 +49,24 @@ def run(
     concurrent: bool = True,
     cache_opt: bool = False,
 ) -> dict[str, Any] | State:
-    """
-    Compute the equation of state (EOS) for the given atoms and calculator.
+    """Compute the equation of state (EOS) for the given atoms and calculator.
 
     Args:
-        atoms: The input atoms.
-        calculator_name: The name of the calculator to use.
-        calculator_kwargs: Additional kwargs to pass to the calculator.
-        device: The device to use.
-        optimizer: The optimizer to use.
-        optimizer_kwargs: Additional kwargs to pass to the optimizer.
-        filter: The filter to use.
-        filter_kwargs: Additional kwargs to pass to the filter.
-        criterion: The criterion to use.
-        max_abs_strain: The maximum absolute strain to use.
-        npoints: The number of points to sample.
-        concurrent: Whether to relax multiple structures concurrently.
-        persist_opt: Whether to persist the optimization results.
-        cache_opt: Whether to cache the intermediate optimization results.
+        atoms (Atoms): The input atoms.
+        calculator (BaseCalculator): The ASE calculator to use.
+        optimizer (Optimizer | str, optional): The optimizer to use. Defaults to "BFGSLineSearch".
+        optimizer_kwargs (dict, optional): Additional kwargs to pass to the optimizer. Defaults to None.
+        filter (Filter | str, optional): The filter to use. Defaults to "FrechetCell".
+        filter_kwargs (dict, optional): Additional kwargs to pass to the filter. Defaults to None.
+        criterion (dict, optional): The convergence criterion. Defaults to None.
+        max_abs_strain (float, optional): The maximum absolute strain to apply. Defaults to 0.1.
+        npoints (int, optional): The number of points to sample. Defaults to 11.
+        concurrent (bool, optional): Whether to relax multiple structures concurrently. Defaults to True.
+        cache_opt (bool, optional): Whether to cache the intermediate optimization results. Defaults to False.
 
     Returns:
-        A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy if successful. Otherwise, a prefect state object.
+        dict[str, Any] | State: A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy if successful. Otherwise, a prefect state object.
     """
-
     atoms = atoms.copy()
 
     OPT_ = OPT.with_options(

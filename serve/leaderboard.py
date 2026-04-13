@@ -70,6 +70,7 @@ leaderboard = metadata_table.join(rank_df, how="left")
 # Compute Arena Rank explicitly without modifying original task ranks
 # -----------------------------------------------------------------------------
 
+rename_dict = {}
 if not rank_df.empty:
     leaderboard = leaderboard.copy()
     leaderboard["Meta Rank Agg"] = 0
@@ -106,8 +107,10 @@ if not rank_df.empty:
 # style = leaderboard.drop(columns=["Meta Rank Agg"], errors="ignore").style
 style = leaderboard.style
 
-style = style.background_gradient(cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"])
-style = style.background_gradient(cmap="cividis_r", subset=list(rename_dict.values()))
+if "Arena Rank" in leaderboard.columns:
+    style = style.background_gradient(cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"])
+if rename_dict:
+    style = style.background_gradient(cmap="cividis_r", subset=list(rename_dict.values()))
 
 st.info(
     "Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",

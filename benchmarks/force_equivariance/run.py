@@ -1,6 +1,4 @@
-"""
-Define equivariance testing task.
-"""
+"""Define equivariance testing task."""
 
 from __future__ import annotations
 
@@ -42,8 +40,7 @@ def compare_forces(
     rotation_mat: np.ndarray,
     zero_threshold: float = 1e-10,
 ) -> tuple[float, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Compare forces before and after rotation, with handling of 0 force case.
+    """Compare forces before and after rotation, with handling of 0 force case.
 
     Args:
         original_forces: Forces before rotation (N x 3 array)
@@ -87,9 +84,8 @@ def compare_forces(
 
 
 def save_molecule_results(aggregate_results: dict, idx_list: np.ndarray, save_path: str | Path) -> None:
-    """
-    Save all molecule results from equivariance testing to .npy files.
-    Save the index list of the atoms for further analysis.
+    """Save all molecule results from equivariance testing to .npy files. Save the index list of the atoms for further
+    analysis.
 
     Args:
         aggregate_results: Dictionary containing the aggregated results from run()
@@ -139,8 +135,7 @@ def run(
     threshold: float = 1e-3,
     seed: int | None = None,
 ) -> dict:
-    """
-    Test equivariance of force predictions under rotations for multiple structures.
+    """Test equivariance of force predictions under rotations for multiple structures.
 
     Args:
         atoms_list: List of input atomic structures

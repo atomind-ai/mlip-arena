@@ -1,10 +1,9 @@
-"""
-Widom insertion workflow to calculate Henry coefficient and heat of adsorption for a given MOF structure and gas molecule.
-
+"""Widom insertion workflow to calculate Henry coefficient and heat of adsorption for a given MOF structure and gas
+molecule.
 
 This script is heavily adapted from the `DAC-SIM <https://github.com/hspark1212/DAC-SIM>`_ package. Please cite the original work if you use this script.
 
-References
+References:
 ~~~~~~~~~~~
 - Lim, Y., Park, H., Walsh, A., & Kim, J. (2024). Accelerating CO₂ Direct Air Capture Screening for Metal-Organic Frameworks with a Transferable Machine Learning Force Field.
 """
@@ -14,6 +13,12 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from ase import Atoms, units
+from ase.build import molecule
+from ase.calculators.calculator import BaseCalculator
+from ase.filters import Filter
+from ase.io.trajectory import Trajectory, TrajectoryWriter
+from ase.optimize.optimize import Optimizer
 from prefect import flow, task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
@@ -21,12 +26,6 @@ from prefect.runtime import task_run
 from prefect.states import State
 from tqdm.auto import tqdm
 
-from ase import Atoms, units
-from ase.build import molecule
-from ase.filters import Filter
-from ase.io.trajectory import Trajectory, TrajectoryWriter
-from ase.optimize.optimize import Optimizer
-from ase.calculators.calculator import BaseCalculator
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
 from mlip_arena.tasks.utils import get_calculator, logger
@@ -36,8 +35,7 @@ from .input import get_atoms_from_db
 
 
 def add_molecule(gas: Atoms, rotate: bool = True, translate: tuple = None) -> Atoms:
-    """
-    Add a molecule to the simulation cell
+    """Add a molecule to the simulation cell.
 
     Parameters
     ----------
@@ -48,17 +46,17 @@ def add_molecule(gas: Atoms, rotate: bool = True, translate: tuple = None) -> At
     translate : tuple, optional
         The translation of the molecule, by default None
 
-    Returns
+    Returns:
     -------
     Atoms
         The gas molecule added to the simulation cell
 
-    Raises
+    Raises:
     ------
     ValueError
         If the translate is not a 3-tuple, raise an error
 
-    Examples
+    Examples:
     --------
     >>> from ml_mc.utils import molecule, add_gas
     >>> gas = molecule("H2O")
@@ -77,15 +75,14 @@ def add_molecule(gas: Atoms, rotate: bool = True, translate: tuple = None) -> At
 
 
 def get_atomic_density(atoms: Atoms) -> float:
-    """
-    Calculate atomic density of the atoms.
+    """Calculate atomic density of the atoms.
 
     Parameters
     ----------
     atoms : Atoms
         The Atoms object to operate on.
 
-    Returns
+    Returns:
     -------
     float
         Atomic density of the atoms in kg/m³.
@@ -133,8 +130,7 @@ def widom_insertion(
     fold: int = 3,
     random_seed: int | None = None,
 ) -> dict[str, Any] | State:
-    """
-    Run the Widom insertion algorithm to calculate the Henry coefficient and heat of adsorption.
+    """Run the Widom insertion algorithm to calculate the Henry coefficient and heat of adsorption.
 
     Parameters
     ----------
@@ -151,12 +147,11 @@ def widom_insertion(
     random_seed : int, optional
         Seed for the random number generator for reproducibility.
 
-    Returns
+    Returns:
     -------
     Dict[str, Any]
         Dictionary containing the calculated Henry coefficient (mol/kg Pa), averaged interaction energy (eV), and heat of adsorption (kJ/mol) over the number of folds.
     """
-
     structure = structure.copy()
     gas = gas.copy()
 
@@ -331,6 +326,14 @@ def widom_insertion(
 def run(
     db_path: Path | str = "mofs.db",
 ):
+    """Run Widom insertion calculations for MOFs in a database using all registered MLIPs.
+
+    Args:
+        db_path (Path | str, optional): Path to the MOF database. Defaults to "mofs.db".
+
+    Returns:
+        list: Results of the Widom insertion tasks.
+    """
     states = []
     for model in MLIPEnum:
         for atoms in tqdm(get_atoms_from_db(db_path)):

@@ -53,9 +53,7 @@ if not selected_models:
 
 
 def load_wbm_structures():
-    """
-    Load the WBM structures from a ASE DB file.
-    """
+    """Load the WBM structures from a ASE DB file."""
     with connect(DATA_DIR.parent / "wbm_structures.db") as db:
         for row in db.select():
             yield row.toatoms(add_additional_information=True)
@@ -63,8 +61,7 @@ def load_wbm_structures():
 
 @st.cache_data
 def generate_dataframe(model_name):
-    """
-    Builds an analyzed DataFrame of energy-volume scan metrics for a given model.
+    """Builds an analyzed DataFrame of energy-volume scan metrics for a given model.
 
     Parameters:
         model_name (str): Identifier of the model; used to locate the model's parquet results file in DATA_DIR.

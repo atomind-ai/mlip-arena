@@ -1,8 +1,7 @@
-from mp_api.client import MPRester
-
 from ase import Atom
 from ase.data import covalent_radii
 from ase.spacegroup import crystal
+from mp_api.client import MPRester
 
 fcc_elements = [
     "Ac",

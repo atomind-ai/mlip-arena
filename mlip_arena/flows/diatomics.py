@@ -24,8 +24,7 @@ from mlip_arena.tasks.utils import get_calculator
     ),
 )
 def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculator, out_dir: Path):
-    """
-    Calculate the potential energy curve for single homonuclear diatomic molecule.
+    """Calculate the potential energy curve for single homonuclear diatomic molecule.
 
     This function computes the potential energy of a diatomic molecule (two atoms of
     the same element) across a range of interatomic distances. The distance range is
@@ -46,7 +45,6 @@ def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculato
         - If an existing trajectory file is found, the calculation will resume from where it left off
         - The atoms are placed in a periodic box large enough to avoid self-interaction
     """
-
     atom = Atom(symbol)
     rmin = 0.9 * covalent_radii[atom.number]
     rvdw = vdw_alvarez.vdw_radii[atom.number] if atom.number < len(vdw_alvarez.vdw_radii) else np.nan
@@ -105,6 +103,14 @@ def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculato
 
 
 def analyze(out_dir: Path):
+    """Analyze potential energy curves (PEC) for diatomic molecules in a directory.
+
+    Args:
+        out_dir (Path): Path to the directory containing .extxyz trajectory files.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing calculated metrics for each diatomic molecule.
+    """
     df = pd.DataFrame(
         columns=[
             "name",
@@ -247,6 +253,15 @@ def analyze(out_dir: Path):
 
 @flow
 def homonuclear_diatomics(model: BaseCalculator | str, run_dir: Path | None = None):
+    """Run homonuclear diatomic calculations for all elements using a specific model.
+
+    Args:
+        model (BaseCalculator | str): The model or ASE calculator to use.
+        run_dir (Path, optional): Directory to save outputs. Defaults to None.
+
+    Returns:
+        list: List of results from the distributed homonuclear_diatomic tasks.
+    """
     if isinstance(model, BaseCalculator):
         model_name = model.__class__.__name__
     elif isinstance(model, str) and hasattr(MLIPEnum, model):

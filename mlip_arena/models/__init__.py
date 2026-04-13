@@ -88,7 +88,7 @@ def _load(self, **kwargs):
     **kwargs
         Forwarded to the calculator's ``__init__``.
 
-    Returns
+    Returns:
     -------
     An ASE-compatible calculator instance.
     """
@@ -192,7 +192,7 @@ class MLIPCalculator(MLIP, Calculator):
         properties: list[str],
         system_changes: list = all_changes,
     ):
-        """Calculate energies and forces for the given Atoms object"""
+        """Calculate energies and forces for the given Atoms object."""
         super().calculate(atoms, properties, system_changes)
 
         data = collate_fn([atoms], cutoff=self.cutoff).to(self.device)

@@ -23,7 +23,7 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
         Reference Atoms object (typically the first frame) used to compute
         center-of-mass drift and to determine the number of atoms.
 
-    Returns
+    Returns:
     -------
     dict
         A dictionary containing the following keys:
@@ -43,7 +43,7 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
         - 'timestep': array of step numbers for valid frames.
         - 'com_drifts': list of center-of-mass drift vectors relative to atoms0.
 
-    Notes
+    Notes:
     -----
     Frames that raise exceptions when querying potential energy are skipped.
     Unique restart blocks are identified by atoms.info['restart'] and used to

@@ -36,11 +36,10 @@ def nvt_heat_one(atoms: Atoms, model: MLIPEnum | BaseCalculator, run_dir: Path):
     - model: either an MLIPEnum entry (selects a registered model) or an
       already-constructed ASE BaseCalculator.
 
-    Returns
+    Returns:
     - The result produced by the MD task. On exception, the exception object
       is returned (the calling flow records and filters results).
     """
-
     calculator = (
         get_calculator(
             model.name,
@@ -89,10 +88,9 @@ def npt_compress_one(atoms: Atoms, model: MLIPEnum | BaseCalculator, run_dir: Pa
     - model: either an MLIPEnum entry (selects a registered model) or an
       already-constructed ASE BaseCalculator.
 
-    Returns
+    Returns:
     - The result produced by the MD task.
     """
-
     calculator = (
         get_calculator(
             model.name,
@@ -131,10 +129,9 @@ def heating(model: MLIPEnum | BaseCalculator, run_dir: Path, hf_token: str | Non
     Parameters
     - model: MLIPEnum or BaseCalculator to use for the simulations.
 
-    Returns
+    Returns:
     - A list of results from completed tasks. Failed tasks are filtered out.
     """
-
     futures = []
     # To download the database automatically, `huggingface_hub login` or provide HF_TOKEN
     for i, atoms in enumerate(get_atoms_from_db("random-mixture.db", hf_token=hf_token, force_download=False)):
@@ -161,10 +158,9 @@ def compression(model: MLIPEnum | BaseCalculator, run_dir: Path, hf_token: str |
     Parameters
     - model: MLIPEnum or BaseCalculator to use for the simulations.
 
-    Returns
+    Returns:
     - A list of results from completed tasks. Failed tasks are filtered out.
     """
-
     futures = []
     # To download the database automatically, `huggingface_hub login` or provide HF_TOKEN
     for i, atoms in enumerate(get_atoms_from_db("random-mixture.db", hf_token=hf_token, force_download=False)):

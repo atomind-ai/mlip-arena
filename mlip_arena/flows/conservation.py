@@ -1,6 +1,5 @@
-"""
-Task for running MD simulations and computing the differential entropy
-of the simulated structures with respect to a reference dataset.
+"""Task for running MD simulations and computing the differential entropy of the simulated structures with respect to a
+reference dataset.
 
 See https://github.com/dskoda/quests for differential entropy details.
 """
@@ -14,8 +13,8 @@ import numpy as np
 from ase import Atoms
 from ase.io import read, write
 from prefect import flow, task
-from prefect.futures import wait
 from prefect.cache_policies import INPUTS, TASK_SOURCE
+from prefect.futures import wait
 from prefect.runtime import flow_run, task_run
 
 from mlip_arena.models import MLIPEnum
@@ -38,6 +37,17 @@ except ImportError as e:
 def get_descriptors_from_path(
     input_path: Path, k: int = 32, cutoff: float = 5.0, output_path: Path | None = None
 ) -> np.ndarray:
+    """Get QUESTS descriptors from a file path. Caches results as .npy file.
+
+    Args:
+        input_path (Path): Path to the structure file (e.g. .traj, .extxyz).
+        k (int, optional): Number of nearest neighbors. Defaults to 32.
+        cutoff (float, optional): Cutoff distance in Å. Defaults to 5.0.
+        output_path (Path, optional): Path to save descriptors. Defaults to None.
+
+    Returns:
+        np.ndarray: Calculated or loaded descriptors.
+    """
     output_path = (
         input_path.with_stem(f"{input_path.stem}_desc_{k}_{cutoff}").with_suffix(".npy")
         if output_path is None
@@ -64,9 +74,7 @@ def get_entropy_from_path(
     cutoff: float = 5.0,
     h: float = 0.015,
 ):
-    """
-    Computes the differential entropy of a subset of structures with respect
-    to a reference dataset.
+    """Computes the differential entropy of a subset of structures with respect to a reference dataset.
 
     Arguments:
         subset_path (Path): Path to the file containing the subset of structures.
@@ -78,7 +86,6 @@ def get_entropy_from_path(
     Returns:
         np.ndarray: The differential entropy of the subset with respect to the dataset.
     """
-
     ref_descriptors = get_descriptors_from_path(reference_path, k=k, cutoff=cutoff)
     y_desc = get_descriptors_from_path(subset_path, k=k, cutoff=cutoff)
     return delta_entropy(y_desc, ref_descriptors, h=h)
@@ -94,9 +101,7 @@ def get_trajectory_entropy(
     cutoff=5.0,
     h=0.015,
 ):
-    """
-    Computes the differential entropy of a subset of structures in a trajectory with respect
-    to a reference dataset.
+    """Computes the differential entropy of a subset of structures in a trajectory with respect to a reference dataset.
 
     Arguments:
         trajectory_dir (str): Path to the directory containing the trajectory files.
@@ -141,6 +146,17 @@ def get_trajectory_entropy(
 def run_nve_md(
     atoms: Atoms, calculator: MLIPEnum | BaseCalculator | str, calculator_kwargs: dict | None, traj_file: Path
 ):
+    """Run NVE molecular dynamics simulation.
+
+    Args:
+        atoms (Atoms): ASE Atoms structure.
+        calculator (MLIPEnum | BaseCalculator | str): Model or calculator to use.
+        calculator_kwargs (dict, optional): Kwargs for calculator initialization.
+        traj_file (Path): Path to save the trajectory file.
+
+    Returns:
+        dict: Results from the MD task.
+    """
     return MD.with_options(
         refresh_cache=True,
     )(
@@ -163,8 +179,7 @@ def run_nve_md(
 def run_simulations(
     calculator: MLIPEnum | BaseCalculator | str, calculator_kwargs: dict | None, structures: list[Atoms], out_dir: Path
 ):
-    """
-    Runs simulations on a list of structures.
+    """Runs simulations on a list of structures.
 
     Parameters:
         calculator (MLIPEnum | BaseCalculator | str): Model to use.
@@ -232,9 +247,7 @@ def differential_entropy_along_nve_trajectory(
     h: float = 0.015,
     work_dir: Path | None = None,
 ):
-    """
-    Computes the differential entropy of a subset of structures in a trajectory with respect
-    to a reference dataset.
+    """Computes the differential entropy of a subset of structures in a trajectory with respect to a reference dataset.
 
     Arguments:
         model (MLIPEnum | BaseCalculator | str): Model to use.
@@ -253,7 +266,6 @@ def differential_entropy_along_nve_trajectory(
             or (np.ndarray): an (H,M) matrix if 'h' is a vector of length H
         sampled_structures (list[ase.Atoms]): List of structures selected from the trajectory.
     """
-
     if isinstance(calculator, MLIPEnum):
         model_name = calculator.name
     elif isinstance(calculator, BaseCalculator):

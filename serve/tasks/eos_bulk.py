@@ -52,9 +52,7 @@ if not selected_models:
 
 
 def load_wbm_structures():
-    """
-    Load the WBM structures from a ASE DB file.
-    """
+    """Load the WBM structures from a ASE DB file."""
     with connect(DATA_DIR.parent / "wbm_structures.db") as db:
         for row in db.select():
             yield row.toatoms(add_additional_information=True)
@@ -62,8 +60,7 @@ def load_wbm_structures():
 
 @st.cache_data
 def generate_dataframe(model_name):
-    """
-    Build an analyzed DataFrame of EOS metrics for every WBM structure using results for the given model.
+    """Build an analyzed DataFrame of EOS metrics for every WBM structure using results for the given model.
 
     Parameters:
         model_name (str): Name of the model whose results are read from DATA_DIR/{model_name}.parquet.
@@ -180,8 +177,7 @@ def generate_dataframe(model_name):
 
 @st.cache_data
 def get_plots(selected_models):
-    """
-    Create a Plotly figure for each model showing relative energy versus volume ratio for its structures.
+    """Create a Plotly figure for each model showing relative energy versus volume ratio for its structures.
 
     Parameters:
         selected_models (iterable): Iterable of model name strings to generate plots for.

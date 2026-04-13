@@ -16,6 +16,14 @@ from mlip_arena.tasks.utils import get_calculator
 
 
 def identify_water_molecules(atoms):
+    """Identify and count water molecules (H2O) in a structure.
+
+    Args:
+        atoms (Atoms): ASE Atoms object.
+
+    Returns:
+        int: Number of water molecules found.
+    """
     nl = NeighborList(natural_cutoffs(atoms), self_interaction=False, bothways=True)
     nl.update(atoms)
 
@@ -35,6 +43,15 @@ def identify_water_molecules(atoms):
 
 @task
 def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
+    """Analyze trajectory for runtime statistics, thermodynamics, and reaction progress.
+
+    Args:
+        traj (list[Atoms]): List of ASE Atoms from trajectory.
+        atoms0 (Atoms): Initial Atoms structure for reference.
+
+    Returns:
+        dict: A dictionary of statistics including energies, temperatures, pressures, and water molecule count.
+    """
     restarts = []
     steps, times = [], []
     Ts, Ps, PEs, KEs = [], [], [], []
