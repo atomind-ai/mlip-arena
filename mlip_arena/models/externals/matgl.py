@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from typing import Literal
+
 import matgl
 import torch
 from matgl.ext.ase import PESCalculator
-from typing import Literal
 
 
 class M3GNet(PESCalculator):

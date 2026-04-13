@@ -1,19 +1,24 @@
-"""
-Widom insertion workflow to calculate Henry coefficient and heat of adsorption for a given MOF structure and gas molecule.
-
+"""Widom insertion workflow to calculate Henry coefficient and heat of adsorption for a given MOF structure and gas
+molecule.
 
 This script is heavily adapted from the `DAC-SIM <https://github.com/hspark1212/DAC-SIM>`_ package. Please cite the original work if you use this script.
 
-References
+References:
 ~~~~~~~~~~~
 - Lim, Y., Park, H., Walsh, A., & Kim, J. (2024). Accelerating CO₂ Direct Air Capture Screening for Metal-Organic Frameworks with a Transferable Machine Learning Force Field.
 """
 
 from collections import defaultdict
 from pathlib import Path
-from typing import IO, Any
+from typing import Any
 
 import numpy as np
+from ase import Atoms, units
+from ase.build import molecule
+from ase.calculators.calculator import BaseCalculator
+from ase.filters import Filter
+from ase.io.trajectory import Trajectory, TrajectoryWriter
+from ase.optimize.optimize import Optimizer
 from prefect import flow, task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
@@ -21,13 +26,6 @@ from prefect.runtime import task_run
 from prefect.states import State
 from tqdm.auto import tqdm
 
-from ase import Atoms, units
-from ase.atoms import Atoms
-from ase.build import molecule
-from ase.filters import Filter
-from ase.io.trajectory import Trajectory, TrajectoryWriter
-from ase.optimize.optimize import Optimizer
-from ase.calculators.calculator import BaseCalculator
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
 from mlip_arena.tasks.utils import get_calculator, logger
@@ -37,8 +35,7 @@ from .input import get_atoms_from_db
 
 
 def add_molecule(gas: Atoms, rotate: bool = True, translate: tuple = None) -> Atoms:
-    """
-    Add a molecule to the simulation cell
+    """Add a molecule to the simulation cell.
 
     Parameters
     ----------
@@ -49,20 +46,20 @@ def add_molecule(gas: Atoms, rotate: bool = True, translate: tuple = None) -> At
     translate : tuple, optional
         The translation of the molecule, by default None
 
-    Returns
+    Returns:
     -------
     Atoms
         The gas molecule added to the simulation cell
 
-    Raises
+    Raises:
     ------
     ValueError
         If the translate is not a 3-tuple, raise an error
 
-    Examples
+    Examples:
     --------
     >>> from ml_mc.utils import molecule, add_gas
-    >>> gas = molecule('H2O')
+    >>> gas = molecule("H2O")
     >>> gas = add_gas(gas, rotate=True, translate=(0, 0, 0))
     """
     gas = gas.copy()
@@ -78,15 +75,14 @@ def add_molecule(gas: Atoms, rotate: bool = True, translate: tuple = None) -> At
 
 
 def get_atomic_density(atoms: Atoms) -> float:
-    """
-    Calculate atomic density of the atoms.
+    """Calculate atomic density of the atoms.
 
     Parameters
     ----------
     atoms : Atoms
         The Atoms object to operate on.
 
-    Returns
+    Returns:
     -------
     float
         Atomic density of the atoms in kg/m³.
@@ -134,8 +130,7 @@ def widom_insertion(
     fold: int = 3,
     random_seed: int | None = None,
 ) -> dict[str, Any] | State:
-    """
-    Run the Widom insertion algorithm to calculate the Henry coefficient and heat of adsorption.
+    """Run the Widom insertion algorithm to calculate the Henry coefficient and heat of adsorption.
 
     Parameters
     ----------
@@ -152,12 +147,11 @@ def widom_insertion(
     random_seed : int, optional
         Seed for the random number generator for reproducibility.
 
-    Returns
+    Returns:
     -------
     Dict[str, Any]
         Dictionary containing the calculated Henry coefficient (mol/kg Pa), averaged interaction energy (eV), and heat of adsorption (kJ/mol) over the number of folds.
     """
-
     structure = structure.copy()
     gas = gas.copy()
 
@@ -197,7 +191,7 @@ def widom_insertion(
 
         if state.is_failed():
             return state
-        
+
         result = state.result(raise_on_failure=False)
         structure = result["atoms"]
         if result["converged"]:
@@ -233,9 +227,7 @@ def widom_insertion(
     idx_accessible_pos = ret["idx_accessible_pos"]
     structure = ret["structure"]  # supercell structure if necessary
 
-    logger.info(
-        f"Number of accessible positions: {len(idx_accessible_pos)} out of total {len(pos_grid)}"
-    )
+    logger.info(f"Number of accessible positions: {len(idx_accessible_pos)} out of total {len(pos_grid)}")
 
     calc = calculator
     # Calculate energies for structure and gas
@@ -256,10 +248,9 @@ def widom_insertion(
         traj = None
 
     # Run Widom insertion algorithm
-    
+
     results = defaultdict(list)
     for ifold in range(fold):
-
         nsteps = 0
 
         np.random.shuffle(idx_accessible_pos)
@@ -283,17 +274,13 @@ def widom_insertion(
             total_energy = structure_with_gas.get_potential_energy()  # [eV]
             interaction_energy = total_energy - energy_structure - energy_gas  # [eV]
 
-            boltzmann_factor = np.exp(
-                -interaction_energy / (temperature * units._k / units._e)
-            )
+            boltzmann_factor = np.exp(-interaction_energy / (temperature * units._k / units._e))
 
             # Handle exponential overflow that can cause numerical instability
 
             max_exp_arg = 700  # np.exp(700) is close to the max float64
             if boltzmann_factor > np.exp(max_exp_arg):
-                logger.warning(
-                    f"Exponential overflow detected. Rejecting this step and retrying."
-                )
+                logger.warning("Exponential overflow detected. Rejecting this step and retrying.")
                 continue
 
             interaction_energies[nsteps] = interaction_energy
@@ -310,9 +297,7 @@ def widom_insertion(
 
         # Calculate ensemble averages properties
         # units._e [J/eV], units._k [J/K], units._k / units._e # [eV/K]
-        boltzmann_factors = np.exp(
-            -interaction_energies / (temperature * units._k / units._e)
-        )
+        boltzmann_factors = np.exp(-interaction_energies / (temperature * units._k / units._e))
 
         # KH = <exp(-E/RT)> / (R * T)
         atomic_density = get_atomic_density(structure)  # [kg / m^3]
@@ -333,7 +318,7 @@ def widom_insertion(
         results["henry_coefficient"].append(kh)
         results["averaged_interaction_energy"].append(u)
         results["heat_of_adsorption"].append(qst)
-        
+
     return results
 
 
@@ -341,6 +326,14 @@ def widom_insertion(
 def run(
     db_path: Path | str = "mofs.db",
 ):
+    """Run Widom insertion calculations for MOFs in a database using all registered MLIPs.
+
+    Args:
+        db_path (Path | str, optional): Path to the MOF database. Defaults to "mofs.db".
+
+    Returns:
+        list: Results of the Widom insertion tasks.
+    """
     states = []
     for model in MLIPEnum:
         for atoms in tqdm(get_atoms_from_db(db_path)):

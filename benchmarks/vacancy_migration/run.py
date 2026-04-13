@@ -18,9 +18,7 @@ MP_API_KEY = None
 test_models = ["MACE-MP(M)", "MatterSim", "ORBv2", "CHGNet", "M3GNet", "SevenNet"]
 
 
-def save_to_pickle(
-    tsk: Task, run: TaskRun, state: State, crystal: str
-):
+def save_to_pickle(tsk: Task, run: TaskRun, state: State, crystal: str):
     result = run.state.result(raise_on_failure=False)
 
     pristine = result["pristine"]
@@ -36,16 +34,11 @@ def save_to_pickle(
     # with open(family_path / f"{crystal}-{pristine.get_chemical_formula()}.json", 'w') as f:
     #     json.dump(result, f)
 
+
 @task
 def calculate_vacancy_migration(
-    pristine: Atoms,
-    istart: int,
-    iend: int,
-    calculator_name: MLIPEnum | str,
-    optimizer: str,
-    criterion: dict = {}
+    pristine: Atoms, istart: int, iend: int, calculator_name: MLIPEnum | str, optimizer: str, criterion: dict = {}
 ):
-
     eos = EOS.with_options(refresh_cache=True, persist_result=True)(
         atoms=pristine,
         calculator_name=calculator_name,
@@ -70,13 +63,14 @@ def calculate_vacancy_migration(
     del atoms[iend]
     end = atoms.copy()
 
-
     neb = NEB.with_options(refresh_cache=True, persist_result=True)(
-        start, end, n_images=7,
+        start,
+        end,
+        n_images=7,
         calculator_name=calculator_name,
         optimizer=optimizer,
         criterion=criterion,
-        relax_end_points=True
+        relax_end_points=True,
     )
 
     e_defect = 0.5 * (neb["images"][0].get_potential_energy() + neb["images"][-1].get_potential_energy())
@@ -100,12 +94,12 @@ def calculate_vacancy_migration(
         "e_vacmig": e_vacmig,
         "asymmetry": asymmetry,
         "neb": neb,
-        "eos": eos
+        "eos": eos,
     }
+
 
 @flow(persist_result=True, result_serializer="pickle")
 def run_fcc():
-
     futures = []
     for atoms in get_fcc_pristine(MP_API_KEY):
         for model in MLIPEnum:
@@ -113,8 +107,7 @@ def run_fcc():
                 continue
             try:
                 result = calculate_vacancy_migration.with_options(
-                    refresh_cache=True, persist_result=True,
-                    on_completion=[partial(save_to_pickle, crystal="fcc")]
+                    refresh_cache=True, persist_result=True, on_completion=[partial(save_to_pickle, crystal="fcc")]
                 )(
                     pristine=atoms,
                     istart=0,
@@ -131,6 +124,7 @@ def run_fcc():
     # wait(futures)
     # return [f.result(raise_on_failure=False) for f in futures if f.state.is_completed()]
 
+
 @flow(persist_result=True, result_serializer="pickle")
 def run_hcp():
     futures = []
@@ -142,8 +136,7 @@ def run_hcp():
                 continue
             try:
                 result = calculate_vacancy_migration.with_options(
-                    refresh_cache=True, persist_result=True,
-                    on_completion=[partial(save_to_pickle, crystal="hcp")]
+                    refresh_cache=True, persist_result=True, on_completion=[partial(save_to_pickle, crystal="hcp")]
                 )(
                     pristine=atoms,
                     istart=0,
@@ -165,6 +158,7 @@ def run_hcp():
     return futures
     # wait(futures)
     # return [f.result(raise_on_failure=False) for f in futures if f.state.is_completed()]
+
 
 if __name__ == "__main__":
     run_fcc()

@@ -1,6 +1,5 @@
-"""
-Task for running MD simulations and computing the differential entropy
-of the simulated structures with respect to a reference dataset.
+"""Task for running MD simulations and computing the differential entropy of the simulated structures with respect to a
+reference dataset.
 
 See https://github.com/dskoda/quests for differential entropy details.
 """
@@ -15,7 +14,8 @@ from ase import Atoms
 from ase.io import read, write
 from prefect import flow, task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
-from prefect.runtime import flow_run
+from prefect.futures import wait
+from prefect.runtime import flow_run, task_run
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.md import run as MD
@@ -37,6 +37,17 @@ except ImportError as e:
 def get_descriptors_from_path(
     input_path: Path, k: int = 32, cutoff: float = 5.0, output_path: Path | None = None
 ) -> np.ndarray:
+    """Get QUESTS descriptors from a file path. Caches results as .npy file.
+
+    Args:
+        input_path (Path): Path to the structure file (e.g. .traj, .extxyz).
+        k (int, optional): Number of nearest neighbors. Defaults to 32.
+        cutoff (float, optional): Cutoff distance in Å. Defaults to 5.0.
+        output_path (Path, optional): Path to save descriptors. Defaults to None.
+
+    Returns:
+        np.ndarray: Calculated or loaded descriptors.
+    """
     output_path = (
         input_path.with_stem(f"{input_path.stem}_desc_{k}_{cutoff}").with_suffix(".npy")
         if output_path is None
@@ -63,9 +74,7 @@ def get_entropy_from_path(
     cutoff: float = 5.0,
     h: float = 0.015,
 ):
-    """
-    Computes the differential entropy of a subset of structures with respect
-    to a reference dataset.
+    """Computes the differential entropy of a subset of structures with respect to a reference dataset.
 
     Arguments:
         subset_path (Path): Path to the file containing the subset of structures.
@@ -77,7 +86,6 @@ def get_entropy_from_path(
     Returns:
         np.ndarray: The differential entropy of the subset with respect to the dataset.
     """
-
     ref_descriptors = get_descriptors_from_path(reference_path, k=k, cutoff=cutoff)
     y_desc = get_descriptors_from_path(subset_path, k=k, cutoff=cutoff)
     return delta_entropy(y_desc, ref_descriptors, h=h)
@@ -93,9 +101,7 @@ def get_trajectory_entropy(
     cutoff=5.0,
     h=0.015,
 ):
-    """
-    Computes the differential entropy of a subset of structures in a trajectory with respect
-    to a reference dataset.
+    """Computes the differential entropy of a subset of structures in a trajectory with respect to a reference dataset.
 
     Arguments:
         trajectory_dir (str): Path to the directory containing the trajectory files.
@@ -131,12 +137,52 @@ def get_trajectory_entropy(
     return delta_entropy(descriptors, ref_descriptors, h=h), structures
 
 
-def run_simulations(model: MLIPEnum | BaseCalculator | str, structures: list[Atoms], out_dir: Path):
+@task(
+    task_run_name=lambda: (
+        f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['calculator']}"
+    ),
+    cache_policy=TASK_SOURCE + INPUTS,
+)
+def run_nve_md(
+    atoms: Atoms, calculator: MLIPEnum | BaseCalculator | str, calculator_kwargs: dict | None, traj_file: Path
+):
+    """Run NVE molecular dynamics simulation.
+
+    Args:
+        atoms (Atoms): ASE Atoms structure.
+        calculator (MLIPEnum | BaseCalculator | str): Model or calculator to use.
+        calculator_kwargs (dict, optional): Kwargs for calculator initialization.
+        traj_file (Path): Path to save the trajectory file.
+
+    Returns:
+        dict: Results from the MD task.
     """
-    Runs simulations on a list of structures.
+    return MD.with_options(
+        refresh_cache=True,
+    )(
+        atoms,
+        calculator=get_calculator(
+            calculator, calculator_kwargs
+        ),  # wrap calculater inside task for separate calculator instances
+        ensemble="nve",
+        dynamics="velocityverlet",
+        time_step=1.0,  # fs
+        total_time=5000,  # 5 ps = 5000 fs
+        temperature=1000.0,
+        traj_file=traj_file,
+        traj_interval=1,
+        zero_linear_momentum=True,
+        zero_angular_momentum=True,
+    )
+
+
+def run_simulations(
+    calculator: MLIPEnum | BaseCalculator | str, calculator_kwargs: dict | None, structures: list[Atoms], out_dir: Path
+):
+    """Runs simulations on a list of structures.
 
     Parameters:
-        model (MLIPEnum | BaseCalculator | str): Model to use.
+        calculator (MLIPEnum | BaseCalculator | str): Model to use.
         structures (list[ase.Atoms]): List of structures to simulate.
         out_dir (str): Directory to save the simulation trajectories to.
 
@@ -155,27 +201,21 @@ def run_simulations(model: MLIPEnum | BaseCalculator | str, structures: list[Ato
     for i, atoms in enumerate(structures):
         # Replicate the structure
         n_atoms = len(atoms)
-        rep_factor = int(np.ceil((min_atoms / n_atoms) ** (1 / 3)))  # cube root since it's a 3D replication
+        rep_factor = int(np.floor((min_atoms / n_atoms) ** (1 / 3)))  # cube root since it's a 3D replication
         supercell_atoms = atoms.repeat((rep_factor, rep_factor, rep_factor))
         if len(supercell_atoms) > max_atoms:
             logger.info(f"Skipping structure {i} because it has too many atoms ({len(supercell_atoms)} > {max_atoms})")
             continue  # skip if it becomes too large
 
         # Run NVE MD @ 1000K for 5 ps
-        future = MD.submit(
+        future = run_nve_md.submit(
             supercell_atoms,
-            calculator=get_calculator(model),
-            ensemble="nve",
-            dynamics="velocityverlet",
-            time_step=1.0,  # fs
-            total_time=5000,  # 5 ps = 5000 fs
-            temperature=1000.0,
-            traj_file=f"{out_dir}/{i}.traj",
-            traj_interval=100,
-            zero_linear_momentum=True,
-            zero_angular_momentum=True,
+            calculator=calculator,
+            calculator_kwargs=calculator_kwargs,
+            traj_file=out_dir / f"{i}.traj",
         )
         futures.append(future)
+    wait(futures)
 
     return [f.result(raise_on_failure=False) for f in futures]
 
@@ -185,7 +225,7 @@ def _generate_flow_run_name():
     parameters = flow_run.parameters
 
     model = parameters["model"]
-    reference_path = parameters["reference_path"]
+    reference_path = parameters["reference_path"].stem
 
     return f"{name}: {model} - {reference_path}"
 
@@ -195,8 +235,9 @@ def _generate_flow_run_name():
     flow_run_name=_generate_flow_run_name,
 )
 def differential_entropy_along_nve_trajectory(
-    model: MLIPEnum | str,
-    structures: list[Atoms],
+    calculator: MLIPEnum | BaseCalculator | str,
+    calculator_kwargs: dict | None,
+    input_path: Path,
     reference_path: Path,
     start_idx: int,
     end_idx: int,
@@ -206,13 +247,11 @@ def differential_entropy_along_nve_trajectory(
     h: float = 0.015,
     work_dir: Path | None = None,
 ):
-    """
-    Computes the differential entropy of a subset of structures in a trajectory with respect
-    to a reference dataset.
+    """Computes the differential entropy of a subset of structures in a trajectory with respect to a reference dataset.
 
     Arguments:
         model (MLIPEnum | BaseCalculator | str): Model to use.
-        structures (list[ase.Atoms]): List of structures to simulate.
+        input_path (Path): Path to the directory containing the trajectory files.
         reference_path (Path): Path to the file containing the descriptors of the full dataset of structures without the subset.
         start_idx (int): Starting index of the subset of structures to select from each trajectory.
         end_idx (int): Ending index of the subset of structures to select from each trajectory.
@@ -227,19 +266,20 @@ def differential_entropy_along_nve_trajectory(
             or (np.ndarray): an (H,M) matrix if 'h' is a vector of length H
         sampled_structures (list[ase.Atoms]): List of structures selected from the trajectory.
     """
-
-    if isinstance(model, MLIPEnum):
-        model_name = model.name
-    elif isinstance(model, BaseCalculator):
-        model_name = model.__class__.__name__
-    elif isinstance(model, str) and hasattr(MLIPEnum, model):
-        model_name = model
+    if isinstance(calculator, MLIPEnum):
+        model_name = calculator.name
+    elif isinstance(calculator, BaseCalculator):
+        model_name = calculator.__class__.__name__
+    elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
+        model_name = calculator
     else:
-        raise ValueError(f"Unsupported model: {model}")
+        raise ValueError(f"Unsupported calculator: {calculator}")
 
     # Run simulations
     out_dir = work_dir / model_name if work_dir is not None else Path.cwd() / model_name
-    run_simulations(model, structures, out_dir)
+
+    structures = read(input_path, index=":")
+    run_simulations(calculator, calculator_kwargs, structures, out_dir)
 
     # Get entropy for structures along trajectories
     dH, sampled_structures = get_trajectory_entropy(

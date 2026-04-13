@@ -20,7 +20,6 @@ def save_to_db(
     subfolder: str = Path(__file__).parent.name,
 ):
     """Save ASE Atoms objects to an ASE database and optionally upload to Hugging Face Hub."""
-
     if upload and hf_token is None:
         raise ValueError("HF_TOKEN is required to upload the database.")
 

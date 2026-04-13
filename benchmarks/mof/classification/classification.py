@@ -96,22 +96,15 @@ client = Client(cluster)
 def run_one(model, row, gas):
     return widom_insertion.with_options(
         refresh_cache=False,
-        on_completion=[functools.partial(
-            save_result,
-            row=row,
-            model_name=model.name,
-            gas=gas,
-            fpath=f"{model.name}.pkl"
-        )]
+        on_completion=[
+            functools.partial(save_result, row=row, model_name=model.name, gas=gas, fpath=f"{model.name}.pkl")
+        ],
     )(
         structure=row["structure"],
         gas=gas,
-        calculator=get_calculator(
-            model,
-            dispersion=True
-        ),
+        calculator=get_calculator(model, dispersion=True),
         criterion=dict(fmax=0.05, steps=50),
-        init_structure_optimize_loops = 10,
+        init_structure_optimize_loops=10,
     )
 
 
@@ -121,7 +114,6 @@ def run_all():
     gas = molecule("CO2")
 
     for model, row in tqdm(itertools.product(MLIPEnum, load_row_from_df("input.pkl"))):
-
         if model.name not in ["MACE-MPA", "MatterSim", "SevenNet", "M3GNet", "ORBv2"]:
             continue
 
@@ -129,11 +121,11 @@ def run_all():
 
         if fpath.exists():
             df = pd.read_pickle(fpath)
-            if row['name'] in df['name'].values:
+            if row["name"] in df["name"].values:
                 continue
-            
+
         try:
-            print(model, row['name'])
+            print(model, row["name"])
             future = run_one.submit(
                 model,
                 row,
@@ -144,6 +136,7 @@ def run_all():
             continue
 
     return [f.result(raise_on_failure=False) for f in futures]
+
 
 # run_all()
 run_all.with_options(

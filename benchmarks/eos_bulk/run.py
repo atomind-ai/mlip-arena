@@ -17,12 +17,11 @@ from mlip_arena.tasks.utils import get_calculator
 
 @task
 def load_wbm_structures():
-    """
-    Load the WBM structures from an ASE database file.
-    
+    """Load the WBM structures from an ASE database file.
+
     Reads structures from 'wbm_structures.db' and yields them as ASE Atoms objects
     with additional metadata preserved from the database.
-    
+
     Yields:
         ase.Atoms: Individual atomic structures from the WBM database with preserved
                   metadata in the .info dictionary.
@@ -62,13 +61,10 @@ def load_wbm_structures():
     cache_policy=TASK_SOURCE + INPUTS,
 )
 def eos_bulk(atoms: Atoms, model: MLIPEnum):
-
     from mlip_arena.tasks.eos import run as EOS
     from mlip_arena.tasks.optimize import run as OPT
 
-    calculator = get_calculator(
-        model
-    )  # avoid sending entire model over prefect and select freer GPU
+    calculator = get_calculator(model)  # avoid sending entire model over prefect and select freer GPU
 
     result = OPT.with_options(
         refresh_cache=True,
@@ -80,21 +76,14 @@ def eos_bulk(atoms: Atoms, model: MLIPEnum):
             fmax=0.1,
         ),
     )
-    result =  EOS.with_options(
+    result = EOS.with_options(
         refresh_cache=True,
         # on_completion=[functools.partial(
         #     save_result,
         #     model_name=model.name,
         #     id=atoms.info["key_value_pairs"]["wbm_id"],
         # )],
-    )(
-        atoms=result["atoms"],
-        calculator=calculator,
-        optimizer="FIRE",
-        npoints=21,
-        max_abs_strain=0.2,
-        concurrent=False
-    )
+    )(atoms=result["atoms"], calculator=calculator, optimizer="FIRE", npoints=21, max_abs_strain=0.2, concurrent=False)
 
     result["method"] = model.name
     result["id"] = atoms.info["key_value_pairs"]["wbm_id"]
@@ -120,9 +109,7 @@ def submit_tasks():
         if "eos_bulk" not in REGISTRY[model.name].get("gpu-tasks", []):
             continue
         try:
-            result = eos_bulk.with_options(
-                refresh_cache=True
-            ).submit(atoms, model)
+            result = eos_bulk.with_options(refresh_cache=True).submit(atoms, model)
             futures.append(result)
         except Exception:
             # print(f"Failed to submit task for {model.name}: {e}")

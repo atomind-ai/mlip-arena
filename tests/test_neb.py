@@ -8,9 +8,7 @@ from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks import NEB_FROM_ENDPOINTS
 from mlip_arena.tasks.utils import get_calculator
 
-pristine = crystal(
-    "Al", [(0, 0, 0)], spacegroup=225, cellpar=[4.05, 4.05, 4.05, 90, 90, 90]
-) * (3, 3, 3)
+pristine = crystal("Al", [(0, 0, 0)], spacegroup=225, cellpar=[4.05, 4.05, 4.05, 90, 90, 90]) * (3, 3, 3)
 
 atoms = pristine.copy()
 del atoms[0]
@@ -27,10 +25,7 @@ end = atoms.copy()
 )
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 def test_neb(model: MLIPEnum):
-    """
-    Test NEB prefect workflow with a simple cubic lattice.
-    """
-
+    """Test NEB prefect workflow with a simple cubic lattice."""
     with prefect_test_harness():
         result = NEB_FROM_ENDPOINTS(
             start=start.copy(),

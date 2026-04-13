@@ -1,6 +1,4 @@
-"""
-Define equivariance testing task.
-"""
+"""Define equivariance testing task."""
 
 from __future__ import annotations
 
@@ -22,9 +20,7 @@ def generate_random_unit_vector():
     return vec / np.linalg.norm(vec)
 
 
-def rotate_molecule_arbitrary(
-    atoms: Atoms, angle: float, axis: np.ndarray
-) -> tuple[Atoms, np.ndarray]:
+def rotate_molecule_arbitrary(atoms: Atoms, angle: float, axis: np.ndarray) -> tuple[Atoms, np.ndarray]:
     """Rotate molecule around arbitrary axis."""
     rotated_atoms = atoms.copy()
     positions = rotated_atoms.get_positions()
@@ -44,8 +40,7 @@ def compare_forces(
     rotation_mat: np.ndarray,
     zero_threshold: float = 1e-10,
 ) -> tuple[float, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Compare forces before and after rotation, with handling of 0 force case.
+    """Compare forces before and after rotation, with handling of 0 force case.
 
     Args:
         original_forces: Forces before rotation (N x 3 array)
@@ -75,12 +70,10 @@ def compare_forces(
 
     valid_forces = ~either_zero
     if np.any(valid_forces):
-        norms_product = np.linalg.norm(
-            rotated_original_forces[valid_forces], axis=1
-        ) * np.linalg.norm(rotated_forces[valid_forces], axis=1)
-        dot_products = np.sum(
-            rotated_original_forces[valid_forces] * rotated_forces[valid_forces], axis=1
+        norms_product = np.linalg.norm(rotated_original_forces[valid_forces], axis=1) * np.linalg.norm(
+            rotated_forces[valid_forces], axis=1
         )
+        dot_products = np.sum(rotated_original_forces[valid_forces] * rotated_forces[valid_forces], axis=1)
         cosine_similarity[valid_forces] = dot_products / norms_product
 
     # If both forces are 0, cosine similarity should be 1. If one is 0, we take the conservative -1.
@@ -90,12 +83,9 @@ def compare_forces(
     return mae, cosine_similarity
 
 
-def save_molecule_results(
-    aggregate_results: dict, idx_list: np.ndarray, save_path: str | Path
-) -> None:
-    """
-    Save all molecule results from equivariance testing to .npy files.
-    Save the index list of the atoms for further analysis.
+def save_molecule_results(aggregate_results: dict, idx_list: np.ndarray, save_path: str | Path) -> None:
+    """Save all molecule results from equivariance testing to .npy files. Save the index list of the atoms for further
+    analysis.
 
     Args:
         aggregate_results: Dictionary containing the aggregated results from run()
@@ -110,15 +100,9 @@ def save_molecule_results(
 
     num_molecules = len(all_molecule_results)
     num_angles = len(rotation_angles)
-    num_random_axes = len(
-        all_molecule_results[0]["results_by_angle"][rotation_angles[0]]["maes"]
-    )
-    num_atoms = len(
-        all_molecule_results[0]["results_by_angle"][rotation_angles[0]][
-            "cosine_similarities"
-        ][0]
-    )
-
+    num_random_axes = len(all_molecule_results[0]["results_by_angle"][rotation_angles[0]]["maes"])
+    # num_atoms = len(all_molecule_results[0]["results_by_angle"][rotation_angles[0]]["cosine_similarities"][0])
+    #
     maes = np.zeros((num_molecules, num_angles, num_random_axes))
     cosine_similarities = np.zeros((num_molecules, num_angles, num_random_axes))
 
@@ -126,9 +110,7 @@ def save_molecule_results(
         for angle_idx, angle in enumerate(rotation_angles):
             angle_results = molecule["results_by_angle"][angle]
             maes[mol_idx, angle_idx, :] = angle_results["maes"]
-            cosine_similarities[mol_idx, angle_idx, :] = np.mean(
-                angle_results["cosine_similarities"], axis=-1
-            )
+            cosine_similarities[mol_idx, angle_idx, :] = np.mean(angle_results["cosine_similarities"], axis=-1)
 
     np.save(save_path.with_name(f"{save_path.stem}_maes.npy"), maes)
     np.save(
@@ -153,8 +135,7 @@ def run(
     threshold: float = 1e-3,
     seed: int | None = None,
 ) -> dict:
-    """
-    Test equivariance of force predictions under rotations for multiple structures.
+    """Test equivariance of force predictions under rotations for multiple structures.
 
     Args:
         atoms_list: List of input atomic structures
@@ -203,27 +184,19 @@ def run(
         # Test each angle with multiple random axes
         for angle in rotation_angles:
             for axis in rotation_axes:
-                rotated_atoms, rotation_mat = rotate_molecule_arbitrary(
-                    atoms, angle, axis
-                )
+                rotated_atoms, rotation_mat = rotate_molecule_arbitrary(atoms, angle, axis)
                 rotated_atoms.calc = calculator
                 rotated_forces = rotated_atoms.get_forces()
-                mae, cosine_similarity = compare_forces(
-                    original_forces, rotated_forces, rotation_mat
-                )
+                mae, cosine_similarity = compare_forces(original_forces, rotated_forces, rotation_mat)
                 results_by_angle[angle]["mae"].append(mae)
                 results_by_angle[angle]["cosine_similarities"].append(cosine_similarity)
 
-                cross_molecule_cosine_sims[angle].append(
-                    float(np.mean(cosine_similarity))
-                )
+                cross_molecule_cosine_sims[angle].append(float(np.mean(cosine_similarity)))
                 cross_molecule_mae[angle].append(float(np.mean(mae)))
 
                 mae_check = mae < threshold
                 cosine_check = all(cosine_similarity > (1 - threshold))
-                results_by_angle[angle]["passed_tests"] += int(
-                    mae_check and cosine_check
-                )
+                results_by_angle[angle]["passed_tests"] += int(mae_check and cosine_check)
                 results_by_angle[angle]["passed_mae"] += int(mae_check)
                 results_by_angle[angle]["passed_cosine_similarity"] += int(cosine_check)
 
@@ -231,51 +204,27 @@ def run(
         # Compute summary statistics
         for angle in rotation_angles:
             results = results_by_angle[angle]
-            results["mean_cosine_similarity"] = float(
-                np.mean(results["cosine_similarities"])
-            )
+            results["mean_cosine_similarity"] = float(np.mean(results["cosine_similarities"]))
             results["avg_mae"] = float(np.mean(results["mae"]))
             results["equivariant_ratio"] = results["passed_tests"] / num_random_axes
             results["mae_passed_ratio"] = results["passed_mae"] / num_random_axes
-            results["cosine_passed_ratio"] = (
-                results["passed_cosine_similarity"] / num_random_axes
-            )
+            results["cosine_passed_ratio"] = results["passed_cosine_similarity"] / num_random_axes
             results["passed"] = results["passed_tests"] == num_random_axes
             results["passed_mae"] = results["passed_mae"] == num_random_axes
-            results["passed_cosine_similarity"] = (
-                results["passed_cosine_similarity"] == num_random_axes
-            )
+            results["passed_cosine_similarity"] = results["passed_cosine_similarity"] == num_random_axes
             results["maes"] = [float(x) for x in results["mae"]]
-            results["cosine_similarities"] = [
-                [float(y) for y in x] for x in results["cosine_similarities"]
-            ]
+            results["cosine_similarities"] = [[float(y) for y in x] for x in results["cosine_similarities"]]
 
         molecule_results = {
             "mol_idx": idx_list[atom_idx],
             "results_by_angle": results_by_angle,
-            "all_passed": all(
-                results_by_angle[angle]["passed"] for angle in rotation_angles
-            ),
+            "all_passed": all(results_by_angle[angle]["passed"] for angle in rotation_angles),
             "avg_cosine_similarity_by_molecule": float(
-                np.mean(
-                    [
-                        results_by_angle[angle]["mean_cosine_similarity"]
-                        for angle in rotation_angles
-                    ]
-                )
+                np.mean([results_by_angle[angle]["mean_cosine_similarity"] for angle in rotation_angles])
             ),
-            "avg_mae_by_molecule": float(
-                np.mean(
-                    [results_by_angle[angle]["avg_mae"] for angle in rotation_angles]
-                )
-            ),
+            "avg_mae_by_molecule": float(np.mean([results_by_angle[angle]["avg_mae"] for angle in rotation_angles])),
             "overall_equivariant_ratio": float(
-                np.mean(
-                    [
-                        results_by_angle[angle]["equivariant_ratio"]
-                        for angle in rotation_angles
-                    ]
-                )
+                np.mean([results_by_angle[angle]["equivariant_ratio"] for angle in rotation_angles])
             ),
         }
 
@@ -286,16 +235,11 @@ def run(
     aggregate_results = {
         "num_molecules": len(atoms_list),
         "all_molecules_passed": all(result["all_passed"] for result in all_results),
-        "average_equivariant_ratio": float(
-            np.mean([result["overall_equivariant_ratio"] for result in all_results])
-        ),
+        "average_equivariant_ratio": float(np.mean([result["overall_equivariant_ratio"] for result in all_results])),
         "average_cosine_similarity_by_angle": {
-            angle: float(np.mean(sims))
-            for angle, sims in cross_molecule_cosine_sims.items()
+            angle: float(np.mean(sims)) for angle, sims in cross_molecule_cosine_sims.items()
         },
-        "average_mae_by_angle": {
-            angle: float(np.mean(diffs)) for angle, diffs in cross_molecule_mae.items()
-        },
+        "average_mae_by_angle": {angle: float(np.mean(diffs)) for angle, diffs in cross_molecule_mae.items()},
         "molecule_results": all_results,
     }
 

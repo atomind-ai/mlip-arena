@@ -1,12 +1,12 @@
 import os
 from pathlib import Path
 from typing import Generator, Iterable
-from loguru import logger
-from huggingface_hub import HfApi, hf_hub_download
-from prefect import task
 
 from ase import Atoms
 from ase.db import connect
+from huggingface_hub import HfApi, hf_hub_download
+from loguru import logger
+from prefect import task
 
 
 def save_to_db(
@@ -19,7 +19,6 @@ def save_to_db(
     subfolder: str = Path(__file__).parent.name,
 ):
     """Save ASE Atoms objects to an ASE database and optionally upload to Hugging Face Hub."""
-
     if upload and hf_token is None:
         raise ValueError("HF_TOKEN is required to upload the database.")
 
@@ -27,7 +26,7 @@ def save_to_db(
 
     if isinstance(atoms_list, Atoms):
         atoms_list = [atoms_list]
-    
+
     with connect(db_path) as db:
         for atoms in atoms_list:
             if not isinstance(atoms, Atoms):
@@ -45,6 +44,7 @@ def save_to_db(
         logger.info(f"{db_path.name} uploaded to {repo_id}/{subfolder}")
 
     return db_path
+
 
 @task
 def get_atoms_from_db(

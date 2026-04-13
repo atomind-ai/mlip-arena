@@ -1,9 +1,13 @@
+import sys
 from pathlib import Path
 
 import pytest
 from streamlit.testing.v1 import AppTest
 
 path = Path(__file__).parents[1] / "serve"
+if str(path) not in sys.path:
+    sys.path.insert(0, str(path))
+
 
 @pytest.fixture
 def home():
@@ -12,10 +16,12 @@ def home():
     assert not at.exception
     return at
 
+
 def test_leaderboard(home):
     # Test the leaderboard page by simulating navigation.
     at = home.switch_page(str(path / "leaderboard.py"))
     assert not at.exception
+
 
 def test_task_pages(home):
     # Test each task page using the TASKS registry.
