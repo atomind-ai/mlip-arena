@@ -1,3 +1,5 @@
+"""Input structure generation for vacancy migration."""
+
 from ase import Atom
 from ase.data import covalent_radii
 from ase.spacegroup import crystal
@@ -157,6 +159,14 @@ hcp_elements = [
 
 
 def get_hcp_pristine(mp_api_key=None):
+    """Retrieve pristine HCP element structures from Materials Project.
+
+    Args:
+        mp_api_key (str, optional): API key for Materials Project.
+
+    Returns:
+        dict: Mapping of elements to pristine HCP Atoms objects.
+    """
     for element in hcp_elements:
         with MPRester(mp_api_key) as mpr:
             docs = mpr.materials.summary.search(

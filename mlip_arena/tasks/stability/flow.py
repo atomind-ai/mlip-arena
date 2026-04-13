@@ -1,3 +1,5 @@
+"""Workflow for executing stability MD simulations."""
+
 from __future__ import annotations
 
 import os

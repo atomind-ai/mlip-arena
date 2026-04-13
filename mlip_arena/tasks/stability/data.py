@@ -1,3 +1,5 @@
+"""Data management for MD stability tests."""
+
 import os
 from collections.abc import Generator, Iterable
 from pathlib import Path

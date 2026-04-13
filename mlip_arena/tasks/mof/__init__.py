@@ -1,3 +1,5 @@
+"""Metal-Organic Framework (MOF) related tasks."""
+
 from pathlib import Path
 
 from loguru import logger

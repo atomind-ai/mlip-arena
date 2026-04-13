@@ -1,3 +1,5 @@
+"""Energy-volume (E-V) curve calculation tasks."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

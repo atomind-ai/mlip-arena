@@ -1,3 +1,5 @@
+"""Input generation and database management for MOF tasks."""
+
 import os
 from collections.abc import Generator, Iterable
 from pathlib import Path

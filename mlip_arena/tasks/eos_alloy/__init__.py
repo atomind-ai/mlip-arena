@@ -1,3 +1,5 @@
+"""Equation of state (EOS) tasks for alloys."""
+
 from pathlib import Path
 
 from loguru import logger

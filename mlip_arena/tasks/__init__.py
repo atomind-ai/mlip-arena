@@ -1,3 +1,5 @@
+"""Tasks and workflows for MLIP Arena."""
+
 from pathlib import Path
 
 import yaml

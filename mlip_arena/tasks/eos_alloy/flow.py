@@ -1,3 +1,5 @@
+"""Workflow for executing alloy EOS calculations."""
+
 from functools import partial
 from pathlib import Path
 

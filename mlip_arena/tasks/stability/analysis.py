@@ -1,3 +1,5 @@
+"""Analysis routines for MD stability trajectories."""
+
 from pathlib import Path
 from typing import Literal
 
@@ -115,6 +117,16 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
 
 
 def gather_results(run_dir: Path, prefix: str, run_type: Literal["nvt", "npt"]) -> pd.DataFrame:
+    """Gather stability analysis results from multiple runs into a single DataFrame.
+
+    Args:
+        run_dir (Path): Output directory containing the runs.
+        prefix (str): Prefix of the target files to gather.
+        run_type (Literal["nvt", "npt"]): MD ensemble type used.
+
+    Returns:
+        pd.DataFrame: Aggregated results table.
+    """
     df = pd.DataFrame()
 
     run_dir = Path(run_dir)

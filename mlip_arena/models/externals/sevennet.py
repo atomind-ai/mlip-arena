@@ -1,3 +1,5 @@
+"""SevenNet model integrations."""
+
 from __future__ import annotations
 
 from sevenn.sevennet_calculator import SevenNetCalculator
