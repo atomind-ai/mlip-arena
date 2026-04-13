@@ -6,6 +6,8 @@ import matgl
 import torch
 from matgl.ext.ase import PESCalculator
 
+matgl.set_backend("DGL")
+
 
 class M3GNet(PESCalculator):
     def __init__(
