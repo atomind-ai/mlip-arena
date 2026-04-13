@@ -31,6 +31,7 @@ dependencies=[
     "ase>=3.26.0",
     "pymatgen",
     "torch",
+    "typer>=0.24.1",
     "huggingface_hub[cli]>=1.10.0",
     "datasets",
     "safetensors",
