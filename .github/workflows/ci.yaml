@@ -80,7 +80,13 @@ jobs:
       env:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
-      run: pytest -vra -n 5 --dist=loadscope tests
+      run: pytest -vra -n 5 --dist=loadscope --cov=mlip_arena --cov-report=xml tests
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: atomind-ai/mlip-arena
 
     - name: Squash commits and trial push to Hugging Face
       if: github.event_name == 'pull_request' && github.event.pull_request.base.ref != 'develop'

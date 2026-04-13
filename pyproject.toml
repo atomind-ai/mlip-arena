@@ -61,6 +61,7 @@ test = [
     "torchani>=2.2.4",
     "nequip==0.16.0",
     "pytest",
+    "pytest-cov",
     "pytest-xdist",
     "pymatgen>=2025.1.9",
     "streamlit>=1.55.0",
