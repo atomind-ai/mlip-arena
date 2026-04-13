@@ -32,7 +32,6 @@ def get_neighbor(atoms: Atoms, cutoff: float, self_interaction: bool = False):
 
 def collate_fn(batch: list[Atoms], cutoff: float) -> Data:
     """Collate a list of Atoms objects into a single batched Atoms object."""
-
     # Offset the edge indices for each graph to ensure they remain disconnected
     offset = 0
 
@@ -120,8 +119,9 @@ def collate_fn(batch: list[Atoms], cutoff: float) -> Data:
 
 
 def decollate_fn(batch_data: Data) -> list[Atoms]:
-    """Decollate a batched Data object into a list of individual Atoms objects."""
-
+    """Decollate a batched Data object into a list of individual Atoms
+    objects.
+    """
     # FIXME: this function is not working properly when the batch_data is on GPU.
     # TODO: create a new Cell class using torch tensor to handle device placement.
     # As a temporary fix, detach the batch_data from the GPU and move it to CPU.

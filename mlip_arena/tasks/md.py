@@ -1,5 +1,4 @@
-"""
-Define molecular dynamics task.
+"""Define molecular dynamics task.
 
 This script has been adapted from Atomate2 MLFF MD workflow written by Aaron Kaplan and Yuan Chiang
 https://github.com/materialsproject/atomate2/blob/main/src/atomate2/forcefields/md.py
@@ -77,11 +76,12 @@ from ase.md.velocitydistribution import (
 )
 from ase.md.verlet import VelocityVerlet
 from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 from scipy.interpolate import interp1d
 from scipy.linalg import schur
 from tqdm.auto import tqdm
+
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY
 
 _valid_dynamics: dict[str, tuple[str, ...]] = {
     "nve": ("velocityverlet",),
@@ -155,7 +155,7 @@ def _get_ensemble_defaults(
     p_schedule: np.ndarray,
     dynamics_kwargs: dict | None = None,
 ) -> dict:
-    """Update ASE MD kwargs"""
+    """Update ASE MD kwargs."""
     dynamics_kwargs = dynamics_kwargs or {}
 
     if ensemble == "nve":
@@ -188,7 +188,11 @@ def _generate_task_run_name():
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator}"
 
 
-@task(name="MD", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS)
+@task(
+    name="MD",
+    task_run_name=_generate_task_run_name,
+    cache_policy=ARENA_TASK_CACHE_POLICY,
+)
 def run(
     atoms: Atoms,
     calculator: BaseCalculator,
@@ -206,8 +210,7 @@ def run(
     traj_interval: int = 1,
     restart: bool = True,
 ):
-    """
-    Run a molecular dynamics (MD) simulation using ASE.
+    """Run a molecular dynamics (MD) simulation using ASE.
 
     Parameters:
         atoms (Atoms): The atomic structure to simulate.
@@ -243,7 +246,6 @@ def run(
         - For NPT dynamics, the atomic cell is transformed to an upper triangular form to meet ASE's requirements.
         - Temperature and pressure schedules can be specified as sequences or arrays for time-dependent control.
     """
-
     atoms = atoms.copy()
 
     atoms.calc = calculator

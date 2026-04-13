@@ -70,6 +70,7 @@ leaderboard = metadata_table.join(rank_df, how="left")
 # Compute Arena Rank explicitly without modifying original task ranks
 # -----------------------------------------------------------------------------
 
+rename_dict = {}
 if not rank_df.empty:
     leaderboard = leaderboard.copy()
     leaderboard["Meta Rank Agg"] = 0
@@ -106,8 +107,10 @@ if not rank_df.empty:
 # style = leaderboard.drop(columns=["Meta Rank Agg"], errors="ignore").style
 style = leaderboard.style
 
-style = style.background_gradient(cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"])
-style = style.background_gradient(cmap="cividis_r", subset=list(rename_dict.values()))
+if "Arena Rank" in leaderboard.columns:
+    style = style.background_gradient(cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"])
+if rename_dict:
+    style = style.background_gradient(cmap="cividis_r", subset=list(rename_dict.values()))
 
 st.info(
     "Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
@@ -124,7 +127,7 @@ st.markdown(
     <a href="https://arxiv.org/abs/2509.20630"><img src="https://img.shields.io/badge/arXiv-2509.20630-b31b1b"></a>
     <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR-AI4Mat-blue"></a>
     <br>
-    <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/test.yaml"></a>
+    <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/ci.yaml"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/mlip-arena"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mlip-arena"></a>
     <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>

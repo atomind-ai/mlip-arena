@@ -5,7 +5,7 @@ from mlip_arena.tasks import Task
 
 
 class Machine(enum.Enum):
-    """Enum class for machine"""
+    """Enum class for machine."""
 
     HFCPU = "Hugging Face CPU Basic"
     PERLCPU = "NERSC Perlmutter CPU"

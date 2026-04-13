@@ -7,8 +7,8 @@ DATA_DIR = Path(__file__).parent.absolute()
 
 
 def summarize():
-    """
-    Summarizes all benchmark results (*_results.parquet) in the directory.
+    """Summarizes all benchmark results (*_results.parquet) in the directory.
+
     Aggregates metrics per model, computes ranks, and exports leaderboard files.
     """
     # 1. Find and Load all result parquet files

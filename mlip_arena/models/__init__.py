@@ -74,8 +74,6 @@ def _make_mlip_enum() -> Enum:
 
 MLIPEnum = _make_mlip_enum()
 
-# ── Patch enum members with convenience methods ────────────────────────────────
-
 
 def _metadata(self) -> dict:
     """Return the raw registry metadata dict for this model."""
@@ -90,7 +88,7 @@ def _load(self, **kwargs):
     **kwargs
         Forwarded to the calculator's ``__init__``.
 
-    Returns
+    Returns:
     -------
     An ASE-compatible calculator instance.
     """
@@ -115,9 +113,6 @@ def _call(self, **kwargs):
 MLIPEnum.metadata = property(_metadata)  # type: ignore[attr-defined]
 MLIPEnum.load = _load  # type: ignore[attr-defined]
 MLIPEnum.__call__ = _call  # type: ignore[attr-defined]
-
-
-# ── Core model base classes (unchanged) ───────────────────────────────────────
 
 
 class MLIP(
@@ -197,7 +192,7 @@ class MLIPCalculator(MLIP, Calculator):
         properties: list[str],
         system_changes: list = all_changes,
     ):
-        """Calculate energies and forces for the given Atoms object"""
+        """Calculate energies and forces for the given Atoms object."""
         super().calculate(atoms, properties, system_changes)
 
         data = collate_fn([atoms], cutoff=self.cutoff).to(self.device)

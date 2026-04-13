@@ -1,3 +1,5 @@
+"""NequIP and Allegro model integrations."""
+
 from __future__ import annotations
 
 from nequip.integrations.ase import NequIPCalculator

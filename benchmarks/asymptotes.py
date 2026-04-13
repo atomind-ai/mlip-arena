@@ -1,6 +1,5 @@
-"""
-================================================================================
-MLIP Arena - Benchmark Job Submission Template
+"""================================================================================
+MLIP Arena - Benchmark Job Submission Template.
 ================================================================================
 This script configures and submits the MLIP Arena core benchmarks
 via a Dask-Jobqueue on a SLURM cluster.
@@ -24,42 +23,41 @@ from prefect_dask import DaskTaskRunner
 from mlip_arena.flows.diatomics import homonuclear_diatomics
 from mlip_arena.flows.eos_bulk import run_db as EOSFlow
 from mlip_arena.flows.ev import run_db as EVFlow
-from mlip_arena.models import REGISTRY, MLIPEnum
 
 
 @flow
-def asymptotic_behaviors(model: str | BaseCalculator):
+def asymptotic_behaviors(calculator: str | BaseCalculator, calculator_kwargs: dict | None = None):
     ctx = FlowRunContext.get()
     parent_task_runner = ctx.task_runner
 
-    if isinstance(model, BaseCalculator):
-        model_name = model.__class__.__name__
-        family = "custom"
+    if isinstance(calculator, BaseCalculator):
+        model_name = calculator.__class__.__name__
     else:
-        model_name = model
-        if model_name not in MLIPEnum.__members__:
-            print(f"Model {model_name} is not in MLIPEnum natively. Using directly.")
-        family = REGISTRY[model_name]["family"] if model_name in REGISTRY else "custom"
+        model_name = calculator
+
+    from mlip_arena.tasks.utils import get_calculator
+
+    calc_instance = get_calculator(calculator, calculator_kwargs)
 
     # 1. Diatomics
     print(f"Starting homonuclear diatomics benchmark for {model_name}...")
-    out_dir_diatomics = Path.cwd() / "diatomics" / family / model_name
+    out_dir_diatomics = Path(__file__).parent / "diatomics"
     homonuclear_diatomics.with_options(name=f"diatomics-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_diatomics
+        model=calc_instance, run_dir=out_dir_diatomics
     )
 
     # 2. EOS Bulk
     print(f"Starting EOS bulk benchmark for {model_name}...")
-    out_dir_eos = Path.cwd() / "eos_bulk"
+    out_dir_eos = Path(__file__).parent / "eos_bulk"
     EOSFlow.with_options(name=f"eos_bulk-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
+        model=calc_instance, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
     )
 
     # 3. E-V
     print(f"Starting E-V scan benchmark for {model_name}...")
-    out_dir_ev = Path.cwd() / "ev"
+    out_dir_ev = Path(__file__).parent / "ev"
     EVFlow.with_options(name=f"ev-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
+        model=calc_instance, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
     )
 
 
@@ -69,11 +67,12 @@ if __name__ == "__main__":
     # ==============================================================================
 
     # Example A: Registered string model (e.g., "MACE-MP(M)", "CHGNet")
-    MODEL = "NequIP-OAM-L"
+    calculator = "ORBv2"
 
-    # Example B: Custom ASE Calculator
-    # from mace.calculators import mace_mp
-    # MODEL = mace_mp(model="medium", dispersion=False, default_dtype="float64", device="cuda")
+    # Example B: Custom ASE Calculator class and arguments (e.g., custom MLIP)
+    # from ase.calculators.lj import LennardJones
+    # calculator = LennardJones
+    # calculator_kwargs = dict(rc=10.0, sigma=1.0, epsilon=0.01)
 
     # SLURM environment configuration
     SLURM_CONFIG = {
@@ -91,7 +90,7 @@ if __name__ == "__main__":
         ],
     }
 
-    job_model_name = MODEL if isinstance(MODEL, str) else MODEL.__class__.__name__
+    job_model_name = calculator if isinstance(calculator, str) else calculator.__class__.__name__
 
     cluster_kwargs = dict(
         cores=1,
@@ -118,7 +117,7 @@ if __name__ == "__main__":
     print(f"Generating SLURM cluster jobs with script:\n{cluster.job_script()}")
     print("--------------------------------------------------------------------------------")
 
-    cluster.adapt(minimum_jobs=1, maximum_jobs=50)
+    cluster.adapt(minimum_jobs=1, maximum_jobs=100)
     client = Client(cluster)
 
     print(f"Dask dashboard available at: {client.dashboard_link}")
@@ -130,4 +129,7 @@ if __name__ == "__main__":
     asymptotic_behaviors.with_options(
         task_runner=DaskTaskRunner(address=client.scheduler.address),
         log_prints=True,
-    )(model=MODEL)
+    )(
+        calculator=calculator,
+        # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
+    )

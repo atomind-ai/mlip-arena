@@ -1,9 +1,11 @@
+"""ORB model integrations."""
+
 from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
 import requests
+import yaml
 from orb_models.forcefield import pretrained
 from orb_models.forcefield.calculator import ORBCalculator
 

@@ -48,8 +48,7 @@ class eqV2(OCPCalculator):
         seed=0,
         **kwargs,
     ) -> None:
-        """
-        Initialize an eqV2 calculator.
+        """Initialize an eqV2 calculator.
 
         Parameters
         ----------
@@ -67,7 +66,6 @@ class eqV2(OCPCalculator):
         **kwargs
             Any additional keyword arguments are passed to the superclass.
         """
-
         # https://huggingface.co/fairchem/OMAT24/resolve/main/eqV2_86M_omat_mp_salex.pt
 
         checkpoint_path = hf_hub_download(

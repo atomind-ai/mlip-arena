@@ -12,6 +12,8 @@ from mlip_arena.models import REGISTRY
 DATA_DIR = Path(__file__).parent
 
 mlip_models = ["MACE-MP(M)", "MatterSim", "ORBv2", "M3GNet", "CHGNet", "SevenNet"]
+colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+method_color_mapping = {model: colors[i % len(colors)] for i, model in enumerate(mlip_models)}
 
 fcc_pbe = pd.read_csv(DATA_DIR / "Table-A1-fcc.csv")
 hcp_pbe = pd.read_csv(DATA_DIR / "Table-A2-hcp.csv")
@@ -43,9 +45,7 @@ for model in mlip_models:
                 "fit_path": [],
                 "fit_energies": [],
             }
-            results_df = pd.concat(
-                [results_df, pd.DataFrame([new_row])], ignore_index=True
-            )
+            results_df = pd.concat([results_df, pd.DataFrame([new_row])], ignore_index=True)
             continue
         file = files[0]
         with open(file, "rb") as f:
@@ -139,7 +139,7 @@ for i, (ax, model) in enumerate(zip(axes.ravel(), mlip_models, strict=False)):
 
     ax.set(
         title=model,
-        xlabel="Normalized path" if i >= len(models) - ncols else None,
+        xlabel="Normalized path" if i >= len(mlip_models) - ncols else None,
         ylabel="Normalized energy" if i % ncols == 0 else None,
         ylim=(-0.1, 2),
     )
@@ -174,9 +174,7 @@ for model in mlip_models:
                 "fit_path": [],
                 "fit_energies": [],
             }
-            results_df = pd.concat(
-                [results_df, pd.DataFrame([new_row])], ignore_index=True
-            )
+            results_df = pd.concat([results_df, pd.DataFrame([new_row])], ignore_index=True)
             # else:
             #     # Update the existing row with the model's prediction
             #     results_df.loc[results_df['symbol'] == symbol, model] = pd.NA
@@ -197,7 +195,6 @@ for model in mlip_models:
             "fit_energies": forcefit.fit_energies,
         }
         results_df = pd.concat([results_df, pd.DataFrame([new_row])], ignore_index=True)
-
 
 
 nrows = 2

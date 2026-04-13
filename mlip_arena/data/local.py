@@ -9,7 +9,7 @@ from pandas import HDFStore
 class SafeHDFStore(HDFStore):
     def __init__(self, *args, **kwargs):
         probe_interval = kwargs.pop("probe_interval", 1)
-        self._lock = "%s.lock" % args[0]
+        self._lock = f"{args[0]}.lock"
         while True:
             try:
                 self._flock = os.open(self._lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)

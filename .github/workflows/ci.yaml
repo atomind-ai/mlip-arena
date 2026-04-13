@@ -1,4 +1,4 @@
-name: Python Test
+name: CI
 
 on:
   push:
@@ -10,7 +10,31 @@ env:
   UV_SYSTEM_PYTHON: 1
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout PR with full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Run pre-commit
+      run: uvx pre-commit run --all-files --show-diff-on-failure
+      env:
+        PRE_COMMIT_USE_UV: 1
+
   test:
+    needs: lint
     runs-on: ubuntu-latest
 
     strategy:
@@ -56,7 +80,13 @@ jobs:
       env:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
-      run: pytest -vra -n 5 --dist=loadscope tests
+      run: pytest -vra -n 5 --dist=loadscope --cov=mlip_arena --cov-report=xml tests
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: atomind-ai/mlip-arena
 
     - name: Squash commits and trial push to Hugging Face
       if: github.event_name == 'pull_request' && github.event.pull_request.base.ref != 'develop'

@@ -2,12 +2,10 @@
 # Taptool: https://docs.bokeh.org/en/2.4.2/docs/reference/models/tools.html#taptool
 
 import streamlit as st
+from bokeh.models import ColumnDataSource, CustomJS, TapTool
 from bokeh.plotting import figure
 from bokeh.sampledata.periodic_table import elements
 from bokeh.transform import dodge, factor_cmap
-
-from bokeh.models import ColumnDataSource, CustomJS, TapTool
-
 
 periods = ["I", "II", "III", "IV", "V", "VI", "VII"]
 groups = [str(x) for x in range(1, 19)]

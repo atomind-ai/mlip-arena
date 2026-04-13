@@ -3,7 +3,6 @@ import streamlit as st
 
 from mlip_arena import PKG_DIR
 
-
 st.markdown(
     """
 # Thermal Conductivity

@@ -1,3 +1,5 @@
+"""Analysis routines for MD stability trajectories."""
+
 from pathlib import Path
 from typing import Literal
 
@@ -23,7 +25,7 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
         Reference Atoms object (typically the first frame) used to compute
         center-of-mass drift and to determine the number of atoms.
 
-    Returns
+    Returns:
     -------
     dict
         A dictionary containing the following keys:
@@ -43,7 +45,7 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
         - 'timestep': array of step numbers for valid frames.
         - 'com_drifts': list of center-of-mass drift vectors relative to atoms0.
 
-    Notes
+    Notes:
     -----
     Frames that raise exceptions when querying potential energy are skipped.
     Unique restart blocks are identified by atoms.info['restart'] and used to
@@ -71,9 +73,7 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
             Ps.append(atoms.get_stress()[:3].mean())
         except Exception:
             Ps.append(np.nan)
-        com_drifts.append(
-            (atoms.get_center_of_mass() - atoms0.get_center_of_mass()).tolist()
-        )
+        com_drifts.append((atoms.get_center_of_mass() - atoms0.get_center_of_mass()).tolist())
 
     restarts = np.array(restarts)
     times = np.array(times)
@@ -102,15 +102,9 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
         "natoms": natoms,
         "total_time_seconds": total_time_seconds,
         "total_steps": total_steps,
-        "steps_per_second": total_steps / total_time_seconds
-        if total_time_seconds != 0
-        else 0,
-        "seconds_per_step": total_time_seconds / total_steps
-        if total_steps != 0
-        else float("inf"),
-        "seconds_per_step_per_atom": total_time_seconds / total_steps / natoms
-        if total_steps != 0
-        else float("inf"),
+        "steps_per_second": total_steps / total_time_seconds if total_time_seconds != 0 else 0,
+        "seconds_per_step": total_time_seconds / total_steps if total_steps != 0 else float("inf"),
+        "seconds_per_step_per_atom": total_time_seconds / total_steps / natoms if total_steps != 0 else float("inf"),
         "energies": Es,
         "kinetic_energies": KEs,
         "temperatures": Ts,
@@ -122,9 +116,17 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
     }
 
 
-def gather_results(
-    run_dir: Path, prefix: str, run_type: Literal["nvt", "npt"]
-) -> pd.DataFrame:
+def gather_results(run_dir: Path, prefix: str, run_type: Literal["nvt", "npt"]) -> pd.DataFrame:
+    """Gather stability analysis results from multiple runs into a single DataFrame.
+
+    Args:
+        run_dir (Path): Output directory containing the runs.
+        prefix (str): Prefix of the target files to gather.
+        run_type (Literal["nvt", "npt"]): MD ensemble type used.
+
+    Returns:
+        pd.DataFrame: Aggregated results table.
+    """
     df = pd.DataFrame()
 
     run_dir = Path(run_dir)
@@ -146,10 +148,8 @@ def gather_results(
                         {
                             # "model": model_name,
                             "formula": traj[0].get_chemical_formula(),
-                            "normalized_timestep": stats["timestep"]
-                            / stats["target_steps"],
-                            "normalized_final_step": stats["final_step"]
-                            / stats["target_steps"],
+                            "normalized_timestep": stats["timestep"] / stats["target_steps"],
+                            "normalized_final_step": stats["final_step"] / stats["target_steps"],
                             "pressure": np.array(stats["pressures"]) / units.GPa,
                         }
                         | stats

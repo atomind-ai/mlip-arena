@@ -31,10 +31,10 @@ dependencies=[
     "ase>=3.26.0",
     "pymatgen",
     "torch",
-    "huggingface_hub>=0.35.0",
+    "huggingface_hub[cli]>=1.10.0",
     "datasets",
     "safetensors",
-    "prefect[dask]==3.6.0",
+    "prefect[dask]>=3.6.26",
     "dask",
     "dask_jobqueue",
     "tables",
@@ -61,6 +61,7 @@ test = [
     "torchani>=2.2.4",
     "nequip==0.16.0",
     "pytest",
+    "pytest-cov",
     "pytest-xdist",
     "pymatgen>=2025.1.9",
     "streamlit>=1.55.0",
@@ -75,7 +76,7 @@ fairchem = [
     "fairchem-core>=2.13.0",
 ]
 orb = [
-    "orb-models>=0.4.0",
+    "orb-models>=0.4.0,<0.6.0",
 ]
 deepmd = [
     "torch>=2.2.0",

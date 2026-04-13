@@ -13,3 +13,13 @@ class ALIGNN(AlignnAtomwiseCalculator):
 
         device = device or get_freer_device()
         super().__init__(path=model_path, device=device, **kwargs)
+
+    def calculate(
+        self,
+        atoms=None,
+        properties=None,
+        system_changes=None,
+    ):
+        super().calculate(atoms, properties=properties, system_changes=system_changes)
+        if "energy" in self.results:
+            self.results["energy"] = float(self.results["energy"])

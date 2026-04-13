@@ -4,7 +4,6 @@ import streamlit as st
 
 from mlip_arena.tasks import REGISTRY as TASKS
 
-
 leaderboard = st.Page("leaderboard.py", title="Leaderboard", icon=":material/trophy:", default=True)
 
 nav = defaultdict(list)
