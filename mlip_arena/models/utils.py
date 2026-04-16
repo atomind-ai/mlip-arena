@@ -23,8 +23,7 @@ def get_freer_device() -> torch.device:
     if device_count > 0:
         # If CUDA GPUs are available, select the one with the most free memory
         mem_free = [
-            torch.cuda.get_device_properties(i).total_memory
-            - torch.cuda.memory_allocated(i)
+            torch.cuda.get_device_properties(i).total_memory - torch.cuda.memory_allocated(i)
             for i in range(device_count)
         ]
         free_gpu_index = mem_free.index(max(mem_free))

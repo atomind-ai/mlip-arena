@@ -13,19 +13,15 @@ DATA_DIR = Path(__file__).parent.absolute()
 palette_name = "tab10"  # Better for distinguishing multiple lines
 color_sequence = plt.get_cmap(palette_name).colors
 
-valid_models = [
-    model
-    for model, metadata in MODELS.items()
-    if "eos_bulk" in metadata.get("gpu-tasks", [])
-]
+valid_models = [model for model, metadata in MODELS.items() if "eos_bulk" in metadata.get("gpu-tasks", [])]
+
 
 def load_wbm_structures():
-    """
-    Load the WBM structures from a ASE DB file.
-    """
+    """Load the WBM structures from a ASE DB file."""
     with connect(DATA_DIR.parent / "wbm_structures.db") as db:
         for row in db.select():
             yield row.toatoms(add_additional_information=True)
+
 
 # Set up the grid layout
 n_models = len(valid_models)
@@ -41,7 +37,7 @@ fig = plt.figure(
 # Create grid of subplots
 axes = []
 for i in range(n_models):
-    ax = plt.subplot(n_rows, n_cols, i+1)
+    ax = plt.subplot(n_rows, n_cols, i + 1)
     axes.append(ax)
 
 SMALL_SIZE = 6
@@ -76,13 +72,13 @@ for i, model_name in enumerate(valid_models):
 
     # Set subplot title
     ax.set_title(f"{model_name} ({len(valid_structures)})", fontsize=MEDIUM_SIZE)
-    
+
     # Only add y-label to leftmost plots (those with index divisible by n_cols)
     if i % n_cols == 0:
         ax.set_ylabel("$\\frac{\\Delta E}{B V_0}$", fontsize=MEDIUM_SIZE)
     else:
         ax.set_ylabel("")
-    
+
     # Only add x-label to bottom row plots
     # Check if this plot is in the bottom row
     is_bottom_row = (i // n_cols) == (n_rows - 1) or (i >= n_models - n_cols)
@@ -90,7 +86,7 @@ for i, model_name in enumerate(valid_models):
         ax.set_xlabel("$V/V_0$", fontsize=MEDIUM_SIZE)
     else:
         ax.set_xlabel("")
-    
+
     ax.set_ylim(-0.02, 0.1)  # Consistent y-limits
     ax.axvline(x=1, linestyle="--", color="gray", alpha=0.7)
     ax.tick_params(axis="both", which="major", labelsize=MEDIUM_SIZE)

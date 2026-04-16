@@ -1,0 +1,78 @@
+---
+title: "Quickstart"
+description: "Run MLIP Arena workflows and benchmarks"
+---
+
+Instruction for individual benchmark is provided in the README in each corresponding folder under `/benchmark`.
+
+## Workflow Overview
+
+### The first Prefect workflow: molecular dynamics
+
+Arena provides a unified interface to run all the compiled MLIPs. This can be achieved simply by looping through `MLIPEnum`:
+
+```python
+from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks import MD
+from mlip_arena.tasks.utils import get_calculator
+
+from ase import units
+from ase.build import bulk
+
+atoms = bulk("Cu", "fcc", a=3.6) * (5, 5, 5)
+
+results = []
+
+for model in MLIPEnum:
+    result = MD(
+        atoms=atoms,
+        calculator=get_calculator(
+            model,
+            calculator_kwargs=dict(), # passing into calculator
+            dispersion=True,
+            dispersion_kwargs=dict(
+                damping='bj', xc='pbe', cutoff=40.0 * units.Bohr
+            ), # passing into TorchDFTD3Calculator
+        ), # compatible with custom ASE Calculator
+        ensemble="nve", # nvt, npt available
+        dynamics="velocityverlet", # compatible with any ASE Dynamics objects and their class names
+        total_time=1e3, # 1 ps = 1e3 fs
+        time_step=2, # fs
+    )
+    results.append(result)
+```
+
+### Parallelize benchmarks at scale
+
+To run multiple benchmarks in parallel, add `.submit` before the task function and wrap all the tasks into a flow to dispatch the tasks to worker for concurrent execution. See Prefect Doc on [tasks](https://docs.prefect.io/v3/develop/write-tasks) and [flow](https://docs.prefect.io/v3/develop/write-flows) for more details.
+
+```python
+...
+from prefect import flow
+
+@flow
+def run_all_tasks():
+    futures = []
+    for model in MLIPEnum:
+        future = MD.submit(
+            atoms=atoms,
+            ...
+        )
+        futures.append(future)
+
+    return [f.result(raise_on_failure=False) for f in futures]
+```
+
+For a more practical example using HPC resources, please refer to the MD stability benchmark in the repository.
+
+## List of modular tasks
+
+The implemented tasks are available under `mlip_arena.tasks.<module>.run` or `from mlip_arena.tasks import *` for convenient imports (currently doesn't work if [phonopy](https://phonopy.github.io/phonopy/install.html) is not installed).
+
+- **OPT**: Structure optimization
+- **EOS**: Equation of state (energy-volume scan)
+- **MD**: Molecular dynamics with flexible dynamics (NVE, NVT, NPT) and temperature/pressure scheduling (annealing, shearing, *etc*)
+- **PHONON**: Phonon calculation driven by [phonopy](https://phonopy.github.io/phonopy/install.html)
+- **NEB**: Nudged elastic band
+- **NEB_FROM_ENDPOINTS**: Nudge elastic band with convenient image interpolation (linear or IDPP)
+- **ELASTICITY**: Elastic tensor calculation

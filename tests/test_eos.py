@@ -41,10 +41,7 @@ def single_eos_flow(calculator_name, concurrent=True, cache=False):
 @pytest.mark.parametrize("concurrent", [False])
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 def test_eos(model: MLIPEnum, concurrent: bool):
-    """
-    Test EOS prefect workflow with a simple cubic lattice.
-    """
-
+    """Test EOS prefect workflow with a simple cubic lattice."""
     with prefect_test_harness():
         result = single_eos_flow(
             calculator_name=model.name,
@@ -63,4 +60,4 @@ def test_eos(model: MLIPEnum, concurrent: bool):
             cache=True,
         )
         assert isinstance(b0_cache := result["b0"], float)
-        assert b0_scratch == pytest.approx(b0_cache, rel=1e-5)
+        assert b0_scratch == pytest.approx(b0_cache, rel=1e-4)

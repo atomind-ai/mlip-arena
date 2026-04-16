@@ -1,10 +1,12 @@
-from __future__ import annotations
-
 from pathlib import Path
 
 import yaml
-from ase import Atoms
-from fairchem.core import OCPCalculator
+
+try:
+    from fairchem.core import OCPCalculator
+except ImportError:
+    from fairchem.core import FAIRChemCalculator as OCPCalculator
+
 from huggingface_hub import hf_hub_download
 
 with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
@@ -16,18 +18,17 @@ class eSEN(OCPCalculator):
         self,
         checkpoint=REGISTRY["eSEN"]["checkpoint"],
         cache_dir=None,
-        cpu=False, # TODO: cannot assign device
+        cpu=False,  # TODO: cannot assign device
         seed=0,
         **kwargs,
     ) -> None:
-
         # https://huggingface.co/facebook/OMAT24/resolve/main/esen_30m_oam.pt
 
         checkpoint_path = hf_hub_download(
             "fairchem/OMAT24",
             filename=checkpoint,
             revision="13ab5b8d71af67bd1c83fbbf53250c82cd87f506",
-            cache_dir=cache_dir
+            cache_dir=cache_dir,
         )
         kwargs.pop("device", None)
         super().__init__(
@@ -37,17 +38,17 @@ class eSEN(OCPCalculator):
             **kwargs,
         )
 
+
 class eqV2(OCPCalculator):
     def __init__(
         self,
         checkpoint=REGISTRY["eqV2(OMat)"]["checkpoint"],
         cache_dir=None,
-        cpu=False, # TODO: cannot assign device
+        cpu=False,  # TODO: cannot assign device
         seed=0,
         **kwargs,
     ) -> None:
-        """
-        Initialize an eqV2 calculator.
+        """Initialize an eqV2 calculator.
 
         Parameters
         ----------
@@ -65,14 +66,13 @@ class eqV2(OCPCalculator):
         **kwargs
             Any additional keyword arguments are passed to the superclass.
         """
-
         # https://huggingface.co/fairchem/OMAT24/resolve/main/eqV2_86M_omat_mp_salex.pt
 
         checkpoint_path = hf_hub_download(
             "fairchem/OMAT24",
             filename=checkpoint,
             revision="bf92f9671cb9d5b5c77ecb4aa8b317ff10b882ce",
-            cache_dir=cache_dir
+            cache_dir=cache_dir,
         )
         kwargs.pop("device", None)
         super().__init__(
@@ -80,76 +80,4 @@ class eqV2(OCPCalculator):
             cpu=cpu,
             seed=seed,
             **kwargs,
-        )
-
-class EquiformerV2(OCPCalculator):
-    def __init__(
-        self,
-        checkpoint=REGISTRY["EquiformerV2(OC22)"]["checkpoint"],
-        # TODO: cannot assign device
-        local_cache="~/.cache/ocp/",
-        cpu=False,
-        seed=0,
-        **kwargs,
-    ) -> None:
-        kwargs.pop("device", None)
-        super().__init__(
-            model_name=checkpoint,
-            local_cache=local_cache,
-            cpu=cpu,
-            seed=seed,
-            **kwargs,
-        )
-
-    def calculate(self, atoms: Atoms, properties, system_changes) -> None:
-        super().calculate(atoms, properties, system_changes)
-
-        self.results.update(
-            force=atoms.get_forces(),
-        )
-
-
-class EquiformerV2OC20(OCPCalculator):
-    def __init__(
-        self,
-        checkpoint=REGISTRY["EquiformerV2(OC22)"]["checkpoint"],
-        # TODO: cannot assign device
-        local_cache="~/.cache/ocp/",
-        cpu=False,
-        seed=0,
-        **kwargs,
-    ) -> None:
-        kwargs.pop("device", None)
-        super().__init__(
-            model_name=checkpoint,
-            local_cache=local_cache,
-            cpu=cpu,
-            seed=seed,
-            **kwargs,
-        )
-
-class eSCN(OCPCalculator):
-    def __init__(
-        self,
-        checkpoint="eSCN-L6-M3-Lay20-S2EF-OC20-All+MD",  # TODO: import from registry
-        # TODO: cannot assign device
-        local_cache="~/.cache/ocp/",
-        cpu=False,
-        seed=0,
-        **kwargs,
-    ) -> None:
-        kwargs.pop("device", None)
-        super().__init__(
-            model_name=checkpoint,
-            local_cache=local_cache,
-            cpu=cpu,
-            seed=seed,
-            **kwargs,
-        )
-
-    def calculate(self, atoms: Atoms, properties, system_changes) -> None:
-        super().calculate(atoms, properties, system_changes)
-
-        self.results.update(
-            force=atoms.get_forces(),
         )

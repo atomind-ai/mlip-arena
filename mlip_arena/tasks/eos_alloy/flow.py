@@ -1,14 +1,16 @@
+"""Workflow for executing alloy EOS calculations."""
+
 from functools import partial
 from pathlib import Path
 
 import pandas as pd
+from ase.db import connect
 from huggingface_hub import hf_hub_download
 from prefect import Task, flow, task
 from prefect.client.schemas.objects import TaskRun
 from prefect.futures import wait
 from prefect.states import State
 
-from ase.db import connect
 from mlip_arena.data.local import SafeHDFStore
 from mlip_arena.models import REGISTRY, MLIPEnum
 from mlip_arena.tasks.eos import run as EOS
@@ -16,6 +18,15 @@ from mlip_arena.tasks.eos import run as EOS
 
 @task
 def get_atoms_from_db(db_path: Path | str):
+    """Load atoms from an ASE database. Downloads from HuggingFace if not
+    local.
+
+    Args:
+        db_path (Path | str): Path to the database file.
+
+    Yields:
+        Atoms: ASE Atoms structures.
+    """
     db_path = Path(db_path)
     if not db_path.exists():
         db_path = hf_hub_download(
@@ -29,13 +40,8 @@ def get_atoms_from_db(db_path: Path | str):
             yield row.toatoms()
 
 
-def save_to_hdf(
-    tsk: Task, run: TaskRun, state: State, fpath: Path | str, table_name: str
-):
-    """
-    Define a hook on completion of EOS task to save results to HDF5 file.
-    """
-
+def save_to_hdf(tsk: Task, run: TaskRun, state: State, fpath: Path | str, table_name: str):
+    """Define a hook on completion of EOS task to save results to HDF5 file."""
     if run.state.is_failed():
         return
 
@@ -46,9 +52,7 @@ def save_to_hdf(
 
     try:
         atoms = result["atoms"]
-        calculator_name = (
-            run.task_inputs["calculator_name"] or result["calculator_name"]
-        )
+        calculator_name = run.task_inputs["calculator_name"] or result["calculator_name"]
 
         energies = [float(e) for e in result["eos"]["energies"]]
 
@@ -88,9 +92,7 @@ def save_to_hdf(
         print(e)
 
 
-@flow(
-    name="EOS Alloy"
-)
+@flow(name="EOS Alloy")
 def run(
     db_path: Path | str,
     out_path: Path | str,
@@ -104,6 +106,24 @@ def run(
     concurrent=False,
     cache=True,
 ):
+    """Run EOS calculations for alloy structures in a database.
+
+    Args:
+        db_path (Path | str): Path to the alloy database.
+        out_path (Path | str): Path to save HDF5 results.
+        table_name (str): Table name in HDF5 file.
+        optimizer (str, optional): Optimizer to use. Defaults to "FIRE".
+        optimizer_kwargs (dict, optional): Additional optimizer kwargs. Defaults to None.
+        filter (str, optional): Filter to use. Defaults to "FrechetCell".
+        filter_kwargs (dict, optional): Additional filter kwargs. Defaults to None.
+        criterion (dict, optional): Convergence criterion. Defaults to dict(fmax=0.1, steps=1000).
+        max_abs_strain (float, optional): Maximum absolute strain. Defaults to 0.20.
+        concurrent (bool, optional): Whether to run concurrently. Defaults to False.
+        cache (bool, optional): Whether to cache results. Defaults to True.
+
+    Returns:
+        list: Results from the EOS tasks.
+    """
     EOS_ = EOS.with_options(
         on_completion=[partial(save_to_hdf, fpath=out_path, table_name=table_name)],
         refresh_cache=not cache,
@@ -115,8 +135,7 @@ def run(
             if not REGISTRY[mlip.name]["npt"]:
                 continue
             if Path(__file__).parent.name not in (
-                REGISTRY[mlip.name].get("cpu-tasks", [])
-                + REGISTRY[mlip.name].get("gpu-tasks", [])
+                REGISTRY[mlip.name].get("cpu-tasks", []) + REGISTRY[mlip.name].get("gpu-tasks", [])
             ):
                 continue
             future = EOS_.submit(
@@ -138,8 +157,4 @@ def run(
 
     wait(futures)
 
-    return [
-        f.result(timeout=None, raise_on_failure=False)
-        for f in futures
-        if f.state.is_completed()
-    ]
+    return [f.result(timeout=None, raise_on_failure=False) for f in futures if f.state.is_completed()]

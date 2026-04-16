@@ -1,0 +1,1 @@
+"""Diatomic molecule analysis tasks."""

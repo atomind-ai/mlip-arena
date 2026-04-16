@@ -1,0 +1,38 @@
+---
+title: "Introduction"
+description: "Welcome to MLIP Arena"
+---
+
+<div align="center">
+    <h1>⚔️ MLIP Arena ⚔️</h1>
+</div>
+
+Foundation machine learning interatomic potentials (MLIPs), trained on extensive databases containing millions of density functional theory (DFT) calculations, have revolutionized molecular and materials modeling, but existing benchmarks suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific DFT references.
+
+We introduce MLIP Arena, a unified benchmark platform for evaluating foundation MLIP performance beyond conventional error metrics. It focuses on revealing the physical soundness learned by MLIPs and assessing their utilitarian performance agnostic to underlying model architecture and training dataset.
+
+***By moving beyond static DFT references and revealing the important failure modes*** of current foundation MLIPs in real-world settings, MLIP Arena provides a reproducible framework to guide the next-generation MLIP development toward improved predictive accuracy and runtime efficiency while maintaining physical consistency.
+
+MLIP Arena leverages modern pythonic workflow orchestrator [Prefect](https://www.prefect.io/) to enable advanced task/flow chaining and caching.
+
+## Announcement
+
+- **[Sep 18, 2025]** 🎊 **MLIP Arena is accepted as a Spotlight (top 3.5%) at NeurIPS!** 🎊
+- **[Apr 8, 2025]** 🎉 **MLIP Arena is accepted as an ICLR AI4Mat Spotlight!** 🎉 Huge thanks to all co-authors for their contributions!
+
+<CardGroup cols={2}>
+  <Card
+    title="Installation"
+    icon="screwdriver-wrench"
+    href="/installation"
+  >
+    Install from PyPI or source to get started.
+  </Card>
+  <Card
+    title="Quickstart"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Start your first Prefect workflow and parallelize benchmarks at scale.
+  </Card>
+</CardGroup>

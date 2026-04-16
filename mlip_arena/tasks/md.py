@@ -1,5 +1,4 @@
-"""
-Define molecular dynamics task.
+"""Define molecular dynamics task.
 
 This script has been adapted from Atomate2 MLFF MD workflow written by Aaron Kaplan and Yuan Chiang
 https://github.com/materialsproject/atomate2/blob/main/src/atomate2/forcefields/md.py
@@ -77,11 +76,12 @@ from ase.md.velocitydistribution import (
 )
 from ase.md.verlet import VelocityVerlet
 from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 from scipy.interpolate import interp1d
 from scipy.linalg import schur
 from tqdm.auto import tqdm
+
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY
 
 _valid_dynamics: dict[str, tuple[str, ...]] = {
     "nve": ("velocityverlet",),
@@ -124,9 +124,7 @@ def _get_ensemble_schedule(
         p_schedule = np.full(n_steps + 1, pressure)
         return t_schedule, p_schedule
 
-    if isinstance(temperature, Sequence) or (
-        isinstance(temperature, np.ndarray) and temperature.ndim == 1
-    ):
+    if isinstance(temperature, Sequence) or (isinstance(temperature, np.ndarray) and temperature.ndim == 1):
         t_schedule = _interpolate_quantity(temperature, n_steps)
     # NOTE: In ASE Langevin dynamics, the temperature are normally
     # scalars, but in principle one quantity per atom could be specified by giving
@@ -139,9 +137,7 @@ def _get_ensemble_schedule(
         p_schedule = np.full(n_steps + 1, pressure)
         return t_schedule, p_schedule
 
-    if isinstance(pressure, Sequence) or (
-        isinstance(pressure, np.ndarray) and pressure.ndim == 1
-    ):
+    if isinstance(pressure, Sequence) or (isinstance(pressure, np.ndarray) and pressure.ndim == 1):
         p_schedule = _interpolate_quantity(pressure, n_steps)
     elif isinstance(pressure, np.ndarray) and pressure.ndim == 3:
         p_schedule = interp1d(np.arange(n_steps + 1), pressure, kind="linear")
@@ -159,7 +155,7 @@ def _get_ensemble_defaults(
     p_schedule: np.ndarray,
     dynamics_kwargs: dict | None = None,
 ) -> dict:
-    """Update ASE MD kwargs"""
+    """Update ASE MD kwargs."""
     dynamics_kwargs = dynamics_kwargs or {}
 
     if ensemble == "nve":
@@ -193,7 +189,9 @@ def _generate_task_run_name():
 
 
 @task(
-    name="MD", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS
+    name="MD",
+    task_run_name=_generate_task_run_name,
+    cache_policy=ARENA_TASK_CACHE_POLICY,
 )
 def run(
     atoms: Atoms,
@@ -212,8 +210,7 @@ def run(
     traj_interval: int = 1,
     restart: bool = True,
 ):
-    """
-    Run a molecular dynamics (MD) simulation using ASE.
+    """Run a molecular dynamics (MD) simulation using ASE.
 
     Parameters:
         atoms (Atoms): The atomic structure to simulate.
@@ -249,7 +246,6 @@ def run(
         - For NPT dynamics, the atomic cell is transformed to an upper triangular form to meet ASE's requirements.
         - Temperature and pressure schedules can be specified as sequences or arrays for time-dependent control.
     """
-
     atoms = atoms.copy()
 
     atoms.calc = calculator
@@ -283,9 +279,9 @@ def run(
         dynamics = dynamics.lower()
         if dynamics not in _valid_dynamics[ensemble]:
             raise ValueError(
-                f"{dynamics} thermostat not available for {ensemble}."
-                f"Available {ensemble} thermostats are:"
-                " ".join(_valid_dynamics[ensemble])
+                f"{dynamics} thermostat not available for {ensemble}.Available {ensemble} thermostats are: ".join(
+                    _valid_dynamics[ensemble]
+                )
             )
         if ensemble == "nve":
             dynamics = "velocityverlet"
@@ -312,12 +308,14 @@ def run(
                 last_atoms = read(traj_file, index="-1")
                 assert isinstance(last_atoms, Atoms)
                 last_step = last_atoms.info.get("step")
+                assert isinstance(last_step, int)
                 n_steps -= last_step
                 traj = Trajectory(traj_file, "a", atoms)
                 atoms.set_positions(last_atoms.get_positions())
                 atoms.set_momenta(last_atoms.get_momenta())
             except Exception:
                 traj = Trajectory(traj_file, "w", atoms)
+                last_step = 0
 
                 if not np.isnan(t_schedule).any():
                     MaxwellBoltzmannDistribution(

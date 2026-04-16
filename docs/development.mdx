@@ -1,0 +1,44 @@
+---
+title: "Contribute and Development"
+description: "Contribute to MLIP Arena"
+---
+
+PRs are welcome. Please clone the repo and submit PRs with changes.
+
+To make change to huggingface space, fetch large files from git lfs first and run streamlit:
+
+```bash
+git lfs fetch --all
+git lfs pull
+streamlit run serve/app.py
+```
+
+## Add new MLIP models
+
+If you have pretrained MLIP models that you would like to contribute to the MLIP Arena and show benchmark in real-time, there are two ways:
+
+### External ASE Calculator (easy)
+
+1. Implement new ASE Calculator class in `mlip_arena/models/externals`.
+2. Name your class with awesome model name and add the same name to `registry` with metadata.
+
+<Warning>
+Remove unneccessary outputs under `results` class attributes to avoid error for MD simulations. Please refer to `CHGNet` as an example.
+</Warning>
+
+### Hugging Face Model (recommended, difficult)
+
+0. Inherit Hugging Face `ModelHubMixin` class to your awesome model class definition. We recommend `PyTorchModelHubMixin`.
+1. Create a new Hugging Face Model repository and upload the model file using `push_to_hub` function.
+2. Follow the template to code the I/O interface for your model.
+3. Update model `registry` with metadata.
+
+## Add new benchmark
+
+<Info>
+Please reuse, extend, or chain the general tasks defined in the Quickstart and add new folder and script under `/benchmarks`.
+</Info>
+
+## Documentation site
+
+We use Mintlify for our documentation. Local development instructions are available in the repository `CONTRIBUTING.md`.

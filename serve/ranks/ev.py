@@ -3,10 +3,10 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-DATA_DIR = Path("benchmarks/wbm_ev")
+DATA_DIR = Path("benchmarks/ev")
 
 
-table = pd.read_csv(DATA_DIR / "summary.csv")
+table = pd.read_csv(DATA_DIR / "leaderboard.csv")
 
 
 table = table.rename(

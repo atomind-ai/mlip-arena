@@ -1,5 +1,4 @@
-"""
-Define equation of state task.
+"""Define equation of state task.
 
 https://github.com/materialsvirtuallab/matcalc/blob/main/matcalc/eos.py
 """
@@ -13,14 +12,14 @@ from ase import Atoms
 from ase.calculators.calculator import BaseCalculator
 from ase.optimize.optimize import Optimizer
 from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.futures import wait
 from prefect.results import ResultRecord
 from prefect.runtime import task_run
 from prefect.states import State
+from pymatgen.analysis.eos import BirchMurnaghan
 
 from mlip_arena.tasks.optimize import run as OPT
-from pymatgen.analysis.eos import BirchMurnaghan
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY
 
 if TYPE_CHECKING:
     from ase.filters import Filter
@@ -36,9 +35,7 @@ def _generate_task_run_name():
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
 
-@task(
-    name="EOS", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS
-)
+@task(name="EOS", task_run_name=_generate_task_run_name, cache_policy=ARENA_TASK_CACHE_POLICY)
 def run(
     atoms: Atoms,
     calculator: BaseCalculator,
@@ -52,29 +49,24 @@ def run(
     concurrent: bool = True,
     cache_opt: bool = False,
 ) -> dict[str, Any] | State:
-    """
-    Compute the equation of state (EOS) for the given atoms and calculator.
+    """Compute the equation of state (EOS) for the given atoms and calculator.
 
     Args:
-        atoms: The input atoms.
-        calculator_name: The name of the calculator to use.
-        calculator_kwargs: Additional kwargs to pass to the calculator.
-        device: The device to use.
-        optimizer: The optimizer to use.
-        optimizer_kwargs: Additional kwargs to pass to the optimizer.
-        filter: The filter to use.
-        filter_kwargs: Additional kwargs to pass to the filter.
-        criterion: The criterion to use.
-        max_abs_strain: The maximum absolute strain to use.
-        npoints: The number of points to sample.
-        concurrent: Whether to relax multiple structures concurrently.
-        persist_opt: Whether to persist the optimization results.
-        cache_opt: Whether to cache the intermediate optimization results.
+        atoms (Atoms): The input atoms.
+        calculator (BaseCalculator): The ASE calculator to use.
+        optimizer (Optimizer | str, optional): The optimizer to use. Defaults to "BFGSLineSearch".
+        optimizer_kwargs (dict, optional): Additional kwargs to pass to the optimizer. Defaults to None.
+        filter (Filter | str, optional): The filter to use. Defaults to "FrechetCell".
+        filter_kwargs (dict, optional): Additional kwargs to pass to the filter. Defaults to None.
+        criterion (dict, optional): The convergence criterion. Defaults to None.
+        max_abs_strain (float, optional): The maximum absolute strain to apply. Defaults to 0.1.
+        npoints (int, optional): The number of points to sample. Defaults to 11.
+        concurrent (bool, optional): Whether to relax multiple structures concurrently. Defaults to True.
+        cache_opt (bool, optional): Whether to cache the intermediate optimization results. Defaults to False.
 
     Returns:
-        A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy if successful. Otherwise, a prefect state object.
+        dict[str, Any] | State: A dictionary containing the EOS data, bulk modulus, equilibrium volume, and equilibrium energy if successful. Otherwise, a prefect state object.
     """
-
     atoms = atoms.copy()
 
     OPT_ = OPT.with_options(
@@ -127,11 +119,7 @@ def run(
 
         wait(futures)
 
-        results = [
-            f.result(raise_on_failure=False)
-            for f in futures
-            if future.state.is_completed()
-        ]
+        results = [f.result(raise_on_failure=False) for f in futures if future.state.is_completed()]
     else:
         states = []
         for f in factors:

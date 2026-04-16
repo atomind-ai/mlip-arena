@@ -9,10 +9,11 @@ from fairchem.core import OCPCalculator
 with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
 
+
 class eSCN(OCPCalculator):
     def __init__(
         self,
-        checkpoint=REGISTRY["eSCN(OC20)"]["checkpoint"], # "eSCN-L6-M3-Lay20-S2EF-OC20-All+MD"
+        checkpoint=REGISTRY["eSCN(OC20)"]["checkpoint"],  # "eSCN-L6-M3-Lay20-S2EF-OC20-All+MD"
         # TODO: cannot assign device
         local_cache="/tmp/ocp/",
         cpu=False,

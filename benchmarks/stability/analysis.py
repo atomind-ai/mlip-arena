@@ -8,7 +8,6 @@ from mlip_arena.tasks.stability.analysis import gather_results
 from mlip_arena.tasks.stability.data import get_atoms_from_db
 
 if __name__ == "__main__":
-
     compositions = []
     sizes = []
     for atoms in tqdm(get_atoms_from_db("random-mixture.db")):
@@ -21,9 +20,7 @@ if __name__ == "__main__":
             run_dir = Path(__file__).parent / f"{REGISTRY[model.name]['family']}"
             df = gather_results(run_dir, prefix=model.name, run_type="nvt")
 
-            df = df[
-                df["formula"].isin(compositions[:120])
-            ].copy()  # tentatively we only take the first 120 structures
+            df = df[df["formula"].isin(compositions[:120])].copy()  # tentatively we only take the first 120 structures
 
             assert len(df) > 0
 
@@ -36,9 +33,7 @@ if __name__ == "__main__":
             run_dir = Path(__file__).parent / f"{REGISTRY[model.name]['family']}"
             df = gather_results(run_dir, prefix=model.name, run_type="npt")
 
-            df = df[
-                df["formula"].isin(compositions[:80])
-            ].copy()  # tentatively we only take the first 80 structures
+            df = df[df["formula"].isin(compositions[:80])].copy()  # tentatively we only take the first 80 structures
 
             assert len(df) > 0
 

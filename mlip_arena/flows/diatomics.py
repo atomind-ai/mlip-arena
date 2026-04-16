@@ -10,6 +10,7 @@ from ase.data import chemical_symbols, covalent_radii, vdw_alvarez
 from ase.io import read, write
 from prefect import flow, task
 from prefect.futures import wait
+from prefect.runtime import task_run
 from scipy import stats
 from tqdm.auto import tqdm
 
@@ -17,10 +18,14 @@ from mlip_arena.models import REGISTRY, MLIPEnum
 from mlip_arena.tasks.utils import get_calculator
 
 
-@task
-def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path):
-    """
-    Calculate the potential energy curve for single homonuclear diatomic molecule.
+@task(
+    task_run_name=lambda: (
+        f"{task_run.task_name}: {task_run.parameters['symbol']} - {task_run.parameters.get('calculator', 'Unknown')}"
+    ),
+)
+def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculator, out_dir: Path):
+    """Calculate the potential energy curve for single homonuclear diatomic
+    molecule.
 
     This function computes the potential energy of a diatomic molecule (two atoms of
     the same element) across a range of interatomic distances. The distance range is
@@ -28,27 +33,22 @@ def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path)
 
     Args:
         symbol: Chemical symbol of the atom (e.g., 'H', 'O', 'Fe')
-        calculator: ASE calculator object used to compute the potential energies. Could be VASP, MLIP, etc.
+        calculator: An ASE calculator instance or a string/MLIPEnum to create one
 
     Returns:
         None: Results are saved as trajectory files.
 
 
     Note:
-        - Minimum distance is set to 0.9× the covalent radius
-        - Maximum distance is set to 3.1× the van der Waals radius (or 6 Å if unknown)
+        - Minimum distance is set to 0.9 x the covalent radius
+        - Maximum distance is set to 3.1 x the van der Waals radius (or 6 Å if unknown)
         - Distance step size is fixed at 0.01 Å
         - If an existing trajectory file is found, the calculation will resume from where it left off
         - The atoms are placed in a periodic box large enough to avoid self-interaction
     """
-
     atom = Atom(symbol)
     rmin = 0.9 * covalent_radii[atom.number]
-    rvdw = (
-        vdw_alvarez.vdw_radii[atom.number]
-        if atom.number < len(vdw_alvarez.vdw_radii)
-        else np.nan
-    )
+    rvdw = vdw_alvarez.vdw_radii[atom.number] if atom.number < len(vdw_alvarez.vdw_radii) else np.nan
     rmax = 3.1 * rvdw if not np.isnan(rvdw) else 6
     rstep = 0.01
     npts = int((rmax - rmin) / rstep)
@@ -86,7 +86,7 @@ def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path)
             pbc=False,
         )
 
-    atoms.calc = calculator
+    atoms.calc = get_calculator(calculator)
 
     for i, r in enumerate(tqdm(rs)):
         if i < skip:
@@ -103,8 +103,16 @@ def homonuclear_diatomic(symbol: str, calculator: BaseCalculator, out_dir: Path)
         write(traj_fpath, atoms, append="a")
 
 
-@task
 def analyze(out_dir: Path):
+    """Analyze potential energy curves (PEC) for diatomic molecules in a
+    directory.
+
+    Args:
+        out_dir (Path): Path to the directory containing .extxyz trajectory files.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing calculated metrics for each diatomic molecule.
+    """
     df = pd.DataFrame(
         columns=[
             "name",
@@ -199,9 +207,7 @@ def analyze(out_dir: Path):
         fdiff_sign = fdiff_sign[mask]
         fdiff_flip = np.diff(fdiff_sign) != 0
         # force discontinuities
-        fjump = (
-            np.abs(fdiff[:-1][fdiff_flip]).sum() + np.abs(fdiff[1:][fdiff_flip]).sum()
-        )
+        fjump = np.abs(fdiff[:-1][fdiff_flip]).sum() + np.abs(fdiff[1:][fdiff_flip]).sum()
 
         ediff = np.diff(es)
         ediff[np.abs(ediff) < 1e-3] = 0  # 1 meV
@@ -211,9 +217,7 @@ def analyze(out_dir: Path):
         ediff_sign = ediff_sign[mask]
         ediff_flip = np.diff(ediff_sign) != 0
         # energy discontinuities
-        ejump = (
-            np.abs(ediff[:-1][ediff_flip]).sum() + np.abs(ediff[1:][ediff_flip]).sum()
-        )
+        ejump = np.abs(ediff[:-1][ediff_flip]).sum() + np.abs(ediff[1:][ediff_flip]).sum()
 
         # conservation deviation
         conservation_deviation = np.mean(np.abs(fs + de_dr))
@@ -238,18 +242,10 @@ def analyze(out_dir: Path):
             "energy-total-variation": etv,
             "tortuosity": etv / (abs(es[0] - es.min()) + (es[-1] - es.min())),
             "conservation-deviation": conservation_deviation,
-            "spearman-descending-force": stats.spearmanr(
-                rs[iminf:], fs[iminf:]
-            ).statistic,
-            "spearman-ascending-force": stats.spearmanr(
-                rs[:iminf], fs[:iminf]
-            ).statistic,
-            "spearman-repulsion-energy": stats.spearmanr(
-                rs[imine:], es[imine:]
-            ).statistic,
-            "spearman-attraction-energy": stats.spearmanr(
-                rs[:imine], es[:imine]
-            ).statistic,
+            "spearman-descending-force": stats.spearmanr(rs[iminf:], fs[iminf:]).statistic,
+            "spearman-ascending-force": stats.spearmanr(rs[:iminf], fs[:iminf]).statistic,
+            "spearman-repulsion-energy": stats.spearmanr(rs[imine:], es[imine:]).statistic,
+            "spearman-attraction-energy": stats.spearmanr(rs[:imine], es[:imine]).statistic,
         }
 
         df = pd.concat([df, pd.DataFrame([data])], ignore_index=True)
@@ -258,22 +254,33 @@ def analyze(out_dir: Path):
 
 
 @flow
-def homonuclear_diatomics(model: str | BaseCalculator, run_dir: Path | None = None):
-    model_name = (
-        MLIPEnum[model].name if isinstance(model, str) else model.__class__.__name__
-    )
-    family = (
-        REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
-    )
+def homonuclear_diatomics(model: BaseCalculator | str, run_dir: Path | None = None):
+    """Run homonuclear diatomic calculations for all elements using a specific
+    model.
+
+    Args:
+        model (BaseCalculator | str): The model or ASE calculator to use.
+        run_dir (Path, optional): Directory to save outputs. Defaults to None.
+
+    Returns:
+        list: List of results from the distributed homonuclear_diatomic tasks.
+    """
+    if isinstance(model, BaseCalculator):
+        model_name = model.__class__.__name__
+    elif isinstance(model, str) and hasattr(MLIPEnum, model):
+        model_name = model
+    else:
+        raise ValueError(f"Unsupported model: {model}")
+
+    family = REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
 
     out_dir = run_dir if run_dir is not None else Path.cwd() / family / model_name
 
     futures = []
     for symbol in chemical_symbols[1:]:
-        calculator = get_calculator(model)
         future = homonuclear_diatomic.submit(
             symbol,
-            calculator,
+            model,
             out_dir=out_dir,
         )
         futures.append(future)
@@ -281,6 +288,6 @@ def homonuclear_diatomics(model: str | BaseCalculator, run_dir: Path | None = No
 
     df = analyze(out_dir)
     df["method"] = model_name
-    df.to_json(out_dir / "homonuclear-diatomics.json", orient="records")
+    df.to_json(out_dir.parents[0] / f"{model_name}.json", orient="records")
 
     return [f.result(raise_on_failure=False) for f in futures]

@@ -17,5 +17,3 @@ uv pip install mlip-arena[orb]
 uv pip install mlip-arena[matgl]
 uv pip install mlip-arena[test]
 uv pip install mlip-arena[mace]
-
-

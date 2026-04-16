@@ -8,6 +8,7 @@ import torch
 from ase import units
 from ase.calculators.calculator import BaseCalculator
 from ase.calculators.mixing import SumCalculator
+from prefect.cache_policies import INPUTS, TASK_SOURCE  # , CacheKeyFnPolicy
 
 from mlip_arena.models import MLIPEnum
 
@@ -21,19 +22,18 @@ except (ImportError, RuntimeError):
 
 def get_freer_device() -> torch.device:
     """Get the GPU with the most free memory, or use MPS if available.
-    s
-        Returns:
-            torch.device: The selected GPU device or MPS.
 
-        Raises:
-            ValueError: If no GPU or MPS is available.
+    Returns:
+        torch.device: The selected GPU device or MPS.
+
+    Raises:
+        ValueError: If no GPU or MPS is available.
     """
     device_count = torch.cuda.device_count()
     if device_count > 0:
         # If CUDA GPUs are available, select the one with the most free memory
         mem_free = [
-            torch.cuda.get_device_properties(i).total_memory
-            - torch.cuda.memory_allocated(i)
+            torch.cuda.get_device_properties(i).total_memory - torch.cuda.memory_allocated(i)
             for i in range(device_count)
         ]
         free_gpu_index = mem_free.index(max(mem_free))
@@ -60,8 +60,18 @@ def get_calculator(
     dispersion_kwargs: dict | None = None,
     device: str | None = None,
 ) -> BaseCalculator:
-    """Get a calculator with optional dispersion correction."""
+    """Get an ASE calculator instance for a given model.
 
+    Args:
+        calculator (str | MLIPEnum | BaseCalculator): Model name, MLIPEnum, or calculator instance.
+        calculator_kwargs (dict, optional): Keyword arguments for calculator initialization.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
+        device (str, optional): Device to run the model on (e.g. 'cuda:0', 'cpu'). If None, tries to find the freest device.
+
+    Returns:
+        BaseCalculator: An ASE calculator instance.
+    """
     device = device or str(get_freer_device())
 
     calculator_kwargs = calculator_kwargs or {}
@@ -70,21 +80,17 @@ def get_calculator(
     logger.info(f"Using device: {device}")
 
     if isinstance(calculator, MLIPEnum) and calculator in MLIPEnum:
-        calc = calculator.value(**calculator_kwargs)
+        calc = calculator.load(**calculator_kwargs)
         calc.__str__ = lambda: calculator.name
     elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
-        calc = MLIPEnum[calculator].value(**calculator_kwargs)
+        calc = MLIPEnum[calculator].load(**calculator_kwargs)
         calc.__str__ = lambda: calculator
-    elif isinstance(calculator, type) and issubclass(
-        calculator, BaseCalculator
-    ):
+    elif isinstance(calculator, type) and issubclass(calculator, BaseCalculator):
         logger.warning(f"Using custom calculator class: {calculator}")
         calc = calculator(**calculator_kwargs)
         calc.__str__ = lambda: f"{calc.__class__.__name__}"
     elif isinstance(calculator, BaseCalculator):
-        logger.warning(
-            f"Using custom calculator object (kwargs are ignored): {calculator}"
-        )
+        logger.warning(f"Using custom calculator object (kwargs are ignored): {calculator}")
         calc = calculator
         calc.__str__ = lambda: f"{calc.__class__.__name__}"
     else:
@@ -94,9 +100,7 @@ def get_calculator(
     if calculator_kwargs:
         logger.info(pformat(calculator_kwargs))
 
-    dispersion_kwargs = dispersion_kwargs or dict(
-        damping="bj", xc="pbe", cutoff=40.0 * units.Bohr
-    )
+    dispersion_kwargs = dispersion_kwargs or dict(damping="bj", xc="pbe", cutoff=40.0 * units.Bohr)
 
     dispersion_kwargs.update({"device": device})
 
@@ -104,9 +108,7 @@ def get_calculator(
         try:
             from torch_dftd.torch_dftd3_calculator import TorchDFTD3Calculator
         except ImportError as e:
-            raise ImportError(
-                "torch_dftd is required for dispersion but is not installed."
-            ) from e
+            raise ImportError("torch_dftd is required for dispersion but is not installed.") from e
 
         disp_calc = TorchDFTD3Calculator(
             **dispersion_kwargs,
@@ -120,3 +122,15 @@ def get_calculator(
 
     assert isinstance(calc, BaseCalculator)
     return calc
+
+
+def _calculator_key_fn(context, parameters):
+    """Generate a cache key for the calculator using its string representation
+    instead of hashing the entire object (which can be very large).
+    """
+    return {"calculator": str(parameters["calculator"])}
+
+
+ARENA_TASK_CACHE_POLICY = (
+    TASK_SOURCE + INPUTS
+)  # .exclude("calculator") + CacheKeyFnPolicy(cache_key_fn=_calculator_key_fn)

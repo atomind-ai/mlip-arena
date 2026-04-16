@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
 import requests
+import yaml
 from deepmd.calculator import DP as DPCalculator
 
 from mlip_arena.models.utils import get_freer_device
 
 with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
+
 
 class DeepMD(DPCalculator):
     def __init__(
@@ -33,15 +34,14 @@ class DeepMD(DPCalculator):
             try:
                 response = requests.get(url, stream=True, timeout=120)
                 response.raise_for_status()
-                with open(cache_dir/"temp.zip", "wb") as f:
+                with open(cache_dir / "temp.zip", "wb") as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         f.write(chunk)
                 print("Download completed.")
-                with zipfile.ZipFile(cache_dir/"temp.zip", "r") as zip_ref:
+                with zipfile.ZipFile(cache_dir / "temp.zip", "r") as zip_ref:
                     zip_ref.extractall(cache_dir)
                 print("Unzip completed.")
             except requests.exceptions.RequestException as e:
                 raise RuntimeError("Failed to download DeepMD model.") from e
 
-        
         super().__init__(model_path, device=device, **kwargs)

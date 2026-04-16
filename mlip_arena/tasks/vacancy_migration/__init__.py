@@ -1,0 +1,1 @@
+"""Vacancy migration property calculations."""

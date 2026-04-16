@@ -1,21 +1,29 @@
-"""
-Define structure optimization tasks.
-"""
+"""Define structure optimization tasks."""
 
 from __future__ import annotations
 
 from ase import Atoms
 from ase.calculators.calculator import BaseCalculator
 from ase.constraints import FixSymmetry
-from ase.filters import *  # type: ignore
-from ase.filters import Filter
-from ase.optimize import *  # type: ignore
+from ase.filters import ExpCellFilter, Filter, FrechetCellFilter, StrainFilter, UnitCellFilter
+from ase.optimize import (
+    BFGS,
+    FIRE,
+    FIRE2,
+    LBFGS,
+    BFGSLineSearch,
+    CellAwareBFGS,
+    GPMin,
+    LBFGSLineSearch,
+    MDMin,
+    ODE12r,
+    QuasiNewton,
+)
 from ase.optimize.optimize import Optimizer
 from prefect import task
-from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 
-from mlip_arena.tasks.utils import logger, pformat
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, logger, pformat
 
 _valid_filters: dict[str, Filter] = {
     "Filter": Filter,
@@ -23,7 +31,7 @@ _valid_filters: dict[str, Filter] = {
     "ExpCell": ExpCellFilter,
     "Strain": StrainFilter,
     "FrechetCell": FrechetCellFilter,
-}  # type: ignore
+}
 
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
@@ -37,7 +45,7 @@ _valid_optimizers: dict[str, Optimizer] = {
     "GPMin": GPMin,
     "CellAwareBFGS": CellAwareBFGS,
     "ODE12r": ODE12r,
-}  # type: ignore
+}
 
 
 def _generate_task_run_name():
@@ -50,9 +58,7 @@ def _generate_task_run_name():
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
 
-@task(
-    name="OPT", task_run_name=_generate_task_run_name, cache_policy=TASK_SOURCE + INPUTS
-)
+@task(name="OPT", task_run_name=_generate_task_run_name, cache_policy=ARENA_TASK_CACHE_POLICY)
 def run(
     atoms: Atoms,
     calculator: BaseCalculator,
@@ -63,6 +69,24 @@ def run(
     criterion: dict | None = None,
     symmetry: bool = False,
 ):
+    """Run structure optimization.
+
+    Args:
+        atoms (Atoms): ASE Atoms object to optimize.
+        calculator (BaseCalculator): ASE calculator to use for forces and energy.
+        optimizer (Optimizer | str, optional): ASE optimizer class or name. Defaults to BFGSLineSearch.
+        optimizer_kwargs (dict, optional): Keyword arguments to pass to the optimizer class. Defaults to None.
+        filter (Filter | str, optional): ASE filter class or name to apply to the atoms. Defaults to None.
+        filter_kwargs (dict, optional): Keyword arguments to pass to the filter class. Defaults to None.
+        criterion (dict, optional): Termination criteria for the optimizer (e.g., {'fmax': 0.01, 'steps': 100}). Defaults to {'steps': 1000}.
+        symmetry (bool, optional): Whether to use FixSymmetry constraint. Defaults to False.
+
+    Returns:
+        dict: A dictionary containing:
+            - "atoms": Optimized ASE Atoms object.
+            - "steps": Number of steps taken by the optimizer.
+            - "converged": Whether the optimization converged.
+    """
     atoms = atoms.copy()
     atoms.calc = calculator
 
@@ -100,7 +124,6 @@ def run(
         logger.info(pformat(optimizer_kwargs))
         logger.info(f"Criterion: {pformat(criterion)}")
         converged = optimizer_instance.run(**criterion)
-
 
     return {
         "atoms": atoms,

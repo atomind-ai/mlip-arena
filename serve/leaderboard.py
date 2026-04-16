@@ -38,9 +38,7 @@ for model, meta in MODELS.items():
         "First Release": meta.get("date"),
         "License": meta.get("license"),
     }
-    metadata_table = pd.concat(
-        [metadata_table, pd.DataFrame([new_row])], ignore_index=True
-    )
+    metadata_table = pd.concat([metadata_table, pd.DataFrame([new_row])], ignore_index=True)
 
 metadata_table.set_index("Model", inplace=True)
 
@@ -72,14 +70,13 @@ leaderboard = metadata_table.join(rank_df, how="left")
 # Compute Arena Rank explicitly without modifying original task ranks
 # -----------------------------------------------------------------------------
 
+rename_dict = {}
 if not rank_df.empty:
     leaderboard = leaderboard.copy()
     leaderboard["Meta Rank Agg"] = 0
 
     for col in rank_df.columns:
-        leaderboard["Meta Rank Agg"] += leaderboard[col].rank(
-            method="min", ascending=True, na_option="bottom"
-        )
+        leaderboard["Meta Rank Agg"] += leaderboard[col].rank(method="min", ascending=True, na_option="bottom")
         leaderboard[col] = leaderboard[col].astype("Int64")
         # rename column to indicate rank
         # leaderboard.rename(columns={col: col}, inplace=True)
@@ -87,19 +84,13 @@ if not rank_df.empty:
     # Final Arena Rank
     leaderboard["Meta Rank Agg"] = leaderboard["Meta Rank Agg"].astype("Int64")
     leaderboard["Arena Rank"] = (
-        leaderboard["Meta Rank Agg"]
-        .rank(method="min", ascending=True, na_option="bottom")
-        .astype("Int64")
+        leaderboard["Meta Rank Agg"].rank(method="min", ascending=True, na_option="bottom").astype("Int64")
     )
 
     # Reorder columns: Training Set → Arena Rank → task ranks → rest
-    rank_cols = [
-        c for c in leaderboard.columns if c.endswith("Rank") and c != "Arena Rank"
-    ]
+    rank_cols = [c for c in leaderboard.columns if c.endswith("Rank") and c != "Arena Rank"]
     first_cols = ["Training Set", "Arena Rank", "Meta Rank Agg"] + rank_cols
-    other_cols = [
-        c for c in leaderboard.columns if c not in first_cols
-    ]  # and c != "Meta Rank Agg"]
+    other_cols = [c for c in leaderboard.columns if c not in first_cols]  # and c != "Meta Rank Agg"]
     leaderboard = leaderboard.reindex(columns=first_cols + other_cols)
 
     # Optional: sort by Arena Rank
@@ -116,10 +107,10 @@ if not rank_df.empty:
 # style = leaderboard.drop(columns=["Meta Rank Agg"], errors="ignore").style
 style = leaderboard.style
 
-style = style.background_gradient(
-    cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"]
-)
-style = style.background_gradient(cmap="cividis_r", subset=list(rename_dict.values()))
+if "Arena Rank" in leaderboard.columns:
+    style = style.background_gradient(cmap="inferno_r", subset=["Arena Rank", "Meta Rank Agg"])
+if rename_dict:
+    style = style.background_gradient(cmap="cividis_r", subset=list(rename_dict.values()))
 
 st.info(
     "Contributions are welcome. For more information, visit https://github.com/atomind-ai/mlip-arena.",
@@ -131,15 +122,20 @@ st.markdown(
 <h1 style='text-align: center;'>⚔️ MLIP Arena Leaderboard ⚔️</h1>
 
 <div align="center">
-    <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR-AI4Mat-blue"></a>
     <a href="https://huggingface.co/spaces/atomind/mlip-arena"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue" alt="Hugging Face"></a>
-    <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/test.yaml"></a>
+    <a href="https://neurips.cc/virtual/2025/poster/121648"><img alt="Static Badge" src="https://img.shields.io/badge/NeurIPS-Spotlight-blue"></a>
+    <a href="https://arxiv.org/abs/2509.20630"><img src="https://img.shields.io/badge/arXiv-2509.20630-b31b1b"></a>
+    <a href="https://openreview.net/forum?id=ysKfIavYQE#discussion"><img alt="Static Badge" src="https://img.shields.io/badge/ICLR-AI4Mat-blue"></a>
+    <br>
+    <a href="https://github.com/atomind-ai/mlip-arena/actions"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/atomind-ai/mlip-arena/ci.yaml"></a>
     <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/mlip-arena"></a>
+    <a href="https://pypi.org/project/mlip-arena/"><img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mlip-arena"></a>
     <a href="https://zenodo.org/doi/10.5281/zenodo.13704399"><img src="https://zenodo.org/badge/776930320.svg" alt="DOI"></a>
+    <!-- <a href="https://discord.gg/W8WvdQtT8T"><img alt="Discord" src="https://img.shields.io/discord/1299613474820984832?logo=discord"> -->
 </a>
 </div>
 
-> MLIP Arena is a unified platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional energy and force error metrics. It focuses on revealing the underlying physics and chemistry learned by these models. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
+> MLIP Arena is a unified platform for evaluating foundation machine learning interatomic potentials (MLIPs) beyond conventional error metrics. Instead, we focus on revealing the underlying physics and chemistry learned by these models. The platform's benchmarks are specifically designed to evaluate the readiness and reliability of open-source, open-weight models in accurately reproducing both qualitative and quantitative behaviors of atomic systems.
 """,
     unsafe_allow_html=True,
 )
@@ -176,6 +172,4 @@ for task, meta in TASKS.items():
     if hasattr(task_module, "render"):
         task_module.render()
     else:
-        st.write(
-            "Rank metrics are not available yet but the task has been implemented."
-        )
+        st.write("Rank metrics are not available yet but the task has been implemented.")

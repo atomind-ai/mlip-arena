@@ -1,0 +1,52 @@
+---
+title: "Installation"
+description: "Install MLIP Arena and its dependencies"
+---
+
+### From PyPI (prefect workflow only, *without* pretrained models)
+
+```bash
+pip install mlip-arena
+```
+
+### From source (with integrated pretrained models)
+
+<Warning>
+We strongly recommend clean build in a new virtual environment due to the compatibility issues between multiple popular MLIPs. We provide a single installation script using `uv` for minimal package conflicts and fast installation!
+</Warning>
+
+<Warning>
+To automatically download fairchem model checkpoints, please make sure you have gained downloading access to their HuggingFace [***model repo (e.g. OMAT24)***](https://huggingface.co/facebook/OMAT24) (not dataset repo), and login locally on your machine through `hf auth login` (see [HF hub authentication](https://huggingface.co/docs/huggingface_hub/en/quick-start#authentication))
+</Warning>
+
+### Linux
+
+<CodeGroup>
+```bash Install using uv
+# (Optional) Install uv, way faster than pip, why not? :)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+
+git clone https://github.com/atomind-ai/mlip-arena.git
+cd mlip-arena
+
+# One script uv pip installation
+bash scripts/install.sh
+```
+</CodeGroup>
+
+<Info>
+Sometimes installing all compiled models takes all the available local storage. Optional pip flag `--no-cache` could be uesed. `uv cache clean` will be helpful too.
+</Info>
+
+### Mac
+
+<CodeGroup>
+```bash Install on Mac using uv
+# (Optional) Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+# One script uv pip installation
+bash scripts/install-macosx.sh
+```
+</CodeGroup>

@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.(json|cif|csv)$|phonopy'
+      - id: end-of-file-fixer
+        exclude: '\.(json|cif|csv)$|phonopy'
+      - id: check-yaml
+        exclude: phonopy
+      - id: check-added-large-files
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ensure this matches a recent version of ruff
+    rev: v0.3.5
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [ --fix ]
+      # Run the formatter.
+      - id: ruff-format

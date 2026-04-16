@@ -1,27 +1,18 @@
 import numpy as np
 import torch
+from ase import Atoms
+from ase.calculators.singlepoint import SinglePointCalculator
 
 # TODO: consider using vesin
 from matscipy.neighbours import neighbour_list
 from torch_geometric.data import Data
 
-from ase import Atoms
-from ase.calculators.singlepoint import SinglePointCalculator
 
-
-def get_neighbor(
-    atoms: Atoms, cutoff: float, self_interaction: bool = False
-):
+def get_neighbor(atoms: Atoms, cutoff: float, self_interaction: bool = False):
     pbc = atoms.pbc
     cell = atoms.cell.array
-    
-    i, j, S = neighbour_list(
-        quantities="ijS",
-        pbc=pbc,
-        cell=cell,
-        positions=atoms.positions,
-        cutoff=cutoff
-    )
+
+    i, j, S = neighbour_list(quantities="ijS", pbc=pbc, cell=cell, positions=atoms.positions, cutoff=cutoff)
 
     if not self_interaction:
         # Eliminate self-edges that don't cross periodic boundaries
@@ -39,10 +30,8 @@ def get_neighbor(
     return edge_index, edge_shift
 
 
-
 def collate_fn(batch: list[Atoms], cutoff: float) -> Data:
     """Collate a list of Atoms objects into a single batched Atoms object."""
-
     # Offset the edge indices for each graph to ensure they remain disconnected
     offset = 0
 
@@ -52,10 +41,8 @@ def collate_fn(batch: list[Atoms], cutoff: float) -> Data:
     positions_batch = []
     # ec_batch = []
 
-    forces_batch = []
     charges_batch = []
     magmoms_batch = []
-    dipoles_batch = []
 
     edge_index_batch = []
     edge_shift_batch = []
@@ -63,11 +50,7 @@ def collate_fn(batch: list[Atoms], cutoff: float) -> Data:
     cell_batch = []
     natoms_batch = []
 
-    energy_batch = []
-    stress_batch = []
-
     for i, atoms in enumerate(batch):
-    
         edge_index, edge_shift = get_neighbor(atoms, cutoff=cutoff, self_interaction=False)
 
         edge_index[0] += offset
@@ -87,9 +70,7 @@ def collate_fn(batch: list[Atoms], cutoff: float) -> Data:
         # ec_batch.append([Atom(int(a)).elecronic_encoding for a in atoms.numbers])
 
         charges_batch.append(
-            atoms.get_initial_charges()
-            if atoms.get_initial_charges().any()
-            else torch.full((natoms,), torch.nan)
+            atoms.get_initial_charges() if atoms.get_initial_charges().any() else torch.full((natoms,), torch.nan)
         )
         magmoms_batch.append(
             atoms.get_initial_magnetic_moments()
@@ -138,8 +119,9 @@ def collate_fn(batch: list[Atoms], cutoff: float) -> Data:
 
 
 def decollate_fn(batch_data: Data) -> list[Atoms]:
-    """Decollate a batched Data object into a list of individual Atoms objects."""
-
+    """Decollate a batched Data object into a list of individual Atoms
+    objects.
+    """
     # FIXME: this function is not working properly when the batch_data is on GPU.
     # TODO: create a new Cell class using torch tensor to handle device placement.
     # As a temporary fix, detach the batch_data from the GPU and move it to CPU.
@@ -193,7 +175,7 @@ def decollate_fn(batch_data: Data) -> list[Atoms]:
             stress=stress,
             # charges=charges,
             # magmoms=magmoms,
-        ) # type: ignore
+        )  # type: ignore
 
         # Append the individual data entry to the list
         individual_entries.append(atoms)

@@ -1,5 +1,4 @@
-"""
-Defines nudged elastic band (NEB) task
+"""Defines nudged elastic band (NEB) task.
 
 This module has been modified from MatCalc
 https://github.com/materialsvirtuallab/matcalc/blob/main/src/matcalc/neb.py
@@ -43,19 +42,29 @@ from typing import Any, Literal
 
 from ase import Atoms
 from ase.calculators.calculator import BaseCalculator
-from ase.filters import *  # type: ignore
 from ase.mep.neb import NEB, NEBTools
-from ase.optimize import *  # type: ignore
+from ase.optimize import (
+    BFGS,
+    FIRE,
+    FIRE2,
+    LBFGS,
+    CellAwareBFGS,
+    GPMin,
+    LBFGSLineSearch,
+    MDMin,
+    ODE12r,
+    QuasiNewton,
+)
 from ase.optimize.optimize import Optimizer
 from ase.utils.forcecurve import fit_images
 from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 from prefect.states import State
+from pymatgen.io.ase import AseAtomsAdaptor
 
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import logger, pformat
-from pymatgen.io.ase import AseAtomsAdaptor
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, logger, pformat
 
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
@@ -69,7 +78,7 @@ _valid_optimizers: dict[str, Optimizer] = {
     "GPMin": GPMin,
     "CellAwareBFGS": CellAwareBFGS,
     "ODE12r": ODE12r,
-}  # type: ignore
+}
 
 
 def _generate_task_run_name():
@@ -91,7 +100,7 @@ def _generate_task_run_name():
 @task(
     name="NEB from images",
     task_run_name=_generate_task_run_name,
-    cache_policy=TASK_SOURCE + INPUTS,
+    cache_policy=ARENA_TASK_CACHE_POLICY,
 )
 def run(
     images: list[Atoms],
@@ -106,23 +115,18 @@ def run(
     """Run the nudged elastic band (NEB) calculation.
 
     Args:
-        images (list[Atoms]): The images.
-        calculator_name (str | MLIPEnum): The calculator name.
-        calculator_kwargs (dict, optional): The calculator kwargs. Defaults to None.
-        dispersion (str, optional): The dispersion. Defaults to None.
-        dispersion_kwargs (dict, optional): The dispersion kwargs. Defaults to None.
-        device (str, optional): The device. Defaults to None.
-        optimizer (Optimizer | str, optional): The optimizer. Defaults to "BFGSLineSearch".
-        optimizer_kwargs (dict, optional): The optimizer kwargs. Defaults to None.
-        criterion (dict, optional): The criterion. Defaults to None.
+        images (list[Atoms]): List of ASE Atoms objects representing the initial images.
+        calculator (BaseCalculator): The ASE calculator to use for energy and forces.
+        optimizer (Optimizer | str, optional): The optimizer to use for NEB relaxation. Defaults to "MDMin".
+        optimizer_kwargs (dict, optional): Additional kwargs to pass to the optimizer. Defaults to None.
+        criterion (dict, optional): The convergence criterion for the optimizer. Defaults to None.
         interpolation (Literal['linear', 'idpp'], optional): The interpolation method. Defaults to "idpp".
-        climb (bool, optional): Whether to use the climbing image. Defaults to True.
-        traj_file (str | Path, optional): The trajectory file. Defaults to None.
+        climb (bool, optional): Whether to use the climbing image method. Defaults to True.
+        traj_file (str | Path, optional): Path to save the trajectory. Defaults to None.
 
     Returns:
-        dict[str, Any] | State: The energy barrier.
+        dict[str, Any] | State: A dictionary containing 'barrier', 'images', and 'forcefit' if successful.
     """
-
     images = [image.copy() for image in images]
 
     for image in images:
@@ -178,25 +182,22 @@ def run_from_endpoints(
     """Run the nudged elastic band (NEB) calculation from end points.
 
     Args:
-        start (Atoms): The start image.
-        end (Atoms): The end image.
-        n_images (int): The number of images.
-        calculator_name (str | MLIPEnum): The calculator name.
-        calculator_kwargs (dict, optional): The calculator kwargs. Defaults to None.
-        dispersion (str, optional): The dispersion. Defaults to None.
-        dispersion_kwargs (dict, optional): The dispersion kwargs. Defaults to None.
-        device (str, optional): The device. Defaults to None.
-        optimizer (Optimizer | str, optional): The optimizer. Defaults to "BFGSLineSearch".
-        optimizer_kwargs (dict, optional): The optimizer kwargs. Defaults to None.
-        criterion (dict, optional): The criterion. Defaults to None.
+        start (Atoms): The starting ASE Atoms structure.
+        end (Atoms): The ending ASE Atoms structure.
+        n_images (int): The number of images to interpolate between endpoints.
+        calculator (BaseCalculator): The ASE calculator to use.
+        optimizer (Optimizer | str, optional): The optimizer to use. Defaults to "BFGS".
+        optimizer_kwargs (dict, optional): Additional kwargs for the optimizer. Defaults to None.
+        criterion (dict, optional): The convergence criterion. Defaults to None.
+        relax_end_points (bool, optional): Whether to relax the start and end images first. Defaults to True.
         interpolation (Literal['linear', 'idpp'], optional): The interpolation method. Defaults to "idpp".
         climb (bool, optional): Whether to use the climbing image. Defaults to True.
-        traj_file (str | Path, optional): The trajectory file. Defaults to None.
+        traj_file (str | Path, optional): The trajectory file path. Defaults to None.
+        cache_subtasks (bool, optional): Whether to cache endpoint relaxation subtasks. Defaults to False.
 
     Returns:
-        dict[str, Any] | State: The energy barrier.
+        dict[str, Any] | State: A dictionary containing 'barrier', 'images', and 'forcefit' if successful.
     """
-
     if relax_end_points:
         relax = OPT.with_options(
             refresh_cache=not cache_subtasks,

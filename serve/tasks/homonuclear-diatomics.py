@@ -11,7 +11,7 @@ from plotly.subplots import make_subplots
 from mlip_arena.models import REGISTRY
 
 st.markdown(
-"""
+    """
 # Homonuclear Diatomics
 
 Homonuclear diatomics are molecules composed of two atoms of the same element.
@@ -21,11 +21,7 @@ The potential energy curves of homonuclear diatomics are the most fundamental in
 
 st.markdown("### Methods")
 container = st.container(border=True)
-valid_models = [
-    model
-    for model, metadata in REGISTRY.items()
-    if Path(__file__).stem in metadata.get("gpu-tasks", [])
-]
+valid_models = [model for model, metadata in REGISTRY.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 mlip_methods = container.multiselect(
     "MLIPs",
     valid_models,
@@ -65,14 +61,18 @@ if not mlip_methods and not dft_methods:
 
 @st.cache_data
 def get_data(mlip_methods, dft_methods):
+    """Load benchmark JSON data for the selected MLIP and DFT methods and return a single concatenated DataFrame.
+
+    Parameters:
+        mlip_methods (list[str]): Names of MLIP methods whose JSON benchmark files (located under benchmarks/diatomics/<family>/<method>.json) will be loaded and included.
+        dft_methods (list[str]): Names of DFT methods (currently unused); a VASP homonuclear-diatomics reference file is always appended.
+
+    Returns:
+        pandas.DataFrame: Concatenated benchmark entries for the selected methods with duplicate rows removed based on the `name` and `method` columns.
+    """
     DATA_DIR = Path("benchmarks/diatomics")
 
-    dfs = [
-        pd.read_json(
-            DATA_DIR / REGISTRY[method]["family"] / f"{method}.json"
-        )
-        for method in mlip_methods
-    ]
+    dfs = [pd.read_json(DATA_DIR / REGISTRY[method]["family"] / f"{method}.json") for method in mlip_methods]
     dfs.extend(
         [
             pd.read_json(Path("mlip_arena/tasks/diatomics") / "vasp" / "homonuclear-diatomics.json")
@@ -87,8 +87,7 @@ def get_data(mlip_methods, dft_methods):
 df = get_data(mlip_methods, dft_methods)
 
 method_color_mapping = {
-    method: color_sequence[i % len(color_sequence)]
-    for i, method in enumerate(df["method"].unique())
+    method: color_sequence[i % len(color_sequence)] for i, method in enumerate(df["method"].unique())
 }
 
 

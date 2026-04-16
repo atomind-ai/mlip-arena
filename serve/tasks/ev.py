@@ -10,7 +10,7 @@ from scipy import stats
 
 from mlip_arena.models import REGISTRY as MODELS
 
-DATA_DIR = Path("benchmarks/wbm_ev")
+DATA_DIR = Path("benchmarks/ev")
 
 st.markdown("""
 # Energy-volume scans
@@ -21,18 +21,10 @@ st.markdown("### Methods")
 methods_container = st.container(border=True)
 
 # Get valid models that support wbm_ev
-valid_models = [
-    model
-    for model, metadata in MODELS.items()
-    if Path(__file__).stem in metadata.get("gpu-tasks", [])
-]
+valid_models = [model for model, metadata in MODELS.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
 
 # Model selection
-selected_models = methods_container.multiselect(
-    "Select Models",
-    options=valid_models,
-    default=valid_models
-)
+selected_models = methods_container.multiselect("Select Models", options=valid_models, default=valid_models)
 
 # Visualization settings
 st.markdown("### Visualization Settings")
@@ -61,9 +53,7 @@ if not selected_models:
 
 
 def load_wbm_structures():
-    """
-    Load the WBM structures from a ASE DB file.
-    """
+    """Load the WBM structures from a ASE DB file."""
     with connect(DATA_DIR.parent / "wbm_structures.db") as db:
         for row in db.select():
             yield row.toatoms(add_additional_information=True)
@@ -71,6 +61,25 @@ def load_wbm_structures():
 
 @st.cache_data
 def generate_dataframe(model_name):
+    """Builds an analyzed DataFrame of energy-volume scan metrics for a given model.
+
+    Parameters:
+        model_name (str): Identifier of the model; used to locate the model's parquet results file in DATA_DIR.
+
+    Returns:
+        pd.DataFrame: One row per WBM structure with the following columns:
+            - model: model identifier (same as `model_name`)
+            - structure: structure identifier from the WBM dataset
+            - formula: chemical formula of the structure
+            - volume-ratio: sequence of volumes normalized by the structure's relaxed volume (V / V0)
+            - energy-delta-per-atom: sequence of energies shifted by the midpoint minimum and normalized per atom
+            - energy-diff-flip-times: integer count of sign flips in adjacent energy differences (after removing zero-difference intervals)
+            - tortuosity: scalar measure of total variation relative to end deviations
+            - spearman-compression-energy: Spearman correlation statistic between volume and energy on the compression side
+            - spearman-compression-derivative: Spearman correlation statistic between interpolated volumes and energy differences on the compression side
+            - spearman-tension-energy: Spearman correlation statistic between volume and energy on the tension side
+            - missing: boolean flag; `True` if metrics could not be computed for the structure, in which case the metric fields are `None`
+    """
     fpath = DATA_DIR / f"{model_name}.parquet"
     if not fpath.exists():
         return pd.DataFrame()  # Return empty dataframe instead of using continue
@@ -98,7 +107,7 @@ def generate_dataframe(model_name):
 
         try:
             results = df_raw_results.loc[df_raw_results["id"] == structure_id]
-            results = results["eos"].values[0]
+            results = results["eos"].to_numpy()[0]
             es = np.array(results["energies"])
             vols = np.array(results["volumes"])
             vol0 = wbm_struct.get_volume()
@@ -112,9 +121,7 @@ def generate_dataframe(model_name):
             # imine = np.where(es == min_center_val)[0][0]
             emin = es[imine]
 
-            interpolated_volumes = [
-                (vols[i] + vols[i + 1]) / 2 for i in range(len(vols) - 1)
-            ]
+            interpolated_volumes = [(vols[i] + vols[i + 1]) / 2 for i in range(len(vols) - 1)]
             ediff = np.diff(es)
             ediff_sign = np.sign(ediff)
             mask = ediff_sign != 0
@@ -133,15 +140,11 @@ def generate_dataframe(model_name):
                 "energy-delta-per-atom": (es - emin) / len(wbm_struct),
                 "energy-diff-flip-times": np.sum(ediff_flip).astype(int),
                 "tortuosity": etv / (abs(es[0] - emin) + abs(es[-1] - emin)),
-                "spearman-compression-energy": stats.spearmanr(
-                    vols[:imine], es[:imine]
-                ).statistic,
+                "spearman-compression-energy": stats.spearmanr(vols[:imine], es[:imine]).statistic,
                 "spearman-compression-derivative": stats.spearmanr(
                     interpolated_volumes[:imine], ediff[:imine]
                 ).statistic,
-                "spearman-tension-energy": stats.spearmanr(
-                    vols[imine:], es[imine:]
-                ).statistic,
+                "spearman-tension-energy": stats.spearmanr(vols[imine:], es[imine:]).statistic,
             }
 
         except Exception:
@@ -170,7 +173,6 @@ def get_plots(selected_models):
     figs = []
 
     for model_name in selected_models:
-
         fpath = DATA_DIR / f"{model_name}_processed.parquet"
         if not fpath.exists():
             df = generate_dataframe(model_name)
@@ -207,7 +209,6 @@ def get_plots(selected_models):
                             "ΔEnergy: %{y:.3f} eV/atom<br>"
                             "<extra></extra>"
                         ),
-
                     )
                 )
                 valid_structures.append(structure_id)

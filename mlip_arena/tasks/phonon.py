@@ -1,6 +1,4 @@
-"""
-This module has been adapted from Quacc (https://github.com/Quantum-Accelerators/quacc). By using this software, you agree to the Quacc license agreement: https://github.com/Quantum-Accelerators/quacc/blob/main/LICENSE.md
-
+"""This module has been adapted from Quacc (https://github.com/Quantum-Accelerators/quacc). By using this software, you agree to the Quacc license agreement: https://github.com/Quantum-Accelerators/quacc/blob/main/LICENSE.md.
 
 BSD 3-Clause License
 
@@ -42,7 +40,7 @@ from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 
-from mlip_arena.tasks.utils import logger
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, logger
 
 try:
     from phonopy import Phonopy
@@ -63,10 +61,21 @@ def get_phonopy(
     distance: float = 0.01,
     phonopy_kwargs: dict = {},
 ) -> Phonopy:
+    """Initialize a Phonopy object for a given ASE Atoms object.
+
+    Args:
+        atoms (Atoms): ASE Atoms object for the unit cell.
+        supercell_matrix (list[int], optional): Supercell matrix for Phonopy. Defaults to None.
+        min_lengths (float | tuple, optional): Minimum lengths for supercell construction. Defaults to None.
+        symprec (float, optional): Symmetry precision. Defaults to 1e-5.
+        distance (float, optional): Displacement distance in Å. Defaults to 0.01.
+        phonopy_kwargs (dict, optional): Additional kwargs for Phonopy initialization. Defaults to {}.
+
+    Returns:
+        Phonopy: Initialized Phonopy object with displacements.
+    """
     if supercell_matrix is None and min_lengths is not None:
-        supercell_matrix = np.diag(
-            np.round(np.ceil(min_lengths / atoms.cell.lengths()))
-        )
+        supercell_matrix = np.diag(np.round(np.ceil(min_lengths / atoms.cell.lengths())))
 
     phonon = Phonopy(
         PhonopyAtoms(
@@ -113,7 +122,7 @@ def _generate_task_run_name():
 @task(
     name="PHONON",
     task_run_name=_generate_task_run_name,
-    cache_policy=TASK_SOURCE + INPUTS,
+    cache_policy=ARENA_TASK_CACHE_POLICY,
 )
 def run(
     atoms: Atoms,
@@ -129,6 +138,25 @@ def run(
     t_step: float = 10.0,
     outdir: str | None = None,
 ):
+    """Run phonon calculation using Phonopy and an ASE calculator.
+
+    Args:
+        atoms (Atoms): ASE Atoms object for the unit cell.
+        calculator (BaseCalculator): ASE calculator for forces.
+        supercell_matrix (list[int], optional): Supercell matrix. Defaults to None.
+        min_lengths (float | tuple, optional): Minimum lengths for supercell. Defaults to None.
+        symprec (float, optional): Symmetry precision. Defaults to 1e-5.
+        distance (float, optional): Displacement distance in Å. Defaults to 0.01.
+        phonopy_kwargs (dict, optional): Additional kwargs for Phonopy. Defaults to {}.
+        symmetry (bool, optional): Whether to symmetrize force constants. Defaults to False.
+        t_min (float, optional): Minimum temperature for thermal properties. Defaults to 0.0.
+        t_max (float, optional): Maximum temperature for thermal properties. Defaults to 1000.0.
+        t_step (float, optional): Temperature step for thermal properties. Defaults to 10.0.
+        outdir (str, optional): Directory to save Phonopy output files. Defaults to None.
+
+    Returns:
+        dict: A dictionary containing the 'phonon' (Phonopy) object.
+    """
     phonon = get_phonopy(
         atoms=atoms.copy(),
         supercell_matrix=supercell_matrix,
@@ -141,9 +169,7 @@ def run(
     supercells_with_displacements = phonon.supercells_with_displacements
 
     phonon.forces = [
-        _get_forces(supercell, calculator)
-        for supercell in supercells_with_displacements
-        if supercell is not None
+        _get_forces(supercell, calculator) for supercell in supercells_with_displacements if supercell is not None
     ]
     phonon.produce_force_constants()
 

@@ -10,5 +10,3 @@ colorTo: yellow
 pinned: true
 short_description: Benchmark machine learning interatomic potential at scale
 ---
-
-

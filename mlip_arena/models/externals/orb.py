@@ -1,9 +1,11 @@
+"""ORB model integrations."""
+
 from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
 import requests
+import yaml
 from orb_models.forcefield import pretrained
 from orb_models.forcefield.calculator import ORBCalculator
 
@@ -11,6 +13,7 @@ from mlip_arena.models.utils import get_freer_device
 
 with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
     REGISTRY = yaml.safe_load(f)
+
 
 class ORB(ORBCalculator):
     def __init__(
@@ -41,6 +44,7 @@ class ORB(ORBCalculator):
 
         orbff = pretrained.orb_v1(weights_path=ckpt_path, device=device)
         super().__init__(orbff, device=device, **kwargs)
+
 
 class ORBv2(ORBCalculator):
     def __init__(
