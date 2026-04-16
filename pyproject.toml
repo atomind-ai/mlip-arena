@@ -31,7 +31,7 @@ dependencies=[
     "ase>=3.26.0",
     "pymatgen",
     "torch",
-    "huggingface_hub[cli]>=1.10.0",
+    "huggingface_hub>=1.10.0",
     "datasets",
     "safetensors",
     "prefect[dask]>=3.6.26",
@@ -60,6 +60,7 @@ test = [
     "mattersim>=1.1.2",
     "torchani>=2.2.4",
     "nequip==0.16.0",
+    "upet==0.1.1",
     "pytest",
     "pytest-cov",
     "pytest-xdist",
@@ -87,9 +88,6 @@ extra = [
     "quests",
     "ipykernel",
     "ipywidgets",
-]
-pet = [
-    "upet==0.1.1",
 ]
 
 [project.urls]
