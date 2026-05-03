@@ -27,7 +27,7 @@ class PET_MAD(UPETCalculator):
         **kwargs,
     ):
         self.device = device or str(get_freer_device())
-        super().__init__(model="pet-mad-s", version="1.0.2", device=self.device, **kwargs)
+        super().__init__(model="pet-mad-s", version="1.5.0", device=self.device, **kwargs)
 
     def calculate(self, atoms=None, properties=["energy", "forces", "stress"], system_changes=all_changes):
         super().calculate(atoms, properties, system_changes)

@@ -50,7 +50,7 @@ app = [
     "plotly",
 ]
 test = [
-    "torch==2.6.0",
+    "torch>=2.8.0",
     "torch_dftd>=0.4.0",
     "e3nn>=0.5.6",
     "dgl",
@@ -58,9 +58,9 @@ test = [
     "sevenn>=0.9.3.post1",
     "alignn>=2024.5.27",
     "mattersim>=1.1.2",
-    "torchani>=2.2.4",
-    "nequip==0.16.0",
-    "upet==0.1.1",
+    "torchani>=2.7.0",
+    "nequip>=0.16.0",
+    "upet>=0.2.2",
     "pytest",
     "pytest-cov",
     "pytest-xdist",

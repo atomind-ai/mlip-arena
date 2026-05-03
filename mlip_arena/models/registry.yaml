@@ -388,6 +388,7 @@ DeepMD:
   nvt: true
   npt: true
   license:
+  deprecated: true
 
 ORB:
   module: externals
