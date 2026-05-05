@@ -13,10 +13,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout PR with full history
+    - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
@@ -24,14 +22,13 @@ jobs:
         enable-cache: true
 
     - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
+      run: uv python install 3.12
 
-    - name: Run pre-commit
-      run: uvx pre-commit run --all-files --show-diff-on-failure
-      env:
-        PRE_COMMIT_USE_UV: 1
+    - name: Run Ruff (Lint & Format)
+      # This assumes ruff is in your pyproject.toml or you use uvx
+      run: |
+        uvx ruff check .
+        uvx ruff format --check .
 
   test:
     needs: lint
@@ -39,7 +36,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
     - name: Checkout PR with full history

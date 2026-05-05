@@ -1,32 +1,11 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-import yaml
-from ase.calculators.calculator import all_changes
-from torchani.ase import Calculator as ANICalculator
-from torchani.models import BuiltinEnsemble
-
+import torchani
 from mlip_arena.models.utils import get_freer_device
 
-with open(Path(__file__).parents[1] / "registry.yaml", encoding="utf-8") as f:
-    REGISTRY = yaml.safe_load(f)
 
-
-class ANI2x(ANICalculator):
-    def __init__(
-        self,
-        checkpoint=REGISTRY["ANI2x"]["checkpoint"],
-        device: str | None = None,
-        periodic_table_index=False,
-        **kwargs,
-    ):
-        self.device = device or str(get_freer_device())
-
-        ensemble = BuiltinEnsemble._from_neurochem_resources(checkpoint, periodic_table_index)
-        # TODO: ANICalculator does not offer API to change device
-        # ensemble.species.device = self.device
-        super().__init__(ensemble.species, ensemble, **kwargs)
-
-    def calculate(self, atoms=None, properties=["energy", "forces", "stress"], system_changes=all_changes):
-        super().calculate(atoms, properties, system_changes)
+class ANI2x:
+    def __new__(cls, device: str | None = None, **kwargs):
+        device = device or str(get_freer_device())
+        model = torchani.models.ANI2x().to(device)
+        return model.ase()

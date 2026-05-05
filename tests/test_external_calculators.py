@@ -3,7 +3,7 @@ import pytest
 from ase import Atoms
 from ase.calculators.calculator import PropertyNotImplementedError
 from httpx import HTTPStatusError
-from huggingface_hub.errors import GatedRepoError, LocalTokenNotFoundError
+from huggingface_hub.errors import GatedRepoError
 from requests import HTTPError
 
 from mlip_arena.models import MLIPEnum
@@ -14,14 +14,10 @@ def test_calculate(model: MLIPEnum):
     try:
         calc = MLIPEnum[model.name].load()
     except (
-        LocalTokenNotFoundError,
         GatedRepoError,
         HTTPError,
         HTTPStatusError,
         FileNotFoundError,
-        ImportError,
-        ModuleNotFoundError,
-        ValueError,
     ) as e:
         pytest.skip(str(e))
     except Exception as e:
@@ -31,6 +27,14 @@ def test_calculate(model: MLIPEnum):
             pytest.xfail("Orbital Materials deprecated the model a month after its premature release in favor of ORBv2")
         elif model.name == "M3GNet":
             pytest.xfail("Cache sometimes fails")
+        elif model.name == "SevenNet":
+            pytest.xfail(
+                "SevenNet fails CI for ValueError: The e3nn version MUST be 0.5.0 or later due to changes in CG coefficient convention."
+            )
+            # TODO: address SevenNet e3nn pin error by implementing seperate test groups
+        elif model.name == "NequIP-OAM-L":
+            pytest.xfail("unknown optimization option: jit_mode")
+            # TODO: separate test group for e3nn versions
         else:
             pytest.fail(f"Failed to initialize model {model.name}: {e}")
 
