@@ -24,6 +24,8 @@ from mlip_arena.flows.diatomics import homonuclear_diatomics
 from mlip_arena.flows.eos_bulk import run_db as EOSFlow
 from mlip_arena.flows.ev import run_db as EVFlow
 
+from mlip_arena.models import REGISTRY, MLIPEnum
+
 
 @flow
 def asymptotic_behaviors(calculator: str | BaseCalculator, calculator_kwargs: dict | None = None):
@@ -32,32 +34,33 @@ def asymptotic_behaviors(calculator: str | BaseCalculator, calculator_kwargs: di
 
     if isinstance(calculator, BaseCalculator):
         model_name = calculator.__class__.__name__
-    else:
+    elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
         model_name = calculator
+    else:
+        raise ValueError(f"Unsupported model: {calculator}")
 
-    from mlip_arena.tasks.utils import get_calculator
-
-    calc_instance = get_calculator(calculator, calculator_kwargs)
+    family = REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
 
     # 1. Diatomics
     print(f"Starting homonuclear diatomics benchmark for {model_name}...")
-    out_dir_diatomics = Path(__file__).parent / "diatomics"
+
+    out_dir_diatomics = Path(__file__).parent / "diatomics" / family / model_name
     homonuclear_diatomics.with_options(name=f"diatomics-{model_name}", task_runner=parent_task_runner)(
-        model=calc_instance, run_dir=out_dir_diatomics
+        calculator=calculator, calculator_kwargs=calculator_kwargs, run_dir=out_dir_diatomics
     )
 
     # 2. EOS Bulk
     print(f"Starting EOS bulk benchmark for {model_name}...")
     out_dir_eos = Path(__file__).parent / "eos_bulk"
     EOSFlow.with_options(name=f"eos_bulk-{model_name}", task_runner=parent_task_runner)(
-        model=calc_instance, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
+        calculator=calculator, calculator_kwargs=calculator_kwargs, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
     )
 
     # 3. E-V
     print(f"Starting E-V scan benchmark for {model_name}...")
     out_dir_ev = Path(__file__).parent / "ev"
     EVFlow.with_options(name=f"ev-{model_name}", task_runner=parent_task_runner)(
-        model=calc_instance, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
+        calculator=calculator, calculator_kwargs=calculator_kwargs, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
     )
 
 
