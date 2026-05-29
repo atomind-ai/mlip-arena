@@ -15,8 +15,7 @@ from prefect.futures import wait
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks import MD
 from mlip_arena.tasks.utils import get_calculator
-
-from .data import get_atoms_from_db
+from mlip_arena.tasks.stability.data import get_atoms_from_db
 
 load_dotenv()
 

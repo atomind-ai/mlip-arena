@@ -430,10 +430,6 @@ PET-OAM:
     - MPTrj
   gpu-tasks:
     - homonuclear-diatomics
-    - stability
-    - eos_bulk
-    - wbm_ev
-    - combustion
   github: https://github.com/lab-cosmo/upet
   doi: https://arxiv.org/abs/2601.16195
   date: 2026-01-22
@@ -455,10 +451,6 @@ PET-MAD:
     - MAD
   gpu-tasks:
     - homonuclear-diatomics
-    - stability
-    - eos_bulk
-    - wbm_ev
-    - combustion
   github: https://github.com/lab-cosmo/upet
   doi: https://www.nature.com/articles/s41467-025-65662-7
   date: 2025-11-27

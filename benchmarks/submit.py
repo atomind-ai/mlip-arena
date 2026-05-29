@@ -2,14 +2,14 @@ from asymptotes import asymptotic_behaviors
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
 from prefect_dask import DaskTaskRunner
-from shifts import distribution_shifts
+from stability import random_mixtures
 
 # ==============================================================================
 # 1. JOB CONFIGURATION
 # ==============================================================================
 
 # Example A: Registered string model (e.g., "MACE-MP(M)", "CHGNet")
-calculator = "NequIP-OAM-L"
+calculator = "PET-OAM"
 
 # Example B: Custom ASE Calculator class and arguments (e.g., custom MLIP)
 # from ase.calculators.lj import LennardJones
@@ -77,7 +77,17 @@ asymptotic_behaviors.with_options(
     # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
 )
 
-distribution_shifts.with_options(
+# distribution_shifts.with_options(
+#     task_runner=DaskTaskRunner(address=client.scheduler.address),
+#     log_prints=True,
+#     persist_result=False,
+# )(
+#     calculator=calculator,
+#     # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
+# )
+
+
+random_mixtures.with_options(
     task_runner=DaskTaskRunner(address=client.scheduler.address),
     log_prints=True,
     persist_result=False,
@@ -86,4 +96,4 @@ distribution_shifts.with_options(
     # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
 )
 
-# TODO: Add Stability and Reactivity
+# TODO: Add Reactivity
