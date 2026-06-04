@@ -1,5 +1,5 @@
-TORCH=2.9
-CUDA=cu128
+TORCH=2.6
+CUDA=cu124
 uv pip install torch==${TORCH}.0
 uv pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-${TORCH}.0+${CUDA}.html
 uv pip install dgl -f https://data.dgl.ai/wheels/torch-${TORCH}/${CUDA}/repo.html
