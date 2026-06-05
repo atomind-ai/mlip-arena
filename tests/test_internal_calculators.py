@@ -1,11 +1,15 @@
 import numpy as np
+import pytest
 from ase.build import bulk
 
 from mlip_arena.models import MLIPCalculator
-from mlip_arena.models.classicals.zbl import ZBL
 
 
 def test_zbl():
+    pytest.importorskip("torch_scatter")
+    pytest.importorskip("torch_geometric")
+    from mlip_arena.models.classicals.zbl import ZBL
+
     calc = MLIPCalculator(model=ZBL(), cutoff=6.0)
 
     energies = []
