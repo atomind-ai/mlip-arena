@@ -55,15 +55,12 @@ test = [
     "e3nn>=0.5.6",
     "dgl",
     "chgnet>=0.3.8",
-    "sevenn>=0.9.3.post1",
     "alignn>=2024.5.27",
     "mattersim>=1.1.2",
     "torchani>=2.7.0",
-    "nequip>=0.16.0",
     "upet>=0.2.2",
     "pytest",
     "pytest-cov",
-    "pytest-xdist",
     "pymatgen>=2025.1.9",
     "streamlit>=1.55.0",
 ]
@@ -89,10 +86,24 @@ extra = [
     "ipykernel",
     "ipywidgets",
 ]
+nequip = [
+    "nequip>=0.16.0",
+]
+sevennet = [
+    "sevenn>=0.9.3.post1",
+]
 
 [project.urls]
 Homepage = "https://github.com/atomind-ai/mlip-arena"
 Issues = "https://github.com/atomind-ai/mlip-arena/issues"
+
+[tool.pytest.ini_options]
+markers = [
+    "nequip: tests for NequIP models requiring specific e3nn versions",
+    "sevennet: tests for SevenNet models requiring e3nn >= 0.5.0",
+    "mace: tests for MACE models",
+    "fairchem: tests for fairchem models",
+]
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.

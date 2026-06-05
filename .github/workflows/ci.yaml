@@ -37,6 +37,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
+        test-group: ["default", "nequip", "sevennet", "mace", "fairchem"]
 
     steps:
     - name: Checkout PR with full history
@@ -62,7 +63,7 @@ jobs:
        swap-size-gb: 12
 
     - name: Install dependencies
-      run: bash scripts/install-linux.sh
+      run: bash scripts/install-linux.sh ${{ matrix.test-group }}
 
     - name: List dependencies
       run: pip list
@@ -77,7 +78,12 @@ jobs:
       env:
         PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
-      run: pytest -vra -n 5 --dist=loadscope --cov=mlip_arena --cov-report=xml tests
+      run: |
+        if [ "${{ matrix.test-group }}" == "default" ]; then
+          pytest -vra --cov=mlip_arena --cov-report=xml tests -m "not (nequip or sevennet or mace or fairchem)"
+        else
+          pytest -vra --cov=mlip_arena --cov-report=xml tests -m ${{ matrix.test-group }}
+        fi
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4

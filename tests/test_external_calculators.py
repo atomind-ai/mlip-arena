@@ -9,7 +9,25 @@ from requests import HTTPError
 from mlip_arena.models import MLIPEnum
 
 
-@pytest.mark.parametrize("model", MLIPEnum)
+model_params = []
+for model in MLIPEnum:
+    marks = []
+    if model.name == "SevenNet":
+        marks.append(pytest.mark.sevennet)
+    elif model.name == "NequIP-OAM-L":
+        marks.append(pytest.mark.nequip)
+    elif "MACE" in model.name:
+        marks.append(pytest.mark.mace)
+    elif model.value.get("family") == "fairchem":
+        marks.append(pytest.mark.fairchem)
+
+    if marks:
+        model_params.append(pytest.param(model, marks=marks, id=model.name))
+    else:
+        model_params.append(pytest.param(model, id=model.name))
+
+
+@pytest.mark.parametrize("model", model_params)
 def test_calculate(model: MLIPEnum):
     try:
         calc = MLIPEnum[model.name].load()
@@ -27,14 +45,6 @@ def test_calculate(model: MLIPEnum):
             pytest.xfail("Orbital Materials deprecated the model a month after its premature release in favor of ORBv2")
         elif model.name == "M3GNet":
             pytest.xfail("Cache sometimes fails")
-        elif model.name == "SevenNet":
-            pytest.xfail(
-                "SevenNet fails CI for ValueError: The e3nn version MUST be 0.5.0 or later due to changes in CG coefficient convention."
-            )
-            # TODO: address SevenNet e3nn pin error by implementing seperate test groups
-        elif model.name == "NequIP-OAM-L":
-            pytest.xfail("unknown optimization option: jit_mode")
-            # TODO: separate test group for e3nn versions
         else:
             pytest.fail(f"Failed to initialize model {model.name}: {e}")
 
