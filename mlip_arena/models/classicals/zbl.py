@@ -4,7 +4,15 @@ import torch.nn as nn
 import torch_scatter
 from ase.data import covalent_radii
 from ase.units import _e, _eps0, m, pi
-from e3nn.util.jit import compile_mode  # TODO: e3nn allows autograd in compiled model
+
+try:
+    from e3nn.util.jit import compile_mode
+except ImportError:
+
+    def compile_mode(mode):
+        return lambda clz: clz
+
+
 from torch_geometric.data import Data
 
 

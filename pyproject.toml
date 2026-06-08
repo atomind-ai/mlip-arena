@@ -38,6 +38,7 @@ dependencies=[
     "dask",
     "dask_jobqueue",
     "tables",
+    "pymatgen>=2025.1.9",
 ]
 
 [project.optional-dependencies]
@@ -51,6 +52,11 @@ app = [
 ]
 test = [
     "torch>=2.8.0",
+    "pytest",
+    "pytest-cov",
+    "streamlit>=1.55.0",
+]
+all = [
     "torch_dftd>=0.4.0",
     "e3nn>=0.5.6",
     "dgl",
@@ -59,10 +65,6 @@ test = [
     "mattersim>=1.1.2",
     "torchani>=2.7.0",
     "upet>=0.2.2",
-    "pytest",
-    "pytest-cov",
-    "pymatgen>=2025.1.9",
-    "streamlit>=1.55.0",
 ]
 mace = [
     "mace-torch>=0.3.12",
@@ -80,18 +82,19 @@ deepmd = [
     "torch>=2.2.0",
     "deepmd-kit"
 ]
-extra = [
-    "MDAnalysis",
-    "quests",
-    "ipykernel",
-    "ipywidgets",
-]
 nequip = [
     "nequip>=0.16.0",
 ]
 sevennet = [
     "sevenn>=0.9.3.post1",
 ]
+extra = [
+    "MDAnalysis",
+    "quests",
+    "ipykernel",
+    "ipywidgets",
+]
+
 
 [project.urls]
 Homepage = "https://github.com/atomind-ai/mlip-arena"
