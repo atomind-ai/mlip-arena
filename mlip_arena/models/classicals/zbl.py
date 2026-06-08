@@ -1,7 +1,6 @@
 import torch
 import torch.linalg as LA
 import torch.nn as nn
-import torch_scatter
 from ase.data import covalent_radii
 from ase.units import _e, _eps0, m, pi
 
@@ -13,7 +12,24 @@ except ImportError:
         return lambda clz: clz
 
 
-from torch_geometric.data import Data
+from mlip_arena.data.collate import Data
+
+
+def scatter_add(src: torch.Tensor, index: torch.Tensor, dim: int = 0, dim_size: int = None) -> torch.Tensor:
+    if dim_size is None:
+        dim_size = int(index.max() + 1) if index.numel() > 0 else 0
+    shape = list(src.shape)
+    shape[dim] = dim_size
+    out = torch.zeros(shape, dtype=src.dtype, device=src.device)
+    if src.ndim > index.ndim:
+        views = [1] * src.ndim
+        views[dim] = -1
+        index = index.view(views).expand_as(src)
+    return out.scatter_add_(dim, index, src)
+
+
+def scatter_sum(src: torch.Tensor, index: torch.Tensor, dim: int = 0, dim_size: int = None) -> torch.Tensor:
+    return scatter_add(src, index, dim, dim_size)
 
 
 @compile_mode("script")
@@ -137,7 +153,7 @@ class ZBL(nn.Module):
 
         edge_batch = data.batch[data.edge_index[0]]
 
-        stress = -0.5 * torch_scatter.scatter_sum(rfaxy, edge_batch, dim=0) / volume.view(-1, 1)
+        stress = -0.5 * scatter_sum(rfaxy, edge_batch, dim=0) / volume.view(-1, 1)
 
         return -egradi, stress
 
@@ -172,13 +188,13 @@ class ZBL(nn.Module):
             self.eij(zi, zj, rij) * self.phi(rij / aij.to(rij)) * self.envelope(rij, torch.min(data.cutoff, rbond))
         )
 
-        energy_nodes = 0.5 * torch_scatter.scatter_add(
+        energy_nodes = 0.5 * scatter_add(
             src=energy_pairs,
             index=edge_dst,
             dim=0,
         )  # (sum(N), )
 
-        energies = torch_scatter.scatter_add(
+        energies = scatter_add(
             src=energy_nodes,
             index=batch,
             dim=0,
