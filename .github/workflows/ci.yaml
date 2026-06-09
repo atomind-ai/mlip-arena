@@ -90,7 +90,7 @@ jobs:
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
       run: |
         if [ "${{ matrix.test-group }}" == "default" ]; then
-          pytest -vra --cov=mlip_arena --cov-report=xml tests -m "default"
+          pytest -vra --cov=mlip_arena --cov-report=xml tests -m "not nequip and not sevennet and not mace and not fairchem"
         else
           pytest -vra --cov=mlip_arena --cov-report=xml tests -m ${{ matrix.test-group }}
         fi
