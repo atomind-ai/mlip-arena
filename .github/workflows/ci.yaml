@@ -39,15 +39,15 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
         test-group: ["default", "nequip", "sevennet", "mace", "fairchem"]
-        exclude:
-          - python-version: "3.13"
-            test-group: "nequip"
-          - python-version: "3.13"
-            test-group: "sevennet"
-          - python-version: "3.13"
-            test-group: "mace"
-          - python-version: "3.13"
-            test-group: "fairchem"
+        # exclude:
+        #   - python-version: "3.13"
+        #     test-group: "nequip"
+        #   - python-version: "3.13"
+        #     test-group: "sevennet"
+        #   - python-version: "3.13"
+        #     test-group: "mace"
+        #   - python-version: "3.13"
+        #     test-group: "fairchem"
 
     steps:
     - name: Checkout PR with full history
@@ -90,7 +90,7 @@ jobs:
         PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
       run: |
         if [ "${{ matrix.test-group }}" == "default" ]; then
-          pytest -vra --cov=mlip_arena --cov-report=xml tests -m "not (nequip or sevennet or mace or fairchem)"
+          pytest -vra --cov=mlip_arena --cov-report=xml tests -m "default"
         else
           pytest -vra --cov=mlip_arena --cov-report=xml tests -m ${{ matrix.test-group }}
         fi

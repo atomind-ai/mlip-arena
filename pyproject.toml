@@ -38,7 +38,8 @@ dependencies=[
     "dask",
     "dask_jobqueue",
     "tables",
-    "pymatgen>=2025.1.9",
+    "matscipy",
+    "torch_dftd>=0.4.0",
 ]
 
 [project.optional-dependencies]
@@ -51,13 +52,12 @@ app = [
     "plotly",
 ]
 test = [
-    "torch>=2.8.0",
     "pytest",
     "pytest-cov",
     "streamlit>=1.55.0",
+    "pymatgen>=2025.1.9",
 ]
 all = [
-    "torch_dftd>=0.4.0",
     "e3nn>=0.5.6",
     "dgl",
     "chgnet>=0.3.8",
