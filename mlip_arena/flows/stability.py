@@ -26,11 +26,6 @@ load_dotenv()
 HF_TOKEN = os.environ.get("HF_TOKEN", None)
 
 
-def resolve_calculator(model: MLIPEnum | BaseCalculator | str) -> BaseCalculator:
-    """Resolve ASE calculator instance from string, MLIPEnum, or calculator object."""
-    return get_calculator(model)
-
-
 def resolve_model_name(model: MLIPEnum | BaseCalculator | str) -> str:
     """Resolve a string model name from MLIPEnum, BaseCalculator, or string."""
     if isinstance(model, str):
@@ -47,7 +42,7 @@ def resolve_model_name(model: MLIPEnum | BaseCalculator | str) -> str:
 @task(cache_policy=TASK_SOURCE + INPUTS)
 def nvt_heat_one(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, run_dir: Path):
     """Run a 10 ps NVT MD simulation with linear heating schedule."""
-    calculator = resolve_calculator(model)
+    calculator = get_calculator(model)
     model_name = resolve_model_name(model)
 
     return MD.with_options(refresh_cache=True)(
@@ -71,7 +66,7 @@ def nvt_heat_one(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, run_dir: 
 @task(cache_policy=TASK_SOURCE + INPUTS)
 def npt_compress_one(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, run_dir: Path):
     """Run a 10 ps NPT MD simulation with linear pressure ramp."""
-    calculator = resolve_calculator(model)
+    calculator = get_calculator(model)
     model_name = resolve_model_name(model)
 
     return MD.with_options(timeout_seconds=600, retries=2, refresh_cache=True)(
