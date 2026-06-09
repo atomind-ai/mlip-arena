@@ -26,21 +26,29 @@ load_dotenv()
 HF_TOKEN = os.environ.get("HF_TOKEN", None)
 
 
+def resolve_calculator(model: MLIPEnum | BaseCalculator | str) -> BaseCalculator:
+    """Resolve ASE calculator instance from string, MLIPEnum, or calculator object."""
+    return get_calculator(model)
+
+
+def resolve_model_name(model: MLIPEnum | BaseCalculator | str) -> str:
+    """Resolve a string model name from MLIPEnum, BaseCalculator, or string."""
+    if isinstance(model, str):
+        return model
+    if isinstance(model, MLIPEnum):
+        return model.name
+    if isinstance(model, type):
+        return model.__name__
+    if hasattr(model, "__class__"):
+        return model.__class__.__name__
+    return str(model)
+
+
 @task(cache_policy=TASK_SOURCE + INPUTS)
 def nvt_heat_one(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, run_dir: Path):
     """Run a 10 ps NVT MD simulation with linear heating schedule."""
-    calculator = (
-        get_calculator(
-            model if isinstance(model, str) else model.name,
-            calculator_kwargs=None,
-        )
-        if isinstance(model, MLIPEnum | str)
-        else model
-    )
-
-    model_name = (
-        model if isinstance(model, str) else (model.name if isinstance(model, MLIPEnum) else model.__class__.__name__)
-    )
+    calculator = resolve_calculator(model)
+    model_name = resolve_model_name(model)
 
     return MD.with_options(refresh_cache=True)(
         atoms=atoms,
@@ -63,18 +71,8 @@ def nvt_heat_one(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, run_dir: 
 @task(cache_policy=TASK_SOURCE + INPUTS)
 def npt_compress_one(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, run_dir: Path):
     """Run a 10 ps NPT MD simulation with linear pressure ramp."""
-    calculator = (
-        get_calculator(
-            model if isinstance(model, str) else model.name,
-            calculator_kwargs=None,
-        )
-        if isinstance(model, MLIPEnum | str)
-        else model
-    )
-
-    model_name = (
-        model if isinstance(model, str) else (model.name if isinstance(model, MLIPEnum) else model.__class__.__name__)
-    )
+    calculator = resolve_calculator(model)
+    model_name = resolve_model_name(model)
 
     return MD.with_options(timeout_seconds=600, retries=2, refresh_cache=True)(
         atoms=atoms,
@@ -99,14 +97,7 @@ def heating(
     hf_token: str | None = HF_TOKEN,
 ):
     """Prefect flow to run NVT heating tasks for many database structures."""
-    if isinstance(model, BaseCalculator):
-        model_name = model.__class__.__name__
-    elif isinstance(model, MLIPEnum):
-        model_name = model.name
-    elif isinstance(model, str) and hasattr(MLIPEnum, model):
-        model_name = model
-    else:
-        model_name = str(model)
+    model_name = resolve_model_name(model)
 
     family = REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
     out_dir = run_dir if run_dir is not None else Path.cwd() / "stability" / family
@@ -134,14 +125,7 @@ def compression(
     hf_token: str | None = HF_TOKEN,
 ):
     """Prefect flow to run NPT compression tasks for many database structures."""
-    if isinstance(model, BaseCalculator):
-        model_name = model.__class__.__name__
-    elif isinstance(model, MLIPEnum):
-        model_name = model.name
-    elif isinstance(model, str) and hasattr(MLIPEnum, model):
-        model_name = model
-    else:
-        model_name = str(model)
+    model_name = resolve_model_name(model)
 
     family = REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
     out_dir = run_dir if run_dir is not None else Path.cwd() / "stability" / family
