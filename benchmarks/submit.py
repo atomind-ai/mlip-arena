@@ -1,8 +1,114 @@
-from asymptotes import asymptotic_behaviors
+from pathlib import Path
+
+from ase.calculators.calculator import BaseCalculator
 from dask.distributed import Client
 from dask_jobqueue import SLURMCluster
+from huggingface_hub import hf_hub_download
+from prefect import flow
+from prefect.context import FlowRunContext
 from prefect_dask import DaskTaskRunner
-from stability import random_mixtures
+
+from mlip_arena.flows.diatomics import homonuclear_diatomics
+from mlip_arena.flows.eos_bulk import run_db as EOSFlow
+from mlip_arena.flows.ev import run_db as EVFlow
+from mlip_arena.flows.conservation import differential_entropy_along_nve_trajectory
+from mlip_arena.flows.stability import compression, heating
+from report import summarize, get_model_name
+
+
+@flow
+def asymptotic_behaviors(calculator: str | BaseCalculator, calculator_kwargs: dict | None = None):
+    ctx = FlowRunContext.get()
+    parent_task_runner = ctx.task_runner
+
+    model_name = get_model_name(calculator)
+
+    from mlip_arena.tasks.utils import get_calculator
+
+    # Use string directly for registered models to avoid client-side unpickleable PyTorch objects
+    model = calculator if isinstance(calculator, str) else get_calculator(calculator, calculator_kwargs)
+
+    # 1. Diatomics
+    print(f"Starting homonuclear diatomics benchmark for {model_name}...")
+    from mlip_arena.models import REGISTRY, MLIPEnum
+
+    if isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
+        family = REGISTRY[calculator]["family"]
+    elif isinstance(calculator, BaseCalculator) and hasattr(MLIPEnum, calculator.__class__.__name__):
+        family = REGISTRY[calculator.__class__.__name__]["family"]
+    else:
+        family = "custom"
+    family = family.lower()
+    out_dir_diatomics = Path(__file__).parent / "diatomics" / family / model_name
+    homonuclear_diatomics.with_options(name=f"diatomics-{model_name}", task_runner=parent_task_runner)(
+        model=model, run_dir=out_dir_diatomics
+    )
+
+    # 2. EOS Bulk
+    print(f"Starting EOS bulk benchmark for {model_name}...")
+    out_dir_eos = Path(__file__).parent / "eos_bulk"
+    EOSFlow.with_options(name=f"eos_bulk-{model_name}", task_runner=parent_task_runner)(
+        model=model, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
+    )
+
+    # 3. E-V
+    print(f"Starting E-V scan benchmark for {model_name}...")
+    out_dir_ev = Path(__file__).parent / "ev"
+    EVFlow.with_options(name=f"ev-{model_name}", task_runner=parent_task_runner)(
+        model=model, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
+    )
+
+
+@flow
+def distribution_shifts(calculator: str | BaseCalculator, calculator_kwargs: dict | None = None):
+    ctx = FlowRunContext.get()
+    parent_task_runner = ctx.task_runner
+
+    work_dir = Path(__file__).parent / "energy_conservation"
+
+    dH, sampled_structures = differential_entropy_along_nve_trajectory.with_options(
+        task_runner=parent_task_runner,
+    )(
+        calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        input_path=Path(__file__).parent / "mptrj_eq_test.extxyz",
+        reference_path=hf_hub_download(
+            repo_id="atomind/mlip-arena", filename="mptrj_subset.extxyz", repo_type="dataset"
+        ),
+        start_idx=0,
+        end_idx=-1,
+        step=100,
+        work_dir=work_dir,
+    )
+
+
+@flow
+def stability(calculator: str | BaseCalculator, calculator_kwargs: dict | None = None):
+    ctx = FlowRunContext.get()
+    parent_task_runner = ctx.task_runner
+
+    model_name = get_model_name(calculator)
+
+    from mlip_arena.models import REGISTRY, MLIPEnum
+
+    if hasattr(MLIPEnum, model_name):
+        family = REGISTRY[model_name]["family"]
+    else:
+        family = "custom"
+    family = family.lower()
+
+    run_dir_stability = Path(__file__).parent / "stability" / family
+
+    heating.with_options(
+        name=f"stability-heating-{model_name}",
+        task_runner=parent_task_runner,
+    )(calculator, run_dir_stability)
+
+    compression.with_options(
+        name=f"stability-compression-{model_name}",
+        task_runner=parent_task_runner,
+    )(calculator, run_dir_stability)
+
 
 # ==============================================================================
 # 1. JOB CONFIGURATION
@@ -32,7 +138,7 @@ SLURM_CONFIG = {
     ],
 }
 
-job_model_name = calculator if isinstance(calculator, str) else calculator.__class__.__name__
+job_model_name = get_model_name(calculator)
 
 cluster_kwargs = dict(
     cores=1,
@@ -54,46 +160,50 @@ cluster_kwargs = dict(
     ],
 )
 
-cluster = SLURMCluster(**cluster_kwargs)
-print("--------------------------------------------------------------------------------")
-print(f"Generating SLURM cluster jobs with script:\n{cluster.job_script()}")
-print("--------------------------------------------------------------------------------")
+if __name__ == "__main__":
+    cluster = SLURMCluster(**cluster_kwargs)
+    print("--------------------------------------------------------------------------------")
+    print(f"Generating SLURM cluster jobs with script:\n{cluster.job_script()}")
+    print("--------------------------------------------------------------------------------")
 
-cluster.adapt(minimum_jobs=1, maximum_jobs=50)
-client = Client(cluster)
+    cluster.adapt(minimum_jobs=1, maximum_jobs=50)
+    client = Client(cluster)
 
-print(f"Dask dashboard available at: {client.dashboard_link}")
+    print(f"Dask dashboard available at: {client.dashboard_link}")
 
-# ==============================================================================
-# 2. JOB EXECUTION
-# ==============================================================================
+    # ==============================================================================
+    # 2. JOB EXECUTION
+    # ==============================================================================
 
-asymptotic_behaviors.with_options(
-    task_runner=DaskTaskRunner(address=client.scheduler.address),
-    log_prints=True,
-    persist_result=False,
-)(
-    calculator=calculator,
-    # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
-)
+    asymptotic_behaviors.with_options(
+        task_runner=DaskTaskRunner(address=client.scheduler.address),
+        log_prints=True,
+        persist_result=False,
+    )(
+        calculator=calculator,
+        # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
+    )
 
-# distribution_shifts.with_options(
-#     task_runner=DaskTaskRunner(address=client.scheduler.address),
-#     log_prints=True,
-#     persist_result=False,
-# )(
-#     calculator=calculator,
-#     # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
-# )
+    # distribution_shifts.with_options(
+    #     task_runner=DaskTaskRunner(address=client.scheduler.address),
+    #     log_prints=True,
+    #     persist_result=False,
+    # )(
+    #     calculator=calculator,
+    #     # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
+    # )
 
+    stability.with_options(
+        task_runner=DaskTaskRunner(address=client.scheduler.address),
+        log_prints=True,
+        persist_result=False,
+    )(
+        calculator=calculator,
+        # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
+    )
 
-random_mixtures.with_options(
-    task_runner=DaskTaskRunner(address=client.scheduler.address),
-    log_prints=True,
-    persist_result=False,
-)(
-    calculator=calculator,
-    # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
-)
+    # 3. Report Generation
+    print(f"Generating reports and processed results for {calculator}...")
+    summarize(calculator)
 
-# TODO: Add Reactivity
+    # TODO: Add Reactivity

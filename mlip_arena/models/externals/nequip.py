@@ -2,9 +2,20 @@
 
 from __future__ import annotations
 
-from nequip.integrations.ase import NequIPCalculator
+import torch
 
-from mlip_arena.models.utils import get_freer_device
+torch.serialization.add_safe_globals([slice])
+
+import e3nn  # noqa: E402
+
+_orig_set_opt = e3nn.set_optimization_defaults
+e3nn.set_optimization_defaults = lambda **kwargs: _orig_set_opt(**{k: v for k, v in kwargs.items() if k != "jit_mode"})
+
+from nequip.integrations.ase import NequIPCalculator  # noqa: E402
+
+e3nn.set_optimization_defaults = _orig_set_opt
+
+from mlip_arena.models.utils import get_freer_device  # noqa: E402
 
 
 class NequIP_OAM_L:
