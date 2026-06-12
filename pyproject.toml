@@ -34,7 +34,7 @@ dependencies=[
     "huggingface_hub>=1.18.0",
     "datasets",
     "safetensors",
-    "prefect[dask]>=3.6.26",
+    "prefect[dask]>=3.6.26,<3.7.0",
     "dask",
     "dask_jobqueue",
     "tables",
