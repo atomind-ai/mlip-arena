@@ -38,7 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
-        test-group: ["default", "nequip", "sevennet", "mace", "fairchem"]
+        test-group: ["default", "nequip", "sevennet", "mace", "fairchem", "orb"]
         # exclude:
         #   - python-version: "3.13"
         #     test-group: "nequip"
@@ -88,7 +88,7 @@ jobs:
     - name: Run tests
       run: |
         if [ "${{ matrix.test-group }}" = "default" ]; then
-          MARKER="not (nequip or sevennet or mace or fairchem)"
+          MARKER="not (nequip or sevennet or mace or fairchem or orb)"
         else
           MARKER="${{ matrix.test-group }}"
         fi

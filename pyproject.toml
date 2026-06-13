@@ -77,7 +77,7 @@ fairchem = [
     "fairchem-core>=2.13.0",
 ]
 orb = [
-    "orb-models>=0.4.0,<0.6.0",
+    "orb-models>=0.4.0,<0.8.0",
 ]
 deepmd = [
     "torch>=2.2.0",
@@ -107,6 +107,7 @@ markers = [
     "sevennet: tests for SevenNet models requiring e3nn >= 0.5.0",
     "mace: tests for MACE models",
     "fairchem: tests for fairchem models",
+    "orb: tests for ORB models",
 ]
 
 [tool.ruff]

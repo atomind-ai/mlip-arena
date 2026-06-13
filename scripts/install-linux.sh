@@ -20,12 +20,16 @@ elif [ "$GROUP" == "fairchem" ]; then
     CUDA=cu129
     uv pip install torch==${TORCH}.0
     uv pip install -e .[test,extra,fairchem] --no-cache
+elif [ "$GROUP" == "orb" ]; then
+    TORCH=2.8
+    CUDA=cu129
+    uv pip install torch==${TORCH}.0
+    uv pip install -e .[test,extra,orb] --no-cache
 else
     TORCH=2.8
     CUDA=cu129
     uv pip install torch==${TORCH}.0
     uv pip install dgl -f https://data.dgl.ai/wheels/torch-${TORCH}/${CUDA}/repo.html
-    uv pip install -e .[orb] --no-cache
     uv pip install -e .[matgl] --no-cache
     uv pip install -e .[test,extra,all] --no-cache
 fi
