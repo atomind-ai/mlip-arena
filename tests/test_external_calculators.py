@@ -47,11 +47,10 @@ def test_calculate(model: MLIPEnum):
             pytest.xfail("Orbital Materials deprecated the model a month after its premature release in favor of ORBv2")
         elif model.name == "M3GNet":
             pytest.xfail("Cache sometimes fails")
+        elif model.name == "UMA-S-1P1":
+            pytest.xfail("The model fails CI on CPU for RuntimeError: expected scalar type Double but found Float")
         else:
             pytest.fail(f"Failed to initialize model {model.name}: {e}")
-
-    if model.name == "UMA-S-1P1":
-        pytest.skip("The model fails CI on CPU for RuntimeError: expected scalar type Double but found Float")
 
     atoms = Atoms(
         "OO",
