@@ -51,8 +51,7 @@ def summarize(model_name: str | None = None):
         return
 
     # Defer heavy imports until we are sure we have files to process
-    from mlip_arena.tasks.stability.analysis import gather_results
-    from mlip_arena.tasks.stability.data import get_atoms_from_db
+    from mlip_arena.flows.stability import gather_results, get_atoms_from_db
 
     compositions = []
     try:

@@ -54,6 +54,7 @@ app = [
 test = [
     "pytest",
     "pytest-cov",
+    "pytest-xdist",
     "streamlit>=1.55.0",
     "pymatgen>=2025.1.9",
 ]

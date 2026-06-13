@@ -41,7 +41,7 @@ def asymptotic_behaviors(calculator: str | BaseCalculator, calculator_kwargs: di
     family = family.lower()
     out_dir_diatomics = Path(__file__).parent / "diatomics" / family / model_name
     homonuclear_diatomics.with_options(name=f"diatomics-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_diatomics
+        calculator=model, calculator_kwargs=calculator_kwargs, run_dir=out_dir_diatomics
     )
 
     # 2. EOS Bulk
@@ -109,13 +109,40 @@ def stability(calculator: str | BaseCalculator, calculator_kwargs: dict | None =
         task_runner=parent_task_runner,
     )(calculator, run_dir_stability)
 
+    # 3. Analysis / gather results
+    print(f"Analyzing stability results for {model_name}...")
+    from mlip_arena.flows.stability import gather_results, get_atoms_from_db
+    from loguru import logger
+
+    compositions = []
+    for atoms in get_atoms_from_db("random-mixture.db"):
+        if len(atoms) == 0:
+            continue
+        compositions.append(atoms.get_chemical_formula())
+
+    try:
+        df = gather_results(run_dir_stability, prefix=model_name, run_type="nvt")
+        df = df[df["formula"].isin(compositions[:120])].copy()  # tentatively we only take the first 120 structures
+        assert len(df) > 0
+        df.to_parquet(run_dir_stability / f"{model_name}-heating.parquet", index=False)
+    except Exception as e:
+        logger.warning(f"Error processing model {model_name} (heating): {e}")
+
+    try:
+        df = gather_results(run_dir_stability, prefix=model_name, run_type="npt")
+        df = df[df["formula"].isin(compositions[:80])].copy()  # tentatively we only take the first 80 structures
+        assert len(df) > 0
+        df.to_parquet(run_dir_stability / f"{model_name}-compression.parquet", index=False)
+    except Exception as e:
+        logger.warning(f"Error processing model {model_name} (compression): {e}")
+
 
 # ==============================================================================
 # 1. JOB CONFIGURATION
 # ==============================================================================
 
 # Example A: Registered string model (e.g., "MACE-MP(M)", "CHGNet")
-calculator = "PET-OAM"
+calculator = "NequIP-OAM-L"
 
 # Example B: Custom ASE Calculator class and arguments (e.g., custom MLIP)
 # from ase.calculators.lj import LennardJones
