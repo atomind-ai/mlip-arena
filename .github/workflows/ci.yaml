@@ -61,6 +61,7 @@ jobs:
       with:
         enable-cache: true
         cache-dependency-glob: "pyproject.toml"
+        cache-suffix: ${{ matrix.test-group }}
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
