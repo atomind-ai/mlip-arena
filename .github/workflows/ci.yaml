@@ -77,9 +77,6 @@ jobs:
       run: hf auth login --token $HF_TOKEN --add-to-git-credential
 
     - name: Run tests
-      env:
-        PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
-        PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
       run: pytest -vra -n 5 --dist=loadscope --cov=mlip_arena --cov-report=xml tests
 
     - name: Upload coverage reports to Codecov
