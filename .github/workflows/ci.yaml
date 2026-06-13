@@ -74,12 +74,9 @@ jobs:
       if: github.event_name != 'pull_request' || github.event.pull_request.base.ref != 'develop'
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      run: hf auth login --token $HF_TOKEN
+      run: hf auth login --token $HF_TOKEN --add-to-git-credential
 
     - name: Run tests
-      env:
-        PREFECT_API_KEY: ${{ secrets.PREFECT_API_KEY }}
-        PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
       run: pytest -vra -n 5 --dist=loadscope --cov=mlip_arena --cov-report=xml tests
 
     - name: Upload coverage reports to Codecov
