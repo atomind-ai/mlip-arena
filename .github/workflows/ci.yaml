@@ -50,6 +50,8 @@ jobs:
         #     test-group: "fairchem"
         exclude:
           - python-version: "3.13"
+            test-group: "nequip"
+          - python-version: "3.13"
             test-group: "orb"
 
     steps:

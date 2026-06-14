@@ -1,17 +1,3 @@
-import sys
-import typing
-
-# Monkeypatch typing.io for Python 3.13 compatibility with torch.package (used by NequIP)
-if not hasattr(typing, "io"):
-    import types
-
-    typing_io = types.ModuleType("typing.io")
-    typing_io.IO = typing.IO
-    typing_io.TextIO = typing.TextIO
-    typing_io.BinaryIO = typing.BinaryIO
-    typing.io = typing_io
-    sys.modules["typing.io"] = typing_io
-
 import torch
 
 torch.serialization.add_safe_globals([slice])
