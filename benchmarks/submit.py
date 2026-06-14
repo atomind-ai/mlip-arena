@@ -202,14 +202,14 @@ if __name__ == "__main__":
     # 2. JOB EXECUTION
     # ==============================================================================
 
-    asymptotic_behaviors.with_options(
-        task_runner=DaskTaskRunner(address=client.scheduler.address),
-        log_prints=True,
-        persist_result=False,
-    )(
-        calculator=calculator,
-        # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
-    )
+    # asymptotic_behaviors.with_options(
+    #     task_runner=DaskTaskRunner(address=client.scheduler.address),
+    #     log_prints=True,
+    #     persist_result=False,
+    # )(
+    #     calculator=calculator,
+    #     # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
+    # )
 
     # distribution_shifts.with_options(
     #     task_runner=DaskTaskRunner(address=client.scheduler.address),
