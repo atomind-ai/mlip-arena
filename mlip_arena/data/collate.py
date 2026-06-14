@@ -28,6 +28,12 @@ class Data:
                 self.__dict__[k] = v.cpu()
         return self
 
+    def to(self, device):
+        for k, v in self.__dict__.items():
+            if isinstance(v, torch.Tensor):
+                self.__dict__[k] = v.to(device)
+        return self
+
     def __contains__(self, key):
         return hasattr(self, key) and getattr(self, key) is not None
 
