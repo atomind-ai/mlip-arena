@@ -48,14 +48,14 @@ def asymptotic_behaviors(calculator: str | BaseCalculator, calculator_kwargs: di
     print(f"Starting EOS bulk benchmark for {model_name}...")
     out_dir_eos = Path(__file__).parent / "eos_bulk"
     EOSFlow.with_options(name=f"eos_bulk-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
+        calculator=model, calculator_kwargs=calculator_kwargs, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
     )
 
     # 3. E-V
     print(f"Starting E-V scan benchmark for {model_name}...")
     out_dir_ev = Path(__file__).parent / "ev"
     EVFlow.with_options(name=f"ev-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
+        calculator=model, calculator_kwargs=calculator_kwargs, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
     )
 
 
