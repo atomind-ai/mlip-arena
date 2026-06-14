@@ -39,6 +39,15 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
         test-group: ["default", "nequip", "sevennet", "mace", "fairchem", "orb"]
+        # exclude:
+        #   - python-version: "3.13"
+        #     test-group: "nequip"
+        #   - python-version: "3.13"
+        #     test-group: "sevennet"
+        #   - python-version: "3.13"
+        #     test-group: "mace"
+        #   - python-version: "3.13"
+        #     test-group: "fairchem"
         exclude:
           - python-version: "3.13"
             test-group: "orb"
