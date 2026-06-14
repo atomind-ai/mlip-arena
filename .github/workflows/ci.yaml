@@ -92,7 +92,15 @@ jobs:
         else
           MARKER="${{ matrix.test-group }}"
         fi
-        pytest -vra -m "$MARKER" --dist=loadscope --cov=mlip_arena --cov-report=xml tests
+        pytest -vra -m "$MARKER" --dist=loadscope --cov=mlip_arena --cov-report=xml tests || {
+          status=$?
+          if [ $status -eq 5 ]; then
+            echo "No tests were collected or executed for group: ${{ matrix.test-group }}. Exiting gracefully."
+            exit 0
+          else
+            exit $status
+          fi
+        }
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
