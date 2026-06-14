@@ -21,8 +21,8 @@ elif [ "$GROUP" == "fairchem" ]; then
     uv pip install torch==${TORCH}.0
     uv pip install -e .[test,extra,fairchem] --no-cache
 elif [ "$GROUP" == "orb" ]; then
-    TORCH=2.2
-    CUDA=cu121
+    TORCH=2.8
+    CUDA=cu129
     uv pip install torch==${TORCH}.0
     uv pip install -e .[test,extra,orb] --no-cache
 else
