@@ -74,7 +74,7 @@ matgl = [
     "matgl>=1.2.6",
 ]
 fairchem = [
-    "fairchem-core>=2.13.0",
+    "fairchem-core>=2.21.0",
 ]
 orb = [
     "orb-models==0.5.5",
