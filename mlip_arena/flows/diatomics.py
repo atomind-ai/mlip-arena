@@ -15,16 +15,27 @@ from scipy import stats
 from tqdm.auto import tqdm
 
 from mlip_arena.models import REGISTRY, MLIPEnum
-from mlip_arena.tasks.utils import get_calculator
+from mlip_arena.tasks.utils import get_calculator, resolve_calculator_name
+
+
+def _generate_task_run_name():
+    task_name = task_run.task_name
+    parameters = task_run.parameters
+    symbol = parameters["symbol"]
+    calculator_name = resolve_calculator_name(parameters.get("calculator"))
+    return f"{task_name}: {symbol} - {calculator_name}"
 
 
 @task(
-    task_run_name=lambda: (
-        f"{task_run.task_name}: {task_run.parameters['symbol']} - {task_run.parameters.get('calculator', 'Unknown')}"
-    ),
+    task_run_name=_generate_task_run_name,
 )
 def homonuclear_diatomic(
-    symbol: str, calculator: str | MLIPEnum | BaseCalculator, calculator_kwargs: dict | None, out_dir: Path
+    symbol: str,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
+    out_dir: Path | None = None,
 ):
     """Calculate the potential energy curve for single homonuclear diatomic
     molecule.
@@ -36,6 +47,10 @@ def homonuclear_diatomic(
     Args:
         symbol: Chemical symbol of the atom (e.g., 'H', 'O', 'Fe')
         calculator: An ASE calculator instance or a string/MLIPEnum to create one
+        calculator_kwargs (dict, optional): Keyword arguments to pass to the calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
+        out_dir: Path to directory to write output.
 
     Returns:
         None: Results are saved as trajectory files.
@@ -88,7 +103,12 @@ def homonuclear_diatomic(
             pbc=False,
         )
 
-    atoms.calc = get_calculator(calculator=calculator, calculator_kwargs=calculator_kwargs)
+    atoms.calc = get_calculator(
+        calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
+    )
 
     for i, r in enumerate(tqdm(rs)):
         if i < skip:
@@ -103,6 +123,8 @@ def homonuclear_diatomic(
         atoms.set_positions(positions)
         es[i] = atoms.get_potential_energy()
         write(traj_fpath, atoms, append="a")
+
+    atoms.calc = None
 
 
 def analyze(out_dir: Path):
@@ -257,24 +279,26 @@ def analyze(out_dir: Path):
 
 @flow
 def homonuclear_diatomics(
-    calculator: BaseCalculator | str, calculator_kwargs: dict | None, run_dir: Path | None = None
+    calculator: BaseCalculator | str,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
+    run_dir: Path | None = None,
 ):
     """Run homonuclear diatomic calculations for all elements using a specific
     model.
 
     Args:
         calculator (BaseCalculator | str): The model or ASE calculator to use.
+        calculator_kwargs (dict, optional): Keyword arguments to pass to the calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         run_dir (Path, optional): Directory to save outputs. Defaults to None.
 
     Returns:
         list: List of results from the distributed homonuclear_diatomic tasks.
     """
-    if isinstance(calculator, BaseCalculator):
-        model_name = calculator.__class__.__name__
-    elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
-        model_name = calculator
-    else:
-        raise ValueError(f"Unsupported model: {calculator}")
+    model_name = resolve_calculator_name(calculator)
 
     family = REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
 
@@ -284,8 +308,10 @@ def homonuclear_diatomics(
     for symbol in chemical_symbols[1:]:
         future = homonuclear_diatomic.submit(
             symbol,
-            calculator,
+            calculator=calculator,
             calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
             out_dir=out_dir,
         )
         futures.append(future)

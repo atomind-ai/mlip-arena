@@ -14,6 +14,7 @@ from prefect.states import State
 from mlip_arena.data.local import SafeHDFStore
 from mlip_arena.models import REGISTRY, MLIPEnum
 from mlip_arena.tasks.eos import run as EOS
+from mlip_arena.tasks.utils import resolve_calculator_name
 
 
 @task
@@ -52,7 +53,17 @@ def save_to_hdf(tsk: Task, run: TaskRun, state: State, fpath: Path | str, table_
 
     try:
         atoms = result["atoms"]
-        calculator_name = run.task_inputs["calculator_name"] or result["calculator_name"]
+
+        # Retrieve calculator argument from parameters or task_inputs
+        calculator = None
+        if hasattr(run, "parameters") and run.parameters:
+            calculator = run.parameters.get("calculator")
+        if calculator is None and hasattr(run, "task_inputs"):
+            calculator = run.task_inputs.get("calculator")
+            if isinstance(calculator, list) and len(calculator) > 0:
+                calculator = calculator[0]
+
+        calculator_name = resolve_calculator_name(calculator)
 
         energies = [float(e) for e in result["eos"]["energies"]]
 
@@ -140,7 +151,7 @@ def run(
                 continue
             future = EOS_.submit(
                 atoms=atoms,
-                calculator_name=mlip.name,
+                calculator=mlip,
                 calculator_kwargs=dict(),
                 optimizer=optimizer,
                 optimizer_kwargs=optimizer_kwargs,
@@ -151,7 +162,6 @@ def run(
                 concurrent=concurrent,
                 persist_opt=cache,
                 cache_opt=cache,
-                # return_state=True
             )
             futures.append(future)
 
