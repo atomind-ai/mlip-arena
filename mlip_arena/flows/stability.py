@@ -105,9 +105,9 @@ def heating(
     for i, atoms in enumerate(get_atoms_from_db("random-mixture.db", hf_token=hf_token, force_download=False)):
         if i >= 200:
             break
-        future = nvt_heat_one.with_options(timeout_seconds=600, retries=2, refresh_cache=False).submit(
-            atoms.copy(), model, out_dir
-        )
+        future = nvt_heat_one.with_options(
+            timeout_seconds=600, retries=2, persist_result=False, refresh_cache=True
+        ).submit(atoms.copy(), model, out_dir)
         futures.append(future)
 
     wait(futures)
@@ -133,9 +133,9 @@ def compression(
     for i, atoms in enumerate(get_atoms_from_db("random-mixture.db", hf_token=hf_token, force_download=False)):
         if i >= 200:
             break
-        future = npt_compress_one.with_options(timeout_seconds=600, retries=2, refresh_cache=False).submit(
-            atoms.copy(), model, out_dir
-        )
+        future = npt_compress_one.with_options(
+            timeout_seconds=600, retries=2, persist_result=False, refresh_cache=True
+        ).submit(atoms.copy(), model, out_dir)
         futures.append(future)
 
     wait(futures)
