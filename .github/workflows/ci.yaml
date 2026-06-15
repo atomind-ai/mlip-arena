@@ -87,7 +87,7 @@ jobs:
         else
           MARKER="${{ matrix.test-group }}"
         fi
-        pytest -vra -n 5 -m "$MARKER" --dist=loadscope --cov=mlip_arena --cov-report=xml tests || {
+        pytest -vra -m "$MARKER" --cov=mlip_arena --cov-report=xml tests || {
           status=$?
           if [ $status -eq 5 ]; then
             echo "No tests were collected or executed for group: ${{ matrix.test-group }}. Exiting gracefully."
