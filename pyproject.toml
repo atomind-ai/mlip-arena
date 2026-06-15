@@ -35,6 +35,7 @@ dependencies=[
     "datasets",
     "safetensors",
     "prefect[dask]>=3.6.26,<3.7.0",
+    "fastapi<0.115.0",
     "dask",
     "dask_jobqueue",
     "tables",
