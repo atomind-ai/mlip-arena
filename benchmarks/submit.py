@@ -160,7 +160,7 @@ SLURM_CONFIG = {
     "job_script_prologue": [
         "source ~/.bashrc",
         "module load python",
-        "module load cudatoolkit/12.4",
+        "module load cudatoolkit/12.9",
         "source activate /pscratch/sd/c/cyrusyc/.conda/mlip-arena",
     ],
 }
