@@ -11,7 +11,7 @@ from mlip_arena.tasks.utils import get_calculator
 
 
 @pytest.mark.skipif(
-    sys.version_info[:2] != (3, 11),
+    sys.version_info[:2] != (3, 12),
     reason="avoid prefect race condition on concurrent tasks",
 )
 @pytest.mark.mace

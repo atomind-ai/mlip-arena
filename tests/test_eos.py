@@ -35,7 +35,7 @@ def single_eos_flow(calculator_name, concurrent=True, cache=False):
 
 
 @pytest.mark.skipif(
-    sys.version_info[:2] != (3, 11),
+    sys.version_info[:2] != (3, 12),
     reason="avoid prefect race condition on concurrent tasks",
 )
 @pytest.mark.mace
