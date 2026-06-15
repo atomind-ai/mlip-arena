@@ -6,7 +6,6 @@ from prefect.testing.utilities import prefect_test_harness
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks import NEB_FROM_ENDPOINTS
-from mlip_arena.tasks.utils import get_calculator
 
 pristine = crystal("Al", [(0, 0, 0)], spacegroup=225, cellpar=[4.05, 4.05, 4.05, 90, 90, 90]) * (3, 3, 3)
 
@@ -32,9 +31,7 @@ def test_neb(model: MLIPEnum):
             start=start.copy(),
             end=end.copy(),
             n_images=5,
-            calculator=get_calculator(
-                model.name,
-            ),
+            calculator=model.name,
             optimizer="BFGS",
         )
 

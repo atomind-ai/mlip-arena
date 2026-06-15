@@ -5,7 +5,6 @@ from ase.build import bulk
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.md import run as MD
-from mlip_arena.tasks.utils import get_calculator
 
 atoms = bulk("Cu", "fcc", a=3.6)
 
@@ -16,9 +15,7 @@ atoms = bulk("Cu", "fcc", a=3.6)
 def test_nve(model: MLIPEnum):
     result = MD.fn(
         atoms,
-        calculator=get_calculator(
-            model.name,
-        ),
+        calculator=model.name,
         ensemble="nve",
         dynamics="velocityverlet",
         total_time=10,

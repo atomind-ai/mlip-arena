@@ -7,7 +7,6 @@ from prefect.testing.utilities import prefect_test_harness
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.elasticity import run as ELASTICITY
-from mlip_arena.tasks.utils import get_calculator
 
 
 @pytest.mark.skipif(
@@ -21,9 +20,7 @@ def test_elasticity(model: MLIPEnum):
     with prefect_test_harness():
         result = ELASTICITY(
             atoms=bulk("Cu", "fcc", a=3.6),
-            calculator=get_calculator(
-                model.name,
-            ),
+            calculator=model.name,
             optimizer="BFGSLineSearch",
             optimizer_kwargs=None,
             filter="FrechetCell",

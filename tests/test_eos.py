@@ -7,7 +7,6 @@ from prefect.testing.utilities import prefect_test_harness
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.eos import run as EOS
-from mlip_arena.tasks.utils import get_calculator
 
 
 @flow(persist_result=True)
@@ -18,9 +17,7 @@ def single_eos_flow(calculator_name, concurrent=True, cache=False):
         refresh_cache=not cache,
     )(
         atoms=atoms,
-        calculator=get_calculator(
-            calculator_name,
-        ),
+        calculator=calculator_name,
         optimizer="BFGSLineSearch",
         optimizer_kwargs=None,
         filter="FrechetCell",

@@ -7,7 +7,6 @@ from prefect.testing.utilities import prefect_test_harness
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.mof.flow import widom_insertion
 from mlip_arena.tasks.mof.input import get_atoms_from_db
-from mlip_arena.tasks.utils import get_calculator
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -30,10 +29,8 @@ def test_widom_insertion(model: MLIPEnum):
         )(
             structure=atoms,
             gas=molecule("CO2"),
-            calculator=get_calculator(
-                model,
-                dispersion=True,
-            ),
+            calculator=model.name,
+            dispersion=True,
             num_insertions=10,
             fold=2,
         )
