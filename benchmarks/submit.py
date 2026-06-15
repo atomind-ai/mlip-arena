@@ -41,21 +41,21 @@ def asymptotic_behaviors(calculator: str | BaseCalculator, calculator_kwargs: di
     family = family.lower()
     out_dir_diatomics = Path(__file__).parent / "diatomics" / family / model_name
     homonuclear_diatomics.with_options(name=f"diatomics-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_diatomics
+        calculator=model, calculator_kwargs=calculator_kwargs, run_dir=out_dir_diatomics
     )
 
     # 2. EOS Bulk
     print(f"Starting EOS bulk benchmark for {model_name}...")
     out_dir_eos = Path(__file__).parent / "eos_bulk"
     EOSFlow.with_options(name=f"eos_bulk-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
+        calculator=model, calculator_kwargs=calculator_kwargs, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
     )
 
     # 3. E-V
     print(f"Starting E-V scan benchmark for {model_name}...")
     out_dir_ev = Path(__file__).parent / "ev"
     EVFlow.with_options(name=f"ev-{model_name}", task_runner=parent_task_runner)(
-        model=model, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
+        calculator=model, calculator_kwargs=calculator_kwargs, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
     )
 
 
@@ -109,6 +109,33 @@ def stability(calculator: str | BaseCalculator, calculator_kwargs: dict | None =
         task_runner=parent_task_runner,
     )(calculator, run_dir_stability)
 
+    # 3. Analysis / gather results
+    print(f"Analyzing stability results for {model_name}...")
+    from mlip_arena.flows.stability import gather_results, get_atoms_from_db
+    from loguru import logger
+
+    compositions = []
+    for atoms in get_atoms_from_db("random-mixture.db"):
+        if len(atoms) == 0:
+            continue
+        compositions.append(atoms.get_chemical_formula())
+
+    try:
+        df = gather_results(run_dir_stability, prefix=model_name, run_type="nvt")
+        df = df[df["formula"].isin(compositions[:120])].copy()  # tentatively we only take the first 120 structures
+        assert len(df) > 0
+        df.to_parquet(run_dir_stability / f"{model_name}-heating.parquet", index=False)
+    except Exception as e:
+        logger.warning(f"Error processing model {model_name} (heating): {e}")
+
+    try:
+        df = gather_results(run_dir_stability, prefix=model_name, run_type="npt")
+        df = df[df["formula"].isin(compositions[:80])].copy()  # tentatively we only take the first 80 structures
+        assert len(df) > 0
+        df.to_parquet(run_dir_stability / f"{model_name}-compression.parquet", index=False)
+    except Exception as e:
+        logger.warning(f"Error processing model {model_name} (compression): {e}")
+
 
 # ==============================================================================
 # 1. JOB CONFIGURATION
@@ -133,7 +160,7 @@ SLURM_CONFIG = {
     "job_script_prologue": [
         "source ~/.bashrc",
         "module load python",
-        "module load cudatoolkit/12.4",
+        "module load cudatoolkit/12.9",
         "source activate /pscratch/sd/c/cyrusyc/.conda/mlip-arena",
     ],
 }
@@ -175,14 +202,14 @@ if __name__ == "__main__":
     # 2. JOB EXECUTION
     # ==============================================================================
 
-    asymptotic_behaviors.with_options(
-        task_runner=DaskTaskRunner(address=client.scheduler.address),
-        log_prints=True,
-        persist_result=False,
-    )(
-        calculator=calculator,
-        # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
-    )
+    # asymptotic_behaviors.with_options(
+    #     task_runner=DaskTaskRunner(address=client.scheduler.address),
+    #     log_prints=True,
+    #     persist_result=False,
+    # )(
+    #     calculator=calculator,
+    #     # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
+    # )
 
     # distribution_shifts.with_options(
     #     task_runner=DaskTaskRunner(address=client.scheduler.address),

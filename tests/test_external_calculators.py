@@ -5,25 +5,41 @@ import pytest
 from ase import Atoms
 from ase.calculators.calculator import PropertyNotImplementedError
 from httpx import HTTPStatusError
-from huggingface_hub.errors import GatedRepoError, LocalTokenNotFoundError
+from huggingface_hub.errors import GatedRepoError
 from requests import HTTPError
 
 from mlip_arena.models import MLIPEnum
 
 
-@pytest.mark.parametrize("model", MLIPEnum)
+model_params = []
+for model in MLIPEnum:
+    marks = []
+    if model.name == "SevenNet":
+        marks.append(pytest.mark.sevennet)
+    elif model.name == "NequIP-OAM-L":
+        marks.append(pytest.mark.nequip)
+    elif "MACE" in model.name:
+        marks.append(pytest.mark.mace)
+    elif model.value.get("family") in ("fairchem", "uma"):
+        marks.append(pytest.mark.fairchem)
+    elif model.value.get("family") == "orb":
+        marks.append(pytest.mark.orb)
+
+    if marks:
+        model_params.append(pytest.param(model, marks=marks, id=model.name))
+    else:
+        model_params.append(pytest.param(model, id=model.name))
+
+
+@pytest.mark.parametrize("model", model_params)
 def test_calculate(model: MLIPEnum):
     try:
         calc = MLIPEnum[model.name].load()
     except (
-        LocalTokenNotFoundError,
         GatedRepoError,
         HTTPError,
         HTTPStatusError,
         FileNotFoundError,
-        ImportError,
-        ModuleNotFoundError,
-        ValueError,
     ) as e:
         pytest.skip(str(e))
     except Exception as e:
@@ -35,9 +51,6 @@ def test_calculate(model: MLIPEnum):
             pytest.xfail("Cache sometimes fails")
         else:
             pytest.fail(f"Failed to initialize model {model.name}: {e}")
-
-    if model.name == "UMA-S-1P1":
-        pytest.skip("The model fails CI on CPU for RuntimeError: expected scalar type Double but found Float")
 
     atoms = Atoms(
         "OO",

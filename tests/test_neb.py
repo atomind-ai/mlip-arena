@@ -20,9 +20,10 @@ end = atoms.copy()
 
 
 @pytest.mark.skipif(
-    sys.version_info[:2] != (3, 11),
+    sys.version_info[:2] != (3, 12),
     reason="avoid prefect race condition on concurrent tasks",
 )
+@pytest.mark.mace
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 def test_neb(model: MLIPEnum):
     """Test NEB prefect workflow with a simple cubic lattice."""

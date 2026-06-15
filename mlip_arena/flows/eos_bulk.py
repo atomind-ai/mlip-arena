@@ -68,18 +68,19 @@ def calculate_metrics(res_eos: dict, b0: float, atoms: Atoms, model_name: str, s
     ),
     cache_policy=TASK_SOURCE + INPUTS,
 )
-def run(atoms: Atoms, model_name: str, model: str | BaseCalculator):
+def run(atoms: Atoms, model_name: str, calculator: str | BaseCalculator, calculator_kwargs: dict | None = None):
     """Run EOS bulk task for a single structure and model.
 
     Args:
         atoms (Atoms): ASE Atoms structure.
         model_name (str): Human-readable name of the model.
-        model (str | BaseCalculator): The model or ASE calculator.
+        calculator (str | BaseCalculator): The model or ASE calculator.
+        calculator_kwargs (dict | None, optional): Arguments for the ASE calculator.
 
     Returns:
         pd.DataFrame: A DataFrame containing the raw EOS results.
     """
-    calculator = model if isinstance(model, BaseCalculator) else get_calculator(model)
+    calculator = calculator if isinstance(calculator, BaseCalculator) else get_calculator(calculator, calculator_kwargs)
 
     result = OPT(
         atoms,
@@ -107,7 +108,8 @@ def run(atoms: Atoms, model_name: str, model: str | BaseCalculator):
 
 @flow
 def run_db(
-    model: str | BaseCalculator,
+    calculator: str | BaseCalculator,
+    calculator_kwargs: dict | None = None,
     run_dir: Path | None = None,
     dataset: str = "atomind/mlip-arena",
     dataset_file: str = "wbm_subset.db",
@@ -123,12 +125,12 @@ def run_db(
     Returns:
         pd.DataFrame: A DataFrame containing analyzed results for all structures in the database.
     """
-    if isinstance(model, BaseCalculator):
-        model_name = model.__class__.__name__
-    elif isinstance(model, str) and hasattr(MLIPEnum, model):
-        model_name = model
+    if isinstance(calculator, BaseCalculator):
+        model_name = calculator.__class__.__name__
+    elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
+        model_name = calculator
     else:
-        raise ValueError(f"Unsupported model: {model}")
+        raise ValueError(f"Unsupported model: {calculator}")
 
     out_dir = run_dir if run_dir is not None else Path.cwd() / "eos_bulk" / model_name
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -140,7 +142,7 @@ def run_db(
     with connect(db_path) as db:
         for row in db.select():
             atoms = row.toatoms(add_additional_information=True)
-            future = run.submit(atoms, model_name, model)
+            future = run.submit(atoms, model_name, calculator, calculator_kwargs)
             futures.append(future)
 
     results = [f.result(raise_on_failure=False) for f in futures]

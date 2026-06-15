@@ -5,7 +5,37 @@ from ase.calculators.singlepoint import SinglePointCalculator
 
 # TODO: consider using vesin
 from matscipy.neighbours import neighbour_list
-from torch_geometric.data import Data
+
+
+class Data:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
+
+    def detach(self):
+        for k, v in self.__dict__.items():
+            if isinstance(v, torch.Tensor):
+                self.__dict__[k] = v.detach()
+        return self
+
+    def cpu(self):
+        for k, v in self.__dict__.items():
+            if isinstance(v, torch.Tensor):
+                self.__dict__[k] = v.cpu()
+        return self
+
+    def to(self, device):
+        for k, v in self.__dict__.items():
+            if isinstance(v, torch.Tensor):
+                self.__dict__[k] = v.to(device)
+        return self
+
+    def __contains__(self, key):
+        return hasattr(self, key) and getattr(self, key) is not None
 
 
 def get_neighbor(atoms: Atoms, cutoff: float, self_interaction: bool = False):

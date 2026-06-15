@@ -10,7 +10,8 @@ from mlip_arena.tasks.utils import get_calculator
 atoms = bulk("Cu", "fcc", a=3.6)
 
 
-@pytest.mark.skipif(sys.version_info[:2] != (3, 11), reason="avoid prefect race condition on concurrent tasks")
+@pytest.mark.skipif(sys.version_info[:2] != (3, 12), reason="avoid prefect race condition on concurrent tasks")
+@pytest.mark.mace
 @pytest.mark.parametrize("model", [MLIPEnum["MACE-MP(M)"]])
 def test_nve(model: MLIPEnum):
     result = MD.fn(

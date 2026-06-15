@@ -1,10 +1,10 @@
-"""NequIP and Allegro model integrations."""
+import torch
 
-from __future__ import annotations
+torch.serialization.add_safe_globals([slice])
 
-from nequip.integrations.ase import NequIPCalculator
+from nequip.integrations.ase import NequIPCalculator  # noqa: E402
 
-from mlip_arena.models.utils import get_freer_device
+from mlip_arena.models.utils import get_freer_device  # noqa: E402
 
 
 class NequIP_OAM_L:

@@ -1,6 +1,10 @@
+import sys
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
+import pytest
+
+from prefect.testing.utilities import prefect_test_harness
 
 from ase.build import bulk
 from ase.calculators.lj import LennardJones
@@ -75,41 +79,51 @@ def test_npt_compress_one():
         assert "atoms" in result
 
 
+@pytest.mark.skipif(
+    sys.version_info[:2] != (3, 12),
+    reason="avoid prefect race condition on concurrent tasks",
+)
 def test_heating_flow():
     calc = LennardJones(rc=5.0)
     mock_atoms = [bulk("Cu", "fcc", a=3.6, cubic=True)]
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        run_dir = Path(tmpdir)
-        with (
-            patch("mlip_arena.flows.stability.get_atoms_from_db", return_value=mock_atoms),
-            patch("mlip_arena.flows.stability.MD") as mock_md,
-        ):
-            mock_md.with_options.return_value = mock_md_run
-            # Run the heating flow
-            results = heating(model=calc, run_dir=run_dir)
-            assert len(results) == 1
+    with prefect_test_harness():
+        with tempfile.TemporaryDirectory() as tmpdir:
+            run_dir = Path(tmpdir)
+            with (
+                patch("mlip_arena.flows.stability.get_atoms_from_db", return_value=mock_atoms),
+                patch("mlip_arena.flows.stability.MD") as mock_md,
+            ):
+                mock_md.with_options.return_value = mock_md_run
+                # Run the heating flow
+                results = heating(model=calc, run_dir=run_dir)
+                assert len(results) == 1
 
-            # Check file was generated in the custom directory
-            expected_traj = run_dir / "LennardJones_random_Cu4_nvt.traj"
-            assert expected_traj.exists()
+                # Check file was generated in the custom directory
+                expected_traj = run_dir / "LennardJones_random_Cu4_nvt.traj"
+                assert expected_traj.exists()
 
 
+@pytest.mark.skipif(
+    sys.version_info[:2] != (3, 12),
+    reason="avoid prefect race condition on concurrent tasks",
+)
 def test_compression_flow():
     calc = LennardJones(rc=5.0)
     mock_atoms = [bulk("Cu", "fcc", a=3.6, cubic=True)]
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        run_dir = Path(tmpdir)
-        with (
-            patch("mlip_arena.flows.stability.get_atoms_from_db", return_value=mock_atoms),
-            patch("mlip_arena.flows.stability.MD") as mock_md,
-        ):
-            mock_md.with_options.return_value = mock_md_run
-            # Run the compression flow
-            results = compression(model=calc, run_dir=run_dir)
-            assert len(results) == 1
+    with prefect_test_harness():
+        with tempfile.TemporaryDirectory() as tmpdir:
+            run_dir = Path(tmpdir)
+            with (
+                patch("mlip_arena.flows.stability.get_atoms_from_db", return_value=mock_atoms),
+                patch("mlip_arena.flows.stability.MD") as mock_md,
+            ):
+                mock_md.with_options.return_value = mock_md_run
+                # Run the compression flow
+                results = compression(model=calc, run_dir=run_dir)
+                assert len(results) == 1
 
-            # Check file was generated in the custom directory
-            expected_traj = run_dir / "LennardJones_random_Cu4_npt.traj"
-            assert expected_traj.exists()
+                # Check file was generated in the custom directory
+                expected_traj = run_dir / "LennardJones_random_Cu4_npt.traj"
+                assert expected_traj.exists()

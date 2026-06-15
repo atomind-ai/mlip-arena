@@ -6,9 +6,14 @@ import streamlit as st
 
 from mlip_arena.models import REGISTRY as MODELS
 
-valid_models = [model for model, metadata in MODELS.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
-
 DATA_DIR = Path("benchmarks/diatomics")
+
+valid_models = [
+    model
+    for model, metadata in MODELS.items()
+    if Path(__file__).stem in metadata.get("gpu-tasks", [])
+    and (DATA_DIR / metadata.get("family") / f"{model}.json").exists()
+]
 
 
 @st.cache_data

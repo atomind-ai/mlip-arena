@@ -8,7 +8,12 @@ from mlip_arena.models import REGISTRY as MODELS
 
 DATA_DIR = Path(__file__).parents[2] / "benchmarks" / "combustion"
 
-valid_models = [model for model, metadata in MODELS.items() if Path(__file__).stem in metadata.get("gpu-tasks", [])]
+valid_models = [
+    model
+    for model, metadata in MODELS.items()
+    if Path(__file__).stem in metadata.get("gpu-tasks", [])
+    and (DATA_DIR / metadata.get("family").lower() / f"{model}_H256O128.json").exists()
+]
 
 
 @st.cache_data
