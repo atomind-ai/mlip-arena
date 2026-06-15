@@ -1,17 +1,12 @@
 import os
-import pytest
+import tempfile
 
+# Set PREFECT_HOME and SQLite DB URL at top-level of conftest.py
+# pytest loads conftest.py before importing any test modules.
+# This ensures Prefect reads the isolated env vars upon initial import.
+worker_id = os.environ.get("PYTEST_XDIST_WORKER", "master")
+temp_dir = os.path.join(tempfile.gettempdir(), f"prefect_home_{worker_id}")
+os.makedirs(temp_dir, exist_ok=True)
 
-@pytest.fixture(scope="session", autouse=True)
-def isolate_prefect_home(tmp_path_factory, worker_id):
-    """Isolate PREFECT_HOME for each test runner worker to prevent SQLite database lock conflicts / race conditions."""
-    if worker_id == "master":
-        # Single process run
-        temp_dir = tmp_path_factory.mktemp("prefect_home")
-    else:
-        # Multi-process run under pytest-xdist
-        temp_dir = tmp_path_factory.mktemp(f"prefect_home_{worker_id}")
-
-    os.environ["PREFECT_HOME"] = str(temp_dir)
-    # Also isolate the Prefect API URL and ensure it uses an in-memory database or isolated database
-    os.environ["PREFECT_API_DATABASE_CONNECTION_URL"] = f"sqlite+aiosqlite:///{temp_dir}/prefect.db"
+os.environ["PREFECT_HOME"] = temp_dir
+os.environ["PREFECT_API_DATABASE_CONNECTION_URL"] = f"sqlite+aiosqlite:///{temp_dir}/prefect.db"
