@@ -12,7 +12,6 @@ from prefect.runtime import task_run
 from prefect_dask import DaskTaskRunner
 
 from mlip_arena.models import REGISTRY, MLIPEnum
-from mlip_arena.tasks.utils import get_calculator
 
 
 @task
@@ -64,13 +63,11 @@ def eos_bulk(atoms: Atoms, model: MLIPEnum):
     from mlip_arena.tasks.eos import run as EOS
     from mlip_arena.tasks.optimize import run as OPT
 
-    calculator = get_calculator(model)  # avoid sending entire model over prefect and select freer GPU
-
     result = OPT.with_options(
         refresh_cache=True,
     )(
-        atoms,
-        calculator,
+        atoms=atoms,
+        calculator=model,
         optimizer="FIRE",
         criterion=dict(
             fmax=0.1,
@@ -78,12 +75,14 @@ def eos_bulk(atoms: Atoms, model: MLIPEnum):
     )
     result = EOS.with_options(
         refresh_cache=True,
-        # on_completion=[functools.partial(
-        #     save_result,
-        #     model_name=model.name,
-        #     id=atoms.info["key_value_pairs"]["wbm_id"],
-        # )],
-    )(atoms=result["atoms"], calculator=calculator, optimizer="FIRE", npoints=21, max_abs_strain=0.2, concurrent=False)
+    )(
+        atoms=result["atoms"],
+        calculator=model,
+        optimizer="FIRE",
+        npoints=21,
+        max_abs_strain=0.2,
+        concurrent=False,
+    )
 
     result["method"] = model.name
     result["id"] = atoms.info["key_value_pairs"]["wbm_id"]

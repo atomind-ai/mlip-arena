@@ -23,11 +23,6 @@ def asymptotic_behaviors(calculator: str | BaseCalculator, calculator_kwargs: di
 
     model_name = get_model_name(calculator)
 
-    from mlip_arena.tasks.utils import get_calculator
-
-    # Use string directly for registered models to avoid client-side unpickleable PyTorch objects
-    model = calculator if isinstance(calculator, str) else get_calculator(calculator, calculator_kwargs)
-
     # 1. Diatomics
     print(f"Starting homonuclear diatomics benchmark for {model_name}...")
     from mlip_arena.models import REGISTRY, MLIPEnum
@@ -41,21 +36,21 @@ def asymptotic_behaviors(calculator: str | BaseCalculator, calculator_kwargs: di
     family = family.lower()
     out_dir_diatomics = Path(__file__).parent / "diatomics" / family / model_name
     homonuclear_diatomics.with_options(name=f"diatomics-{model_name}", task_runner=parent_task_runner)(
-        calculator=model, calculator_kwargs=calculator_kwargs, run_dir=out_dir_diatomics
+        calculator=calculator, calculator_kwargs=calculator_kwargs, run_dir=out_dir_diatomics
     )
 
     # 2. EOS Bulk
     print(f"Starting EOS bulk benchmark for {model_name}...")
     out_dir_eos = Path(__file__).parent / "eos_bulk"
     EOSFlow.with_options(name=f"eos_bulk-{model_name}", task_runner=parent_task_runner)(
-        calculator=model, calculator_kwargs=calculator_kwargs, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
+        calculator=calculator, calculator_kwargs=calculator_kwargs, run_dir=out_dir_eos, dataset_file="wbm_subset.db"
     )
 
     # 3. E-V
     print(f"Starting E-V scan benchmark for {model_name}...")
     out_dir_ev = Path(__file__).parent / "ev"
     EVFlow.with_options(name=f"ev-{model_name}", task_runner=parent_task_runner)(
-        calculator=model, calculator_kwargs=calculator_kwargs, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
+        calculator=calculator, calculator_kwargs=calculator_kwargs, run_dir=out_dir_ev, dataset_file="wbm_subset.db"
     )
 
 
@@ -102,12 +97,12 @@ def stability(calculator: str | BaseCalculator, calculator_kwargs: dict | None =
     heating.with_options(
         name=f"stability-heating-{model_name}",
         task_runner=parent_task_runner,
-    )(calculator, run_dir_stability)
+    )(calculator=calculator, calculator_kwargs=calculator_kwargs, run_dir=run_dir_stability)
 
     compression.with_options(
         name=f"stability-compression-{model_name}",
         task_runner=parent_task_runner,
-    )(calculator, run_dir_stability)
+    )(calculator=calculator, calculator_kwargs=calculator_kwargs, run_dir=run_dir_stability)
 
     # 3. Analysis / gather results
     print(f"Analyzing stability results for {model_name}...")

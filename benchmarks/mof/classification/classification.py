@@ -15,7 +15,6 @@ from tqdm.auto import tqdm
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.mof.flow import widom_insertion
-from mlip_arena.tasks.utils import get_calculator
 
 
 def load_row_from_df(fpath: str):
@@ -102,7 +101,8 @@ def run_one(model, row, gas):
     )(
         structure=row["structure"],
         gas=gas,
-        calculator=get_calculator(model, dispersion=True),
+        calculator=model.name,
+        dispersion=True,
         criterion=dict(fmax=0.05, steps=50),
         init_structure_optimize_loops=10,
     )

@@ -41,7 +41,7 @@ def calculate_vacancy_migration(
 ):
     eos = EOS.with_options(refresh_cache=True, persist_result=True)(
         atoms=pristine,
-        calculator_name=calculator_name,
+        calculator=calculator_name,
         optimizer=optimizer,
         criterion=criterion,
         concurrent=False,
@@ -64,10 +64,10 @@ def calculate_vacancy_migration(
     end = atoms.copy()
 
     neb = NEB.with_options(refresh_cache=True, persist_result=True)(
-        start,
-        end,
+        start=start,
+        end=end,
         n_images=7,
-        calculator_name=calculator_name,
+        calculator=calculator_name,
         optimizer=optimizer,
         criterion=criterion,
         relax_end_points=True,
