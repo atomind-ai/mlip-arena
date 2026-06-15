@@ -23,7 +23,9 @@ from mlip_arena.tasks.utils import get_calculator
         f"{task_run.task_name}: {task_run.parameters['symbol']} - {task_run.parameters.get('calculator', 'Unknown')}"
     ),
 )
-def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculator, out_dir: Path):
+def homonuclear_diatomic(
+    symbol: str, calculator: str | MLIPEnum | BaseCalculator, calculator_kwargs: dict | None, out_dir: Path
+):
     """Calculate the potential energy curve for single homonuclear diatomic
     molecule.
 
@@ -86,7 +88,7 @@ def homonuclear_diatomic(symbol: str, calculator: str | MLIPEnum | BaseCalculato
             pbc=False,
         )
 
-    atoms.calc = get_calculator(calculator)
+    atoms.calc = get_calculator(calculator=calculator, calculator_kwargs=calculator_kwargs)
 
     for i, r in enumerate(tqdm(rs)):
         if i < skip:
@@ -254,23 +256,25 @@ def analyze(out_dir: Path):
 
 
 @flow
-def homonuclear_diatomics(model: BaseCalculator | str, run_dir: Path | None = None):
+def homonuclear_diatomics(
+    calculator: BaseCalculator | str, calculator_kwargs: dict | None, run_dir: Path | None = None
+):
     """Run homonuclear diatomic calculations for all elements using a specific
     model.
 
     Args:
-        model (BaseCalculator | str): The model or ASE calculator to use.
+        calculator (BaseCalculator | str): The model or ASE calculator to use.
         run_dir (Path, optional): Directory to save outputs. Defaults to None.
 
     Returns:
         list: List of results from the distributed homonuclear_diatomic tasks.
     """
-    if isinstance(model, BaseCalculator):
-        model_name = model.__class__.__name__
-    elif isinstance(model, str) and hasattr(MLIPEnum, model):
-        model_name = model
+    if isinstance(calculator, BaseCalculator):
+        model_name = calculator.__class__.__name__
+    elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
+        model_name = calculator
     else:
-        raise ValueError(f"Unsupported model: {model}")
+        raise ValueError(f"Unsupported model: {calculator}")
 
     family = REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
 
@@ -280,7 +284,8 @@ def homonuclear_diatomics(model: BaseCalculator | str, run_dir: Path | None = No
     for symbol in chemical_symbols[1:]:
         future = homonuclear_diatomic.submit(
             symbol,
-            model,
+            calculator,
+            calculator_kwargs=calculator_kwargs,
             out_dir=out_dir,
         )
         futures.append(future)

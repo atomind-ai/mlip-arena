@@ -10,7 +10,7 @@ authors=[
 ]
 description="Fair and transparent benchmark of machine learning interatomic potentials (MLIPs), beyond error-based regression metrics"
 readme=".github/README.md"
-requires-python=">=3.10"
+requires-python=">=3.11"
 keywords=[
     "pytorch",
     "machine-learning-interatomic-potentials",
@@ -21,9 +21,9 @@ keywords=[
 classifiers=[
     "Development Status :: 1 - Planning",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies=[
@@ -34,10 +34,13 @@ dependencies=[
     "huggingface_hub[cli]>=1.10.0,<1.18.0",
     "datasets",
     "safetensors",
-    "prefect[dask]>=3.6.26,<3.7.0",
+    "prefect[dask]>=3.6.26",
+    "fastapi<=0.136.3",
     "dask",
     "dask_jobqueue",
     "tables",
+    "matscipy",
+    "torch_dftd>=0.4.0",
 ]
 
 [project.optional-dependencies]
@@ -50,21 +53,20 @@ app = [
     "plotly",
 ]
 test = [
-    "torch==2.6.0",
-    "torch_dftd>=0.4.0",
-    "e3nn>=0.5.6",
-    "dgl",
-    "chgnet>=0.3.8",
-    "sevenn>=0.9.3.post1",
-    "alignn>=2024.5.27",
-    "mattersim>=1.1.2",
-    "torchani>=2.2.4",
-    "nequip==0.16.0",
     "pytest",
     "pytest-cov",
     "pytest-xdist",
-    "pymatgen>=2025.1.9",
     "streamlit>=1.55.0",
+    "pymatgen>=2025.1.9",
+]
+all = [
+    "e3nn>=0.5.6",
+    "dgl",
+    "chgnet>=0.3.8",
+    "alignn>=2024.5.27",
+    "mattersim>=1.1.2",
+    "torchani>=2.7.0",
+    "upet>=0.2.2",
 ]
 mace = [
     "mace-torch>=0.3.12",
@@ -73,25 +75,41 @@ matgl = [
     "matgl>=1.2.6",
 ]
 fairchem = [
-    "fairchem-core>=2.13.0",
+    "fairchem-core>=2.21.0",
 ]
 orb = [
-    "orb-models>=0.4.0,<0.6.0",
+    "orb-models==0.5.5",
 ]
 deepmd = [
     "torch>=2.2.0",
     "deepmd-kit"
 ]
+nequip = [
+    "nequip>=0.16.0",
+]
+sevennet = [
+    "sevenn>=0.9.3.post1",
+]
 extra = [
     "MDAnalysis",
     "quests",
-    "ipykernel",
-    "ipywidgets",
+    #"ipykernel",
+    #"ipywidgets",
 ]
+
 
 [project.urls]
 Homepage = "https://github.com/atomind-ai/mlip-arena"
 Issues = "https://github.com/atomind-ai/mlip-arena/issues"
+
+[tool.pytest.ini_options]
+markers = [
+    "nequip: tests for NequIP models requiring specific e3nn versions",
+    "sevennet: tests for SevenNet models requiring e3nn >= 0.5.0",
+    "mace: tests for MACE models",
+    "fairchem: tests for fairchem models",
+    "orb: tests for ORB models",
+]
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
