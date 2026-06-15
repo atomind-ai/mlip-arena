@@ -23,4 +23,8 @@ def test_nve(model: MLIPEnum):
         dynamics_kwargs={},
     )
 
-    assert isinstance(result["atoms"].get_potential_energy(), float)
+    res_atoms = result["atoms"]
+    from mlip_arena.tasks.utils import get_calculator
+
+    res_atoms.calc = get_calculator(model.name)
+    assert isinstance(res_atoms.get_potential_energy(), float)

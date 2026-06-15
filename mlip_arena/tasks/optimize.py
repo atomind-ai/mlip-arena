@@ -131,9 +131,8 @@ def run(
         logger.info(f"Using optimizer: {optimizer_instance}")
         logger.info(pformat(optimizer_kwargs))
         logger.info(f"Criterion: {pformat(criterion)}")
-        converged = optimizer_instance.run(**criterion)
 
-    atoms.calc = None
+        converged = optimizer_instance.run(**criterion)
     return {
         "atoms": atoms,
         "steps": optimizer_instance.nsteps,

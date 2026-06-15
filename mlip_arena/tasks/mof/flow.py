@@ -333,11 +333,6 @@ def widom_insertion(
         results["henry_coefficient"].append(kh)
         results["averaged_interaction_energy"].append(u)
         results["heat_of_adsorption"].append(qst)
-
-    # Clear calculators on persistent Atoms objects
-    structure.calc = None
-    gas.calc = None
-
     return results
 
 

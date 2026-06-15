@@ -161,10 +161,6 @@ def run(
 
     neb_tool = NEBTools(neb.images)
 
-    # Clear calculator before returning to avoid serialization errors with unpickleable calculators
-    for img in neb.images:
-        img.calc = None
-
     return {
         "barrier": neb_tool.get_barrier(),
         "images": neb.images,

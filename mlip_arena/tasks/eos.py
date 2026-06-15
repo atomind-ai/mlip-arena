@@ -171,8 +171,6 @@ def run(
 
     bm = BirchMurnaghan(volumes=volumes, energies=energies)
     bm.fit()
-
-    relaxed.calc = None
     return {
         "atoms": relaxed,
         "eos": {"volumes": volumes, "energies": energies},
