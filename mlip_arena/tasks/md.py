@@ -81,7 +81,8 @@ from scipy.interpolate import interp1d
 from scipy.linalg import schur
 from tqdm.auto import tqdm
 
-from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY
+from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, get_calculator, resolve_calculator_name
 
 _valid_dynamics: dict[str, tuple[str, ...]] = {
     "nve": ("velocityverlet",),
@@ -183,9 +184,9 @@ def _generate_task_run_name():
     parameters = task_run.parameters
 
     atoms = parameters["atoms"]
-    calculator = parameters["calculator"]
+    calculator_name = resolve_calculator_name(parameters.get("calculator"))
 
-    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator}"
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
 
 @task(
@@ -195,7 +196,10 @@ def _generate_task_run_name():
 )
 def run(
     atoms: Atoms,
-    calculator: BaseCalculator,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     ensemble: Literal["nve", "nvt", "npt"] = "nvt",
     dynamics: str | MolecularDynamics = "langevin",
     time_step: float | None = None,  # fs
@@ -214,7 +218,10 @@ def run(
 
     Parameters:
         atoms (Atoms): The atomic structure to simulate.
-        calculator (BaseCalculator): The calculator to use for energy and force calculations.
+        calculator (str | MLIPEnum | BaseCalculator, optional): The calculator or model name/enum.
+        calculator_kwargs (dict, optional): Additional kwargs to pass to the calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         ensemble (Literal["nve", "nvt", "npt"], optional): The MD ensemble to use. Defaults to "nvt".
         dynamics (str | MolecularDynamics, optional): The dynamics method to use. Defaults to "langevin".
         time_step (float | None, optional): The time step for the simulation in femtoseconds.
@@ -247,8 +254,8 @@ def run(
         - Temperature and pressure schedules can be specified as sequences or arrays for time-dependent control.
     """
     atoms = atoms.copy()
-
-    atoms.calc = calculator
+    calculator_obj = get_calculator(calculator, calculator_kwargs, dispersion, dispersion_kwargs)
+    atoms.calc = calculator_obj
 
     if time_step is None:
         # If a structure contains an isotope of hydrogen, set default `time_step`
@@ -389,6 +396,7 @@ def run(
             traj.write(atoms)
         traj.close()
 
+    atoms.calc = None
     return {
         "atoms": atoms,
         "runtime": end_time - start_time,

@@ -28,7 +28,7 @@ from tqdm.auto import tqdm
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import get_calculator, logger
+from mlip_arena.tasks.utils import get_calculator, logger, resolve_calculator_name
 
 from .grid import get_accessible_positions
 from .input import get_atoms_from_db
@@ -98,9 +98,9 @@ def _generate_task_run_name():
 
     structure = parameters["structure"]
     gas = parameters["gas"]
-    calculator = parameters["calculator"]
+    calculator_name = resolve_calculator_name(parameters.get("calculator"))
 
-    return f"{task_name}: {structure.get_chemical_formula()} + {gas.get_chemical_formula()} - {calculator}"
+    return f"{task_name}: {structure.get_chemical_formula()} + {gas.get_chemical_formula()} - {calculator_name}"
 
 
 @task(
@@ -109,10 +109,12 @@ def _generate_task_run_name():
     cache_policy=TASK_SOURCE + INPUTS,
 )
 def widom_insertion(
-    # init
     structure: Atoms,
     gas: Atoms,
-    calculator: BaseCalculator,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     optimizer: Optimizer | str = "FIRE",
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = "FrechetCell",
@@ -162,6 +164,9 @@ def widom_insertion(
         state = OPT(
             atoms=structure,
             calculator=calculator,
+            calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             filter=filter,
@@ -182,6 +187,9 @@ def widom_insertion(
         state = OPT(
             atoms=structure,
             calculator=calculator,
+            calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             filter=None,
@@ -205,6 +213,9 @@ def widom_insertion(
         state = OPT(
             atoms=gas,
             calculator=calculator,
+            calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             filter=None,
@@ -230,7 +241,7 @@ def widom_insertion(
 
     logger.info(f"Number of accessible positions: {len(idx_accessible_pos)} out of total {len(pos_grid)}")
 
-    calc = calculator
+    calc = get_calculator(calculator, calculator_kwargs, dispersion, dispersion_kwargs)
     # Calculate energies for structure and gas
     energy_structure = calc.get_potential_energy(structure)
     energy_gas = calc.get_potential_energy(gas)
@@ -292,6 +303,9 @@ def widom_insertion(
             if isinstance(traj, TrajectoryWriter):
                 traj.write(structure_with_gas)
 
+            # Clear calc for structure_with_gas to avoid memory leaks or reference issues
+            structure_with_gas.calc = None
+
         pbar.close()
 
         assert nsteps == num_insertions, "Cannot reach the number of insertions due to too many invalid steps."
@@ -320,6 +334,10 @@ def widom_insertion(
         results["averaged_interaction_energy"].append(u)
         results["heat_of_adsorption"].append(qst)
 
+    # Clear calculators on persistent Atoms objects
+    structure.calc = None
+    gas.calc = None
+
     return results
 
 
@@ -342,13 +360,11 @@ def run(
             state = widom_insertion.submit(
                 atoms,
                 molecule("CO2"),
-                calculator=get_calculator(
-                    model,
-                    dispersion=True,
-                ),
+                calculator=model,
+                dispersion=True,
                 return_state=True,
             )
             states.append(state)
 
     wait(states)
-    return [s.result(raise_on_failture=False) for s in states if s.is_completed()]
+    return [s.result(raise_on_failure=False) for s in states if s.is_completed()]
