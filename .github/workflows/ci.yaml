@@ -53,13 +53,6 @@ jobs:
         fetch-depth: 0
         lfs: true
 
-    - name: Free Disk Space
-      run: |
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /usr/local/lib/android
-        sudo rm -rf /opt/ghc
-
-
     - name: Install uv
       uses: astral-sh/setup-uv@v6
       with:
@@ -94,7 +87,7 @@ jobs:
         else
           MARKER="${{ matrix.test-group }}"
         fi
-        pytest -vra -m "$MARKER" --dist=loadscope --cov=mlip_arena --cov-report=xml tests || {
+        pytest -vra -n 5 -m "$MARKER" --dist=loadscope --cov=mlip_arena --cov-report=xml tests || {
           status=$?
           if [ $status -eq 5 ]; then
             echo "No tests were collected or executed for group: ${{ matrix.test-group }}. Exiting gracefully."
