@@ -20,7 +20,7 @@ for model in MLIPEnum:
         marks.append(pytest.mark.nequip)
     elif "MACE" in model.name:
         marks.append(pytest.mark.mace)
-    elif model.value.get("family") == "fairchem":
+    elif model.value.get("family") in ("fairchem", "uma"):
         marks.append(pytest.mark.fairchem)
     elif model.value.get("family") == "orb":
         marks.append(pytest.mark.orb)
