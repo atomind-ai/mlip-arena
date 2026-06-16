@@ -18,7 +18,7 @@ from tqdm.auto import tqdm
 
 from mlip_arena.models import MLIPEnum, REGISTRY
 from mlip_arena.tasks import MD
-from mlip_arena.tasks.utils import get_calculator
+from mlip_arena.tasks.utils import resolve_calculator_name
 
 if TYPE_CHECKING:
     pass
@@ -28,28 +28,24 @@ load_dotenv()
 HF_TOKEN = os.environ.get("HF_TOKEN", None)
 
 
-def resolve_model_name(model: MLIPEnum | BaseCalculator | str) -> str:
-    """Resolve a string model name from MLIPEnum, BaseCalculator, or string."""
-    if isinstance(model, str):
-        return model
-    if isinstance(model, MLIPEnum):
-        return model.name
-    if isinstance(model, type):
-        return model.__name__
-    if hasattr(model, "__class__"):
-        return model.__class__.__name__
-    return str(model)
-
-
 @task(cache_policy=TASK_SOURCE + INPUTS)
-def nvt_heat_one(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, run_dir: Path):
+def nvt_heat_one(
+    atoms: Atoms,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
+    run_dir: Path | None = None,
+):
     """Run a 10 ps NVT MD simulation with linear heating schedule."""
-    calculator = get_calculator(model)
-    model_name = resolve_model_name(model)
+    model_name = resolve_calculator_name(calculator)
 
     return MD.with_options(refresh_cache=True)(
         atoms=atoms,
         calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
         ensemble="nvt",
         dynamics="nose-hoover",
         time_step=None,
@@ -66,14 +62,23 @@ def nvt_heat_one(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, run_dir: 
 
 
 @task(cache_policy=TASK_SOURCE + INPUTS)
-def npt_compress_one(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, run_dir: Path):
+def npt_compress_one(
+    atoms: Atoms,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
+    run_dir: Path | None = None,
+):
     """Run a 10 ps NPT MD simulation with linear pressure ramp."""
-    calculator = get_calculator(model)
-    model_name = resolve_model_name(model)
+    model_name = resolve_calculator_name(calculator)
 
     return MD.with_options(timeout_seconds=600, retries=2, refresh_cache=True)(
         atoms=atoms,
         calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
         ensemble="npt",
         dynamics="nose-hoover",
         time_step=None,
@@ -89,12 +94,15 @@ def npt_compress_one(atoms: Atoms, model: MLIPEnum | BaseCalculator | str, run_d
 
 @flow
 def heating(
-    model: MLIPEnum | BaseCalculator | str,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     run_dir: Path | None = None,
     hf_token: str | None = HF_TOKEN,
 ):
     """Prefect flow to run NVT heating tasks for many database structures."""
-    model_name = resolve_model_name(model)
+    model_name = resolve_calculator_name(calculator)
 
     family = REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
     out_dir = run_dir if run_dir is not None else Path.cwd() / "stability" / family
@@ -107,7 +115,14 @@ def heating(
             break
         future = nvt_heat_one.with_options(
             timeout_seconds=600, retries=2, persist_result=False, refresh_cache=True
-        ).submit(atoms.copy(), model, out_dir)
+        ).submit(
+            atoms=atoms.copy(),
+            calculator=calculator,
+            calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
+            run_dir=out_dir,
+        )
         futures.append(future)
 
     wait(futures)
@@ -117,12 +132,15 @@ def heating(
 
 @flow
 def compression(
-    model: MLIPEnum | BaseCalculator | str,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     run_dir: Path | None = None,
     hf_token: str | None = HF_TOKEN,
 ):
     """Prefect flow to run NPT compression tasks for many database structures."""
-    model_name = resolve_model_name(model)
+    model_name = resolve_calculator_name(calculator)
 
     family = REGISTRY[model_name]["family"] if hasattr(MLIPEnum, model_name) else "custom"
     out_dir = run_dir if run_dir is not None else Path.cwd() / "stability" / family
@@ -135,7 +153,14 @@ def compression(
             break
         future = npt_compress_one.with_options(
             timeout_seconds=600, retries=2, persist_result=False, refresh_cache=True
-        ).submit(atoms.copy(), model, out_dir)
+        ).submit(
+            atoms=atoms.copy(),
+            calculator=calculator,
+            calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
+            run_dir=out_dir,
+        )
         futures.append(future)
 
     wait(futures)

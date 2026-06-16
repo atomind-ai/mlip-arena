@@ -64,7 +64,8 @@ from prefect.states import State
 from pymatgen.io.ase import AseAtomsAdaptor
 
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, logger, pformat
+from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, logger, pformat, get_calculator, resolve_calculator_name
 
 _valid_optimizers: dict[str, Optimizer] = {
     "MDMin": MDMin,
@@ -92,7 +93,7 @@ def _generate_task_run_name():
     else:
         raise ValueError("No images or start atoms found in parameters")
 
-    calculator_name = parameters["calculator"]
+    calculator_name = resolve_calculator_name(parameters.get("calculator"))
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
@@ -104,7 +105,10 @@ def _generate_task_run_name():
 )
 def run(
     images: list[Atoms],
-    calculator: BaseCalculator,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     optimizer: Optimizer | str = "MDMin",  # type: ignore
     optimizer_kwargs: dict | None = None,
     criterion: dict | None = None,
@@ -116,7 +120,10 @@ def run(
 
     Args:
         images (list[Atoms]): List of ASE Atoms objects representing the initial images.
-        calculator (BaseCalculator): The ASE calculator to use for energy and forces.
+        calculator (str | MLIPEnum | BaseCalculator, optional): The ASE calculator or model name/enum.
+        calculator_kwargs (dict, optional): Additional kwargs to pass to the calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         optimizer (Optimizer | str, optional): The optimizer to use for NEB relaxation. Defaults to "MDMin".
         optimizer_kwargs (dict, optional): Additional kwargs to pass to the optimizer. Defaults to None.
         criterion (dict, optional): The convergence criterion for the optimizer. Defaults to None.
@@ -128,10 +135,11 @@ def run(
         dict[str, Any] | State: A dictionary containing 'barrier', 'images', and 'forcefit' if successful.
     """
     images = [image.copy() for image in images]
+    calculator_obj = get_calculator(calculator, calculator_kwargs, dispersion, dispersion_kwargs)
 
     for image in images:
         assert isinstance(image, Atoms)
-        image.calc = calculator
+        image.calc = calculator_obj
 
     neb = NEB(images, climb=climb, allow_shared_calculator=True)
 
@@ -169,7 +177,10 @@ def run_from_endpoints(
     start: Atoms,
     end: Atoms,
     n_images: int,
-    calculator: BaseCalculator,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     optimizer: Optimizer | str = "BFGS",  # type: ignore
     optimizer_kwargs: dict | None = None,
     criterion: dict | None = None,
@@ -185,7 +196,10 @@ def run_from_endpoints(
         start (Atoms): The starting ASE Atoms structure.
         end (Atoms): The ending ASE Atoms structure.
         n_images (int): The number of images to interpolate between endpoints.
-        calculator (BaseCalculator): The ASE calculator to use.
+        calculator (str | MLIPEnum | BaseCalculator, optional): The ASE calculator or model name/enum.
+        calculator_kwargs (dict, optional): Additional kwargs to pass to the calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         optimizer (Optimizer | str, optional): The optimizer to use. Defaults to "BFGS".
         optimizer_kwargs (dict, optional): Additional kwargs for the optimizer. Defaults to None.
         criterion (dict, optional): The convergence criterion. Defaults to None.
@@ -204,6 +218,9 @@ def run_from_endpoints(
         )(
             atoms=start.copy(),
             calculator=calculator,
+            calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             criterion=criterion,
@@ -215,6 +232,9 @@ def run_from_endpoints(
         )(
             atoms=end.copy(),
             calculator=calculator,
+            calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
             optimizer=optimizer,
             optimizer_kwargs=optimizer_kwargs,
             criterion=criterion,
@@ -240,6 +260,9 @@ def run_from_endpoints(
     )(
         images,
         calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
         optimizer=optimizer,
         optimizer_kwargs=optimizer_kwargs,
         criterion=criterion,

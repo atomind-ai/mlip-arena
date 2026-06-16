@@ -14,8 +14,8 @@ from mlip_arena.flows.stability import (
     heating,
     npt_compress_one,
     nvt_heat_one,
-    resolve_model_name,
 )
+from mlip_arena.tasks.utils import resolve_calculator_name
 from mlip_arena.models import MLIPEnum
 
 
@@ -30,19 +30,19 @@ def mock_md_run(*args, **kwargs):
     return {"atoms": atoms, "runtime": 0.0, "n_steps": 0}
 
 
-def test_resolve_model_name():
+def test_resolve_calculator_name():
     # Test string input
-    assert resolve_model_name("custom-model") == "custom-model"
+    assert resolve_calculator_name("custom-model") == "custom-model"
 
     # Test MLIPEnum member input
-    assert resolve_model_name(MLIPEnum["MACE-MP(M)"]) == "MACE-MP(M)"
+    assert resolve_calculator_name(MLIPEnum["MACE-MP(M)"]) == "MACE-MP(M)"
 
     # Test class input
-    assert resolve_model_name(LennardJones) == "LennardJones"
+    assert resolve_calculator_name(LennardJones) == "LennardJones"
 
     # Test instance input
     calc = LennardJones(rc=1.0)
-    assert resolve_model_name(calc) == "LennardJones"
+    assert resolve_calculator_name(calc) == "LennardJones"
 
 
 def test_nvt_heat_one():
@@ -54,7 +54,7 @@ def test_nvt_heat_one():
         with patch("mlip_arena.flows.stability.MD") as mock_md:
             mock_md.with_options.return_value = mock_md_run
             # Use .fn to bypass Prefect tasks runner locally
-            result = nvt_heat_one.fn(atoms, calc, run_dir)
+            result = nvt_heat_one.fn(atoms=atoms, calculator=calc, run_dir=run_dir)
 
         # Verify the trajectory file was created
         expected_traj = run_dir / "LennardJones_random_Cu4_nvt.traj"
@@ -71,7 +71,7 @@ def test_npt_compress_one():
         with patch("mlip_arena.flows.stability.MD") as mock_md:
             mock_md.with_options.return_value = mock_md_run
             # Use .fn to bypass Prefect tasks runner locally
-            result = npt_compress_one.fn(atoms, calc, run_dir)
+            result = npt_compress_one.fn(atoms=atoms, calculator=calc, run_dir=run_dir)
 
         # Verify the trajectory file was created
         expected_traj = run_dir / "LennardJones_random_Cu4_npt.traj"
@@ -96,7 +96,7 @@ def test_heating_flow():
             ):
                 mock_md.with_options.return_value = mock_md_run
                 # Run the heating flow
-                results = heating(model=calc, run_dir=run_dir)
+                results = heating(calculator=calc, run_dir=run_dir)
                 assert len(results) == 1
 
                 # Check file was generated in the custom directory
@@ -121,7 +121,7 @@ def test_compression_flow():
             ):
                 mock_md.with_options.return_value = mock_md_run
                 # Run the compression flow
-                results = compression(model=calc, run_dir=run_dir)
+                results = compression(calculator=calc, run_dir=run_dir)
                 assert len(results) == 1
 
                 # Check file was generated in the custom directory

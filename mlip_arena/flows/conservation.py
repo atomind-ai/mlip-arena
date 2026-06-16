@@ -19,7 +19,7 @@ from prefect.runtime import flow_run, task_run
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.md import run as MD
-from mlip_arena.tasks.utils import BaseCalculator, get_calculator, logger
+from mlip_arena.tasks.utils import BaseCalculator, logger, resolve_calculator_name
 
 try:
     from quests.descriptor import get_descriptors
@@ -139,21 +139,35 @@ def get_trajectory_entropy(
     return delta_entropy(descriptors, ref_descriptors, h=h), structures
 
 
+def _generate_task_run_name():
+    task_name = task_run.task_name
+    parameters = task_run.parameters
+    atoms = parameters["atoms"]
+    calculator_name = resolve_calculator_name(parameters.get("calculator"))
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+
+
 @task(
-    task_run_name=lambda: (
-        f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['calculator']}"
-    ),
+    name="NVE MD",
+    task_run_name=_generate_task_run_name,
     cache_policy=TASK_SOURCE + INPUTS,
 )
 def run_nve_md(
-    atoms: Atoms, calculator: MLIPEnum | BaseCalculator | str, calculator_kwargs: dict | None, traj_file: Path
+    atoms: Atoms,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
+    traj_file: Path | None = None,
 ):
     """Run NVE molecular dynamics simulation.
 
     Args:
         atoms (Atoms): ASE Atoms structure.
-        calculator (MLIPEnum | BaseCalculator | str): Model or calculator to use.
-        calculator_kwargs (dict, optional): Kwargs for calculator initialization.
+        calculator (str | MLIPEnum | BaseCalculator, optional): Model or calculator to use.
+        calculator_kwargs (dict, optional): Kwargs for calculator initialization. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         traj_file (Path): Path to save the trajectory file.
 
     Returns:
@@ -163,9 +177,10 @@ def run_nve_md(
         refresh_cache=True,
     )(
         atoms,
-        calculator=get_calculator(
-            calculator, calculator_kwargs
-        ),  # wrap calculater inside task for separate calculator instances
+        calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
         ensemble="nve",
         dynamics="velocityverlet",
         time_step=1.0,  # fs
@@ -179,12 +194,20 @@ def run_nve_md(
 
 
 def run_simulations(
-    calculator: MLIPEnum | BaseCalculator | str, calculator_kwargs: dict | None, structures: list[Atoms], out_dir: Path
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
+    structures: list[Atoms] = None,
+    out_dir: Path = None,
 ):
     """Runs simulations on a list of structures.
 
     Parameters:
-        calculator (MLIPEnum | BaseCalculator | str): Model to use.
+        calculator (str | MLIPEnum | BaseCalculator, optional): Model to use.
+        calculator_kwargs (dict, optional): Keyword arguments for calculator initialization.
+        dispersion (bool, optional): Whether to use dispersion correction.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         structures (list[ase.Atoms]): List of structures to simulate.
         out_dir (str): Directory to save the simulation trajectories to.
 
@@ -214,6 +237,8 @@ def run_simulations(
             supercell_atoms,
             calculator=calculator,
             calculator_kwargs=calculator_kwargs,
+            dispersion=dispersion,
+            dispersion_kwargs=dispersion_kwargs,
             traj_file=out_dir / f"{i}.traj",
         )
         futures.append(future)
@@ -226,10 +251,11 @@ def _generate_flow_run_name():
     name = flow_run.flow_name
     parameters = flow_run.parameters
 
-    model = parameters["model"]
+    calculator = parameters.get("calculator")
+    model_name = resolve_calculator_name(calculator)
     reference_path = parameters["reference_path"].stem
 
-    return f"{name}: {model} - {reference_path}"
+    return f"{name}: {model_name} - {reference_path}"
 
 
 @flow(
@@ -237,13 +263,15 @@ def _generate_flow_run_name():
     flow_run_name=_generate_flow_run_name,
 )
 def differential_entropy_along_nve_trajectory(
-    calculator: MLIPEnum | BaseCalculator | str,
-    calculator_kwargs: dict | None,
-    input_path: Path,
-    reference_path: Path,
-    start_idx: int,
-    end_idx: int,
-    step: int,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
+    input_path: Path | None = None,
+    reference_path: Path | None = None,
+    start_idx: int | None = None,
+    end_idx: int | None = None,
+    step: int | None = None,
     k: int = 32,
     cutoff: float = 5.0,
     h: float = 0.015,
@@ -253,7 +281,10 @@ def differential_entropy_along_nve_trajectory(
     trajectory with respect to a reference dataset.
 
     Arguments:
-        model (MLIPEnum | BaseCalculator | str): Model to use.
+        calculator (str | MLIPEnum | BaseCalculator, optional): Model to use.
+        calculator_kwargs (dict, optional): Keyword arguments to pass to the calculator.
+        dispersion (bool, optional): Whether to use dispersion correction.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         input_path (Path): Path to the directory containing the trajectory files.
         reference_path (Path): Path to the file containing the descriptors of the full dataset of structures without the subset.
         start_idx (int): Starting index of the subset of structures to select from each trajectory.
@@ -269,20 +300,20 @@ def differential_entropy_along_nve_trajectory(
             or (np.ndarray): an (H,M) matrix if 'h' is a vector of length H
         sampled_structures (list[ase.Atoms]): List of structures selected from the trajectory.
     """
-    if isinstance(calculator, MLIPEnum):
-        model_name = calculator.name
-    elif isinstance(calculator, BaseCalculator):
-        model_name = calculator.__class__.__name__
-    elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
-        model_name = calculator
-    else:
-        raise ValueError(f"Unsupported calculator: {calculator}")
+    model_name = resolve_calculator_name(calculator)
 
     # Run simulations
     out_dir = work_dir / model_name if work_dir is not None else Path.cwd() / model_name
 
     structures = read(input_path, index=":")
-    run_simulations(calculator, calculator_kwargs, structures, out_dir)
+    run_simulations(
+        calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
+        structures=structures,
+        out_dir=out_dir,
+    )
 
     # Get entropy for structures along trajectories
     dH, sampled_structures = get_trajectory_entropy(

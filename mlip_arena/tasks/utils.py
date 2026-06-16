@@ -53,6 +53,21 @@ def get_freer_device() -> torch.device:
     return device
 
 
+def resolve_calculator_name(calculator: str | MLIPEnum | BaseCalculator | None) -> str:
+    """Resolve a string calculator name from MLIPEnum, BaseCalculator, or string."""
+    if calculator is None:
+        return "Unknown"
+    if isinstance(calculator, str):
+        return calculator
+    if isinstance(calculator, MLIPEnum):
+        return calculator.name
+    if isinstance(calculator, type):
+        return calculator.__name__
+    if hasattr(calculator, "__class__"):
+        return calculator.__class__.__name__
+    return str(calculator)
+
+
 def get_calculator(
     calculator: str | MLIPEnum | BaseCalculator,
     calculator_kwargs: dict | None = None,
@@ -74,7 +89,9 @@ def get_calculator(
     """
     device = device or str(get_freer_device())
 
-    calculator_kwargs = calculator_kwargs or {}
+    calculator_kwargs = (calculator_kwargs or {}).copy()
+    dispersion = calculator_kwargs.pop("dispersion", dispersion)
+    dispersion_kwargs = calculator_kwargs.pop("dispersion_kwargs", dispersion_kwargs)
     calculator_kwargs.update({"device": device})
 
     logger.info(f"Using device: {device}")

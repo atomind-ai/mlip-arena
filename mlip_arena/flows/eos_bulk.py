@@ -16,7 +16,7 @@ from scipy import stats
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.eos import run as EOS
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import get_calculator
+from mlip_arena.tasks.utils import resolve_calculator_name
 
 if TYPE_CHECKING:
     from ase import Atoms
@@ -61,30 +61,48 @@ def calculate_metrics(res_eos: dict, b0: float, atoms: Atoms, model_name: str, s
     }
 
 
+def _generate_task_run_name():
+    task_name = task_run.task_name
+    parameters = task_run.parameters
+
+    atoms = parameters["atoms"]
+    calculator_name = resolve_calculator_name(parameters.get("calculator"))
+
+    return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
+
+
 @task(
     name="EOS bulk",
-    task_run_name=lambda: (
-        f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['model_name']}"
-    ),
+    task_run_name=_generate_task_run_name,
     cache_policy=TASK_SOURCE + INPUTS,
 )
-def run(atoms: Atoms, model_name: str, calculator: str | BaseCalculator, calculator_kwargs: dict | None = None):
+def run(
+    atoms: Atoms,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
+):
     """Run EOS bulk task for a single structure and model.
 
     Args:
         atoms (Atoms): ASE Atoms structure.
-        model_name (str): Human-readable name of the model.
-        calculator (str | BaseCalculator): The model or ASE calculator.
-        calculator_kwargs (dict | None, optional): Arguments for the ASE calculator.
+        calculator (str | MLIPEnum | BaseCalculator, optional): The model or ASE calculator.
+        calculator_kwargs (dict, optional): Arguments for the ASE calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
 
     Returns:
         pd.DataFrame: A DataFrame containing the raw EOS results.
     """
-    calculator = calculator if isinstance(calculator, BaseCalculator) else get_calculator(calculator, calculator_kwargs)
+    model_name = resolve_calculator_name(calculator)
 
     result = OPT(
         atoms,
-        calculator,
+        calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
         optimizer="FIRE",
         criterion=dict(
             fmax=0.1,
@@ -93,6 +111,9 @@ def run(atoms: Atoms, model_name: str, calculator: str | BaseCalculator, calcula
     result = EOS(
         atoms=result["atoms"],
         calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
         optimizer="FIRE",
         npoints=21,
         max_abs_strain=0.2,
@@ -110,6 +131,8 @@ def run(atoms: Atoms, model_name: str, calculator: str | BaseCalculator, calcula
 def run_db(
     calculator: str | BaseCalculator,
     calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     run_dir: Path | None = None,
     dataset: str = "atomind/mlip-arena",
     dataset_file: str = "wbm_subset.db",
@@ -117,7 +140,10 @@ def run_db(
     """Run bulk EOS calculations over a database of structures.
 
     Args:
-        model (str | BaseCalculator): Model name or ASE calculator.
+        calculator (str | BaseCalculator): Model name or ASE calculator.
+        calculator_kwargs (dict, optional): Arguments for the ASE calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         run_dir (Path, optional): Directory to save outputs (parquet files). Defaults to None.
         dataset (str, optional): HuggingFace dataset ID. Defaults to "atomind/mlip-arena".
         dataset_file (str, optional): Database filename in the dataset. Defaults to "wbm_subset.db".
@@ -125,12 +151,7 @@ def run_db(
     Returns:
         pd.DataFrame: A DataFrame containing analyzed results for all structures in the database.
     """
-    if isinstance(calculator, BaseCalculator):
-        model_name = calculator.__class__.__name__
-    elif isinstance(calculator, str) and hasattr(MLIPEnum, calculator):
-        model_name = calculator
-    else:
-        raise ValueError(f"Unsupported model: {calculator}")
+    model_name = resolve_calculator_name(calculator)
 
     out_dir = run_dir if run_dir is not None else Path.cwd() / "eos_bulk" / model_name
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -142,7 +163,13 @@ def run_db(
     with connect(db_path) as db:
         for row in db.select():
             atoms = row.toatoms(add_additional_information=True)
-            future = run.submit(atoms, model_name, calculator, calculator_kwargs)
+            future = run.submit(
+                atoms,
+                calculator=calculator,
+                calculator_kwargs=calculator_kwargs,
+                dispersion=dispersion,
+                dispersion_kwargs=dispersion_kwargs,
+            )
             futures.append(future)
 
     results = [f.result(raise_on_failure=False) for f in futures]

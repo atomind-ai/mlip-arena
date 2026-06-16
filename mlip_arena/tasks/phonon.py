@@ -40,7 +40,8 @@ from prefect import task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
 from prefect.runtime import task_run
 
-from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, logger
+from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, logger, get_calculator, resolve_calculator_name
 
 try:
     from phonopy import Phonopy
@@ -95,7 +96,10 @@ def get_phonopy(
 
 def _get_forces(
     phononpy_atoms: PhonopyAtoms,
-    calculator: BaseCalculator,
+    calculator: str | MLIPEnum | BaseCalculator,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
 ) -> np.ndarray:
     atoms = Atoms(
         symbols=phononpy_atoms.symbols,
@@ -104,9 +108,10 @@ def _get_forces(
         pbc=True,
     )
 
-    atoms.calc = calculator
-
-    return atoms.get_forces()
+    atoms.calc = get_calculator(calculator, calculator_kwargs, dispersion, dispersion_kwargs)
+    forces = atoms.get_forces()
+    atoms.calc = None
+    return forces
 
 
 def _generate_task_run_name():
@@ -114,7 +119,7 @@ def _generate_task_run_name():
     parameters = task_run.parameters
 
     atoms = parameters["atoms"]
-    calculator_name = parameters["calculator"]
+    calculator_name = resolve_calculator_name(parameters.get("calculator"))
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
@@ -126,7 +131,10 @@ def _generate_task_run_name():
 )
 def run(
     atoms: Atoms,
-    calculator: BaseCalculator,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     supercell_matrix: list[int] | None = None,
     min_lengths: float | tuple[float, float, float] | None = None,
     symprec: float = 1e-5,
@@ -142,7 +150,10 @@ def run(
 
     Args:
         atoms (Atoms): ASE Atoms object for the unit cell.
-        calculator (BaseCalculator): ASE calculator for forces.
+        calculator (str | MLIPEnum | BaseCalculator, optional): The ASE calculator or model name/enum.
+        calculator_kwargs (dict, optional): Additional kwargs to pass to the calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         supercell_matrix (list[int], optional): Supercell matrix. Defaults to None.
         min_lengths (float | tuple, optional): Minimum lengths for supercell. Defaults to None.
         symprec (float, optional): Symmetry precision. Defaults to 1e-5.
@@ -169,7 +180,15 @@ def run(
     supercells_with_displacements = phonon.supercells_with_displacements
 
     phonon.forces = [
-        _get_forces(supercell, calculator) for supercell in supercells_with_displacements if supercell is not None
+        _get_forces(
+            supercell,
+            calculator,
+            calculator_kwargs,
+            dispersion,
+            dispersion_kwargs,
+        )
+        for supercell in supercells_with_displacements
+        if supercell is not None
     ]
     phonon.produce_force_constants()
 

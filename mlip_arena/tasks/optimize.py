@@ -23,7 +23,8 @@ from ase.optimize.optimize import Optimizer
 from prefect import task
 from prefect.runtime import task_run
 
-from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, logger, pformat
+from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, logger, pformat, get_calculator, resolve_calculator_name
 
 _valid_filters: dict[str, Filter] = {
     "Filter": Filter,
@@ -53,7 +54,7 @@ def _generate_task_run_name():
     parameters = task_run.parameters
 
     atoms = parameters["atoms"]
-    calculator_name = parameters["calculator"]
+    calculator_name = resolve_calculator_name(parameters.get("calculator"))
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
@@ -61,7 +62,10 @@ def _generate_task_run_name():
 @task(name="OPT", task_run_name=_generate_task_run_name, cache_policy=ARENA_TASK_CACHE_POLICY)
 def run(
     atoms: Atoms,
-    calculator: BaseCalculator,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     optimizer: Optimizer | str = BFGSLineSearch,
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = None,
@@ -73,7 +77,10 @@ def run(
 
     Args:
         atoms (Atoms): ASE Atoms object to optimize.
-        calculator (BaseCalculator): ASE calculator to use for forces and energy.
+        calculator (str | MLIPEnum | BaseCalculator, optional): ASE calculator or model name/enum.
+        calculator_kwargs (dict, optional): Keyword arguments to pass to the calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         optimizer (Optimizer | str, optional): ASE optimizer class or name. Defaults to BFGSLineSearch.
         optimizer_kwargs (dict, optional): Keyword arguments to pass to the optimizer class. Defaults to None.
         filter (Filter | str, optional): ASE filter class or name to apply to the atoms. Defaults to None.
@@ -88,7 +95,8 @@ def run(
             - "converged": Whether the optimization converged.
     """
     atoms = atoms.copy()
-    atoms.calc = calculator
+    calculator_obj = get_calculator(calculator, calculator_kwargs, dispersion, dispersion_kwargs)
+    atoms.calc = calculator_obj
 
     if isinstance(filter, str):
         if filter not in _valid_filters:
@@ -123,8 +131,8 @@ def run(
         logger.info(f"Using optimizer: {optimizer_instance}")
         logger.info(pformat(optimizer_kwargs))
         logger.info(f"Criterion: {pformat(criterion)}")
-        converged = optimizer_instance.run(**criterion)
 
+        converged = optimizer_instance.run(**criterion)
     return {
         "atoms": atoms,
         "steps": optimizer_instance.nsteps,

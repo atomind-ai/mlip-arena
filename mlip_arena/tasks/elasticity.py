@@ -52,7 +52,8 @@ from pymatgen.analysis.elasticity.elastic import get_strain_state_dict
 from pymatgen.io.ase import AseAtomsAdaptor
 
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY
+from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, get_calculator, resolve_calculator_name
 
 if TYPE_CHECKING:
     from ase.filters import Filter
@@ -63,7 +64,7 @@ def _generate_task_run_name():
     parameters = task_run.parameters
 
     atoms = parameters["atoms"]
-    calculator_name = parameters["calculator"]
+    calculator_name = resolve_calculator_name(parameters.get("calculator"))
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
@@ -75,7 +76,10 @@ def _generate_task_run_name():
 )
 def run(
     atoms: Atoms,
-    calculator: BaseCalculator,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = "FrechetCell",  # type: ignore
@@ -90,7 +94,10 @@ def run(
 
     Args:
         atoms (Atoms): The input structure.
-        calculator (BaseCalculator): The calculator.
+        calculator (str | MLIPEnum | BaseCalculator, optional): The ASE calculator or model name/enum.
+        calculator_kwargs (dict, optional): Keyword arguments to pass to the calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         optimizer (Optimizer | str, optional): The optimizer. Defaults to "BFGSLineSearch".
         optimizer_kwargs (dict, optional): The optimizer kwargs. Defaults to None.
         filter (Filter | str, optional): The filter to use for relaxation. Defaults to "FrechetCell".
@@ -105,6 +112,7 @@ def run(
         dict[str, Any] | State: A dictionary containing 'elastic_tensor' and 'residuals_sum'.
     """
     atoms = atoms.copy()
+    calculator_obj = get_calculator(calculator, calculator_kwargs, dispersion, dispersion_kwargs)
 
     OPT_ = OPT.with_options(
         refresh_cache=not cache_opt,
@@ -114,6 +122,9 @@ def run(
     first_relax = OPT_(
         atoms=atoms,
         calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
         optimizer=optimizer,
         optimizer_kwargs=optimizer_kwargs,
         filter=filter,
@@ -149,13 +160,18 @@ def run(
 
     stresses = []
     for deformed_structure in deformed_structure_set:
-        atoms = deformed_structure.to_ase_atoms()
-        atoms.calc = relaxed.calc
-        stresses.append(atoms.get_stress(voigt=False))
+        atoms_deformed = deformed_structure.to_ase_atoms()
+        atoms_deformed.calc = calculator_obj
+        stresses.append(atoms_deformed.get_stress(voigt=False))
 
     strains = [Strain.from_deformation(deformation) for deformation in deformed_structure_set.deformations]
 
-    fit = fit_elastic_tensor(strains, stresses, eq_stress=relaxed.get_stress(voigt=False))
+    # Temporarily set relaxed.calc to calculate stress
+    relaxed.calc = calculator_obj
+    eq_stress = relaxed.get_stress(voigt=False)
+    relaxed.calc = None
+
+    fit = fit_elastic_tensor(strains, stresses, eq_stress=eq_stress)
 
     return {
         "elastic_tensor": fit["elastic_tensor"],

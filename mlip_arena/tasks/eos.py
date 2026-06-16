@@ -19,7 +19,8 @@ from prefect.states import State
 from pymatgen.analysis.eos import BirchMurnaghan
 
 from mlip_arena.tasks.optimize import run as OPT
-from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY
+from mlip_arena.models import MLIPEnum
+from mlip_arena.tasks.utils import ARENA_TASK_CACHE_POLICY, resolve_calculator_name
 
 if TYPE_CHECKING:
     from ase.filters import Filter
@@ -30,7 +31,7 @@ def _generate_task_run_name():
     parameters = task_run.parameters
 
     atoms = parameters["atoms"]
-    calculator_name = parameters["calculator"]
+    calculator_name = resolve_calculator_name(parameters.get("calculator"))
 
     return f"{task_name}: {atoms.get_chemical_formula()} - {calculator_name}"
 
@@ -38,7 +39,10 @@ def _generate_task_run_name():
 @task(name="EOS", task_run_name=_generate_task_run_name, cache_policy=ARENA_TASK_CACHE_POLICY)
 def run(
     atoms: Atoms,
-    calculator: BaseCalculator,
+    calculator: str | MLIPEnum | BaseCalculator | None = None,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     optimizer: Optimizer | str = "BFGSLineSearch",  # type: ignore
     optimizer_kwargs: dict | None = None,
     filter: Filter | str | None = "FrechetCell",  # type: ignore
@@ -53,7 +57,10 @@ def run(
 
     Args:
         atoms (Atoms): The input atoms.
-        calculator (BaseCalculator): The ASE calculator to use.
+        calculator (str | MLIPEnum | BaseCalculator, optional): The ASE calculator or model name/enum.
+        calculator_kwargs (dict, optional): Keyword arguments to pass to the calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         optimizer (Optimizer | str, optional): The optimizer to use. Defaults to "BFGSLineSearch".
         optimizer_kwargs (dict, optional): Additional kwargs to pass to the optimizer. Defaults to None.
         filter (Filter | str, optional): The filter to use. Defaults to "FrechetCell".
@@ -77,6 +84,9 @@ def run(
     state = OPT_(
         atoms=atoms,
         calculator=calculator,
+        calculator_kwargs=calculator_kwargs,
+        dispersion=dispersion,
+        dispersion_kwargs=dispersion_kwargs,
         optimizer=optimizer,
         optimizer_kwargs=optimizer_kwargs,
         filter=filter,
@@ -109,6 +119,9 @@ def run(
             future = OPT_.submit(
                 atoms=atoms,
                 calculator=calculator,
+                calculator_kwargs=calculator_kwargs,
+                dispersion=dispersion,
+                dispersion_kwargs=dispersion_kwargs,
                 optimizer=optimizer,
                 optimizer_kwargs=optimizer_kwargs,
                 filter=None,
@@ -129,6 +142,9 @@ def run(
             state = OPT_(
                 atoms=atoms,
                 calculator=calculator,
+                calculator_kwargs=calculator_kwargs,
+                dispersion=dispersion,
+                dispersion_kwargs=dispersion_kwargs,
                 optimizer=optimizer,
                 optimizer_kwargs=optimizer_kwargs,
                 filter=None,
@@ -155,7 +171,6 @@ def run(
 
     bm = BirchMurnaghan(volumes=volumes, energies=energies)
     bm.fit()
-
     return {
         "atoms": relaxed,
         "eos": {"volumes": volumes, "energies": energies},

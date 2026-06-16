@@ -13,7 +13,6 @@ from tqdm.auto import tqdm
 
 from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks import ELASTICITY, OPT, PHONON
-from mlip_arena.tasks.utils import get_calculator
 
 select_models = [
     "ALIGNN",
@@ -94,11 +93,9 @@ def run_one(model, row):
     atoms = row.toatoms()
     # print(data := row.key_value_pairs)
 
-    calc = get_calculator(model)
-
     result_opt = OPT(
-        atoms,
-        calc,
+        atoms=atoms,
+        calculator=model,
         optimizer="FIRE",
         criterion=dict(fmax=0.05, steps=500),
         symmetry=True,
@@ -107,8 +104,8 @@ def run_one(model, row):
     atoms = result_opt["atoms"]
 
     result_elastic = ELASTICITY(
-        atoms,
-        calc,
+        atoms=atoms,
+        calculator=model,
         optimizer="FIRE",
         criterion=dict(fmax=0.05, steps=500),
         pre_relax=False,
@@ -123,8 +120,8 @@ def run_one(model, row):
     np.savez(outdir / "elastic.npz", tensor=elastic_tensor, eigenvalues=eigenvalues)
 
     result_phonon = PHONON(
-        atoms,
-        calc,
+        atoms=atoms,
+        calculator=model,
         supercell_matrix=(2, 2, 1),
         outdir=outdir,
     )

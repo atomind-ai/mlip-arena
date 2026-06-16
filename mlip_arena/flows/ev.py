@@ -11,8 +11,9 @@ from huggingface_hub import hf_hub_download
 from prefect import flow
 from scipy import stats
 
-from mlip_arena.models import MLIPEnum
 from mlip_arena.tasks.ev import run as ev_scan
+
+from mlip_arena.tasks.utils import resolve_calculator_name
 
 if TYPE_CHECKING:
     from ase import Atoms
@@ -58,7 +59,10 @@ def calculate_metrics(res_eos: dict, wbm_struct: Atoms, model_name: str, structu
 
 @flow
 def run_db(
-    model: str | BaseCalculator,
+    calculator: str | BaseCalculator,
+    calculator_kwargs: dict | None = None,
+    dispersion: bool = False,
+    dispersion_kwargs: dict | None = None,
     run_dir: Path | None = None,
     dataset: str = "atomind/mlip-arena",
     dataset_file: str = "wbm_subset.db",
@@ -66,7 +70,10 @@ def run_db(
     """Run bulk E-V scan calculations over a database.
 
     Args:
-        model (str | BaseCalculator): Model name or ASE calculator.
+        calculator (str | BaseCalculator): Model name or ASE calculator.
+        calculator_kwargs (dict, optional): Keyword arguments to pass to the calculator. Defaults to None.
+        dispersion (bool, optional): Whether to use dispersion correction. Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for dispersion correction.
         run_dir (Path, optional): Directory to save outputs. Defaults to None.
         dataset (str, optional): HuggingFace dataset ID. Defaults to "atomind/mlip-arena".
         dataset_file (str, optional): Database filename. Defaults to "wbm_subset.db".
@@ -74,12 +81,7 @@ def run_db(
     Returns:
         pd.DataFrame: Analyzed results for all structures in the database.
     """
-    if isinstance(model, BaseCalculator):
-        model_name = model.__class__.__name__
-    elif isinstance(model, str) and hasattr(MLIPEnum, model):
-        model_name = model
-    else:
-        raise ValueError(f"Unsupported model: {model}")
+    model_name = resolve_calculator_name(calculator)
 
     out_dir = run_dir if run_dir is not None else Path.cwd() / Path(__file__).stem
 
@@ -92,7 +94,13 @@ def run_db(
     with connect(db_path) as db:
         for row in db.select():
             atoms = row.toatoms(add_additional_information=True)
-            future = ev_scan.submit(atoms, model)
+            future = ev_scan.submit(
+                atoms,
+                calculator=calculator,
+                calculator_kwargs=calculator_kwargs,
+                dispersion=dispersion,
+                dispersion_kwargs=dispersion_kwargs,
+            )
             futures.append(future)
 
     results = [f.result(raise_on_failure=False) for f in futures]
