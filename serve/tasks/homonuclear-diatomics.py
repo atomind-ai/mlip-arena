@@ -281,4 +281,4 @@ figs = get_plots(df, energy_plot, force_plot, method_color_mapping)
 for i, fig in enumerate(figs):
     if i % ncols == 0:
         cols = st.columns(ncols)
-    cols[i % ncols].plotly_chart(fig, use_container_width=True)
+    cols[i % ncols].plotly_chart(fig, width="stretch")

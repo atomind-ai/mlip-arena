@@ -143,7 +143,7 @@ st.markdown(
 # st.subheader(":red[Supported Models + Arena Rank]")
 st.dataframe(
     style,
-    use_container_width=True,
+    width="stretch",
     column_config={
         "Code": st.column_config.LinkColumn(width="medium", display_text="Link"),
         "Paper": st.column_config.LinkColumn(width="medium", display_text="Link"),

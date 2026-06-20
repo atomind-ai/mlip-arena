@@ -119,7 +119,7 @@ tap_tool = TapTool()
 p.add_tools(tap_tool)
 p.js_on_event("tap", callback)
 
-st.bokeh_chart(p, use_container_width=True)
+st.bokeh_chart(p)
 
 # show(p)
 

@@ -325,7 +325,7 @@ else:
     # show_scatter = vis.checkbox("Show scatter points", value=True)
     st.plotly_chart(
         build_nvt_figure(df_nvt, method_color_mapping, show_scatter_nvt),
-        use_container_width=True,
+        width="stretch",
     )
 
     st.markdown("""
@@ -338,5 +338,5 @@ else:
     # show_scatter = vis.checkbox("Show scatter points", value=True)
     st.plotly_chart(
         build_npt_figure(df_npt, method_color_mapping, show_scatter_npt),
-        use_container_width=True,
+        width="stretch",
     )
