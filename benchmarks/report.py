@@ -32,12 +32,10 @@ def summarize(model_name):
 
     family = "custom"
     try:
-        import yaml
+        from mlip_arena.models import REGISTRY
 
-        with open(benchmarks_dir.parent / "mlip_arena" / "models" / "registry.yaml", "r") as f:
-            registry = yaml.safe_load(f)
-            if model_name in registry:
-                family = registry[model_name].get("family", "custom").lower()
+        if model_name in REGISTRY:
+            family = REGISTRY[model_name].get("family", "custom").lower()
     except Exception:
         pass
 

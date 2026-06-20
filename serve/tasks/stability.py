@@ -28,16 +28,7 @@ valid_models = [
 models = container.multiselect(
     "MLIPs",
     valid_models,
-    [
-        "MACE-MP(M)",
-        "CHGNet",
-        "SevenNet",
-        "ORBv2",
-        "eqV2(OMat)",
-        "M3GNet",
-        "MatterSim",
-        "MACE-MPA",
-    ],
+    ["MACE-MP(M)", "CHGNet", "SevenNet", "ORBv2", "M3GNet", "MatterSim", "MACE-MPA", "NequIP-OAM-L"],
 )
 
 st.markdown("### Settings")
@@ -242,7 +233,8 @@ def build_nvt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -
     # Left panel: cumulative valid runs
     for method, df_model in df_in.groupby("method"):
         df_model_grp = df_model.drop_duplicates(["formula"])
-        hist, bin_edges = np.histogram(df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50))
+        normalized_steps = np.clip(df_model_grp["normalized_final_step"], 0, 1)
+        hist, bin_edges = np.histogram(normalized_steps, bins=np.linspace(0, 1, 50))
         cumulative_population = np.cumsum(hist)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         fig.add_trace(
@@ -295,7 +287,8 @@ def build_npt_figure(df_in: pd.DataFrame, color_map: dict, show_scatter: bool) -
     # Left panel: cumulative valid runs
     for method, df_model in df_in.groupby("method"):
         df_model_grp = df_model.drop_duplicates(["formula"])
-        hist, bin_edges = np.histogram(df_model_grp["normalized_final_step"], bins=np.linspace(0, 1, 50))
+        normalized_steps = np.clip(df_model_grp["normalized_final_step"], 0, 1)
+        hist, bin_edges = np.histogram(normalized_steps, bins=np.linspace(0, 1, 50))
         cumulative_population = np.cumsum(hist)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         fig.add_trace(

@@ -273,21 +273,40 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
     Unique restart blocks are identified by atoms.info['restart'] and used to
     compute contiguous time and step differences across restarts.
     """
+    from datetime import datetime
+
+    first_valid_info = None
+    for atoms in traj:
+        if "datetime" in atoms.info and "step" in atoms.info:
+            first_valid_info = atoms.info
+            break
+
     restarts = []
     steps, times = [], []
     Ts, Ps, Es, KEs = [], [], [], []
     com_drifts = []
 
-    for atoms in traj:
+    info_ok = first_valid_info is not None
+
+    for i, atoms in enumerate(traj):
         try:
             energy = atoms.get_potential_energy()
             assert np.isfinite(energy), f"invalid energy: {energy}"
         except Exception:
             continue
 
-        restarts.append(atoms.info["restart"])
-        times.append(atoms.info["datetime"])
-        steps.append(atoms.info["step"])
+        if info_ok:
+            r = atoms.info.get("restart", 0)
+            dt = atoms.info.get("datetime", first_valid_info["datetime"])
+            st = atoms.info.get("step", 0)
+        else:
+            r = 0
+            dt = datetime.now()
+            st = i * 10
+
+        restarts.append(r)
+        times.append(dt)
+        steps.append(st)
         Es.append(energy)
         KEs.append(atoms.get_kinetic_energy())
         Ts.append(atoms.get_temperature())
@@ -304,20 +323,29 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
     # Identify unique blocks
     unique_restarts = np.unique(restarts)
 
-    total_time_seconds = 0
+    total_time_seconds = 0.0
     total_steps = 0
 
-    # Iterate over unique blocks to calculate averages
-    for block in unique_restarts:
-        # Get the indices corresponding to the current block
-        # indices = np.where(restarts == block)[0]
-        indices = restarts == block
-        # Extract the corresponding data values
-        block_time = times[indices][-1] - times[indices][0]
-        total_time_seconds += block_time.total_seconds()
-        total_steps += steps[indices][-1] - steps[indices][0]
+    if info_ok:
+        # Iterate over unique blocks to calculate averages
+        for block in unique_restarts:
+            indices = restarts == block
+            block_time = times[indices][-1] - times[indices][0]
+            total_time_seconds += block_time.total_seconds()
+            total_steps += steps[indices][-1] - steps[indices][0]
+    else:
+        total_time_seconds = 0.0
+        total_steps = steps[-1] if len(steps) != 0 else 0
 
-    target_steps = traj[1].info["target_steps"]
+    if info_ok and len(traj) > 1:
+        try:
+            target_steps = traj[1].info["target_steps"]
+        except KeyError:
+            has_h = "H" in atoms0.get_chemical_symbols()
+            target_steps = 20000 if has_h else 5000
+    else:
+        has_h = "H" in atoms0.get_chemical_symbols()
+        target_steps = 20000 if has_h else 5000
     natoms = len(atoms0)
 
     return {
