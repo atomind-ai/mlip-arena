@@ -2,8 +2,22 @@
 *.extxyz
 *.traj
 *.db
-datasets/
-benchmarks/
+# Fine-grained benchmark ignore rules to avoid missing scripts/processed results
+benchmarks/**/*.parquet
+!benchmarks/c2db/*.parquet
+!benchmarks/**/*_processed.parquet
+!benchmarks/**/*-heating.parquet
+!benchmarks/**/*-compression.parquet
+benchmarks/**/summary.csv
+benchmarks/**/summary.tex
+
+# Ignore intermediate calculator output directories
+benchmarks/diatomics/pet/
+benchmarks/diatomics/uma/
+benchmarks/diatomics/nequip/NequIP-OAM-L/
+benchmarks/energy_conservation/ORBv2/
+benchmarks/energy_conservation/christine/
+benchmarks/energy_conservation/orb/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
