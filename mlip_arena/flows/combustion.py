@@ -162,7 +162,18 @@ def hydrogen_combustion(
     dispersion: bool = False,
     dispersion_kwargs: dict | None = None,
 ):
-    """Run hydrogen combustion simulation and analyze results."""
+    """Run hydrogen combustion simulation and analyze results.
+
+    Parameters:
+        run_dir (Path): Directory where output files (.traj and .json) will be saved.
+        calculator (str | MLIPEnum | BaseCalculator): Model identifier, enum, or instantiated ASE Calculator.
+        calculator_kwargs (dict, optional): Additional parameters passed to the model's calculator constructor. Defaults to None.
+        dispersion (bool, optional): Whether to enable dispersion corrections (e.g. via TorchDFTD3Calculator). Defaults to False.
+        dispersion_kwargs (dict, optional): Keyword arguments for the dispersion calculator. Defaults to None.
+
+    Returns:
+        dict: Dictionary containing final state atoms and execution stats from the molecular dynamics simulation.
+    """
     atoms_path = hf_hub_download(
         repo_id="atomind/mlip-arena",
         filename="combustion/H256O128.extxyz",
