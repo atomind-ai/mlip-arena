@@ -32,12 +32,10 @@ def summarize(model_name):
 
     family = "custom"
     try:
-        import yaml
+        from mlip_arena.models import REGISTRY
 
-        with open(benchmarks_dir.parent / "mlip_arena" / "models" / "registry.yaml", "r") as f:
-            registry = yaml.safe_load(f)
-            if model_name in registry:
-                family = registry[model_name].get("family", "custom").lower()
+        if model_name in REGISTRY:
+            family = REGISTRY[model_name].get("family", "custom").lower()
     except Exception:
         pass
 
@@ -45,14 +43,17 @@ def summarize(model_name):
     nvt_files = list(run_dir_stability.glob(f"{model_name}_*nvt.traj"))
     npt_files = list(run_dir_stability.glob(f"{model_name}_*npt.traj"))
 
+    p_combustion = benchmarks_dir / "combustion" / family / f"{model_name}_H256O128.json"
+
     has_eos = p_eos.exists()
     has_ev = p_ev.exists()
     has_stability = bool(nvt_files or npt_files)
+    has_combustion = p_combustion.exists()
 
-    if not (has_eos or has_ev or has_stability):
+    if not (has_eos or has_ev or has_stability or has_combustion):
         warnings.warn(
             f"All expected benchmark output files are missing for model '{model_name}'. "
-            f"Expected files at: {p_eos}, {p_ev}, or stability traj files in {run_dir_stability}. "
+            f"Expected files at: {p_eos}, {p_ev}, {p_combustion}, or stability traj files in {run_dir_stability}. "
             "Bailing out of report generation."
         )
         return
@@ -78,6 +79,14 @@ def summarize(model_name):
         summarize_stability(model_name)
     else:
         warnings.warn(f"No stability trajectory files found for {model_name}. Skipping stability analysis.")
+
+    # 4. Combustion
+    if has_combustion:
+        print(f"Combustion results JSON found for {model_name} at {p_combustion}.")
+    else:
+        warnings.warn(
+            f"Combustion processed file is missing for {model_name} at {p_combustion}. Skipping combustion report check."
+        )
 
 
 if __name__ == "__main__":
