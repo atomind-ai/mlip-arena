@@ -10,7 +10,7 @@ To run or submit benchmark jobs at scale (such as on HPC environments like NERSC
 Ensure your model is registered under `mlip_arena/models/registry.yaml` with the appropriate metadata (such as class, family, module name, and the list of supported `cpu-tasks` and `gpu-tasks`).
 
 ### 2. Configure the Submission Script
-Open [benchmarks/submit.py](file:///pscratch/sd/c/cyrusyc/mlip-arena/benchmarks/submit.py) and configure the following parameters:
+Open [benchmarks/submit.py](./submit.py) and configure the following parameters:
 
 - **Model/Calculator selection**: Set the `calculator` variable to the name of your model registered in the registry.
   ```python
@@ -23,7 +23,7 @@ Open [benchmarks/submit.py](file:///pscratch/sd/c/cyrusyc/mlip-arena/benchmarks/
   - `job_script_prologue`: Bash commands to activate your environment (e.g. `source activate /path/to/conda/env`).
 
 ### 3. Select Benchmark Tasks
-At the bottom of [benchmarks/submit.py](file:///pscratch/sd/c/cyrusyc/mlip-arena/benchmarks/submit.py), uncomment the flow execution blocks you want to run:
+At the bottom of [benchmarks/submit.py](./submit.py), uncomment the flow execution blocks you want to run:
 - `asymptotic_behaviors`: Homonuclear diatomics, EOS bulk, E-V scan.
 - `distribution_shifts`: NVE trajectory entropy.
 - `stability`: Linear heating and compression.

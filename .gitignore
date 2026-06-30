@@ -3,21 +3,14 @@
 *.traj
 *.db
 # Fine-grained benchmark ignore rules to avoid missing scripts/processed results
-benchmarks/**/*.parquet
+benchmarks/
 !benchmarks/c2db/*.parquet
 !benchmarks/**/*_processed.parquet
-!benchmarks/**/*-heating.parquet
-!benchmarks/**/*-compression.parquet
-benchmarks/**/summary.csv
-benchmarks/**/summary.tex
+!benchmarks/stability/*-heating.parquet
+!benchmarks/stability/*-compression.parquet
+!benchmarks/combustion/**/*.json
+!benchmarks/diatomics/**/*.json
 
-# Ignore intermediate calculator output directories
-benchmarks/diatomics/pet/
-benchmarks/diatomics/uma/
-benchmarks/diatomics/nequip/NequIP-OAM-L/
-benchmarks/energy_conservation/ORBv2/
-benchmarks/energy_conservation/christine/
-benchmarks/energy_conservation/orb/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
