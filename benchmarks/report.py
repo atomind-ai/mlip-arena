@@ -5,8 +5,6 @@ import shutil
 import warnings
 from pathlib import Path
 
-from eos_bulk.aggregate import summarize as summarize_eos_bulk
-from ev.aggregate import summarize as summarize_ev
 from stability.aggregate import summarize as summarize_stability
 
 BENCH_DIR = Path(__file__).parent
@@ -94,29 +92,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        help="Optional name of the model to generate report/results for.",
+        required=True,
+        help="Name of the model to generate report/results for.",
     )
     args = parser.parse_args()
 
-    BENCH_DIR = Path(__file__).parent
-
-    if args.model:
-        print(f"Generating reports and processed results for model: {args.model}")
-        summarize(args.model)
-    else:
-        # Legacy behavior: copy all processed parquets to results parquets and run global summaries
-        print("Gathering results and generating global summaries for all models...")
-        for subdir in ["eos_bulk", "ev"]:
-            dir_path = BENCH_DIR / subdir
-            for p in dir_path.glob("*_processed.parquet"):
-                dest = p.with_name(p.name.replace("_processed.parquet", "_results.parquet"))
-                shutil.copy2(p, dest)
-
-        print("Reporting EOS Bulk Results...")
-        summarize_eos_bulk()
-
-        print("\nReporting Energy-Volume (EV) Results...")
-        summarize_ev()
-
-        print("\nReporting Stability MD Results...")
-        summarize_stability()
+    print(f"Generating reports and processed results for model: {args.model}")
+    summarize(args.model)
