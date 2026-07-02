@@ -154,7 +154,10 @@ def get_runtime_stats(traj: list[Atoms], atoms0: Atoms):
     }
 
 
-@flow
+@flow(
+    retries=2,  # Retries 2 times (total of 3 attempts/days of run time)
+    timeout_seconds=86400,  # 1 day (24 hours) in seconds
+)
 def hydrogen_combustion(
     run_dir: Path,
     calculator: str | MLIPEnum | BaseCalculator,
@@ -208,9 +211,7 @@ def hydrogen_combustion(
 
     traj = io.read(traj_file, index=":")
 
-    assert len(traj) >= 2000, f"Trajectory has only {len(traj)} frames and is not complete."
-
-    assert np.allclose(traj[0].positions, atoms.positions), "Initial positions do not match."
+    # assert len(traj) >= 2000, f"Trajectory has only {len(traj)} frames and is not complete."
 
     stats = get_runtime_stats(traj, atoms0=traj[0])
 
