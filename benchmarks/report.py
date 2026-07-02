@@ -9,6 +9,8 @@ from eos_bulk.aggregate import summarize as summarize_eos_bulk
 from ev.aggregate import summarize as summarize_ev
 from stability.aggregate import summarize as summarize_stability
 
+BENCH_DIR = Path(__file__).parent
+
 
 def get_model_name(calculator) -> str:
     """Helper to resolve a string model name from various calculator inputs."""
@@ -24,12 +26,6 @@ def get_model_name(calculator) -> str:
 def summarize(model_name):
     model_name = get_model_name(model_name)
 
-    benchmarks_dir = Path(__file__).parent
-
-    # Check which output files exist first to enable quick warning & early exit
-    p_eos = benchmarks_dir / "eos_bulk" / f"{model_name}_processed.parquet"
-    p_ev = benchmarks_dir / "ev" / f"{model_name}_processed.parquet"
-
     family = "custom"
     try:
         from mlip_arena.models import REGISTRY
@@ -39,11 +35,15 @@ def summarize(model_name):
     except Exception:
         pass
 
-    run_dir_stability = benchmarks_dir / "stability" / family
-    nvt_files = list(run_dir_stability.glob(f"{model_name}_*nvt.traj"))
-    npt_files = list(run_dir_stability.glob(f"{model_name}_*npt.traj"))
+    # Check which output files exist first to enable quick warning & early exit
+    p_eos = BENCH_DIR / "eos_bulk" / f"{model_name}_processed.parquet"
+    p_ev = BENCH_DIR / "ev" / f"{model_name}_processed.parquet"
 
-    p_combustion = benchmarks_dir / "combustion" / family / f"{model_name}_H256O128.json"
+    p_stability = BENCH_DIR / "stability" / family
+    nvt_files = list(p_stability.glob(f"{model_name}_*nvt.traj"))
+    npt_files = list(p_stability.glob(f"{model_name}_*npt.traj"))
+
+    p_combustion = BENCH_DIR / "combustion" / family / f"{model_name}_H256O128.json"
 
     has_eos = p_eos.exists()
     has_ev = p_ev.exists()
@@ -53,7 +53,7 @@ def summarize(model_name):
     if not (has_eos or has_ev or has_stability or has_combustion):
         warnings.warn(
             f"All expected benchmark output files are missing for model '{model_name}'. "
-            f"Expected files at: {p_eos}, {p_ev}, {p_combustion}, or stability traj files in {run_dir_stability}. "
+            f"Expected files at: {p_eos}, {p_ev}, {p_combustion}, or stability traj files in {p_stability}. "
             "Bailing out of report generation."
         )
         return
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    benchmarks_dir = Path(__file__).parent
+    BENCH_DIR = Path(__file__).parent
 
     if args.model:
         print(f"Generating reports and processed results for model: {args.model}")
@@ -107,7 +107,7 @@ if __name__ == "__main__":
         # Legacy behavior: copy all processed parquets to results parquets and run global summaries
         print("Gathering results and generating global summaries for all models...")
         for subdir in ["eos_bulk", "ev"]:
-            dir_path = benchmarks_dir / subdir
+            dir_path = BENCH_DIR / subdir
             for p in dir_path.glob("*_processed.parquet"):
                 dest = p.with_name(p.name.replace("_processed.parquet", "_results.parquet"))
                 shutil.copy2(p, dest)
