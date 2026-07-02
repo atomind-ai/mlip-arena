@@ -101,7 +101,8 @@ def compute_auc(df: pd.DataFrame) -> dict:
         dfm = dfm.drop_duplicates(["formula"])
         if dfm.empty:
             continue
-        hist, bin_edges = np.histogram(dfm["normalized_final_step"], bins=np.linspace(0, 1, 100))
+        normalized_steps = np.clip(dfm["normalized_final_step"], 0, 1)
+        hist, bin_edges = np.histogram(normalized_steps, bins=np.linspace(0, 1, 100))
         cumulative_population = np.cumsum(hist)
         valid_curve = (cumulative_population[-1] - cumulative_population) / len(dfm)
         aucs[method] = np.trapezoid(valid_curve, bin_edges[:-1])  # trapezoidal integration
@@ -190,4 +191,4 @@ def render():
             na_rep="-",
         )
     )
-    st.dataframe(s, use_container_width=True)
+    st.dataframe(s, width="stretch")

@@ -37,5 +37,5 @@ s = table.style.background_gradient(cmap="Reds", subset=["SRME[𝜅]"]).format("
 
 st.dataframe(
     s,
-    use_container_width=True,
+    width="stretch",
 )

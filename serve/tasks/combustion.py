@@ -443,7 +443,7 @@ if "time_range" not in st.session_state:
 
 
 # @st.experimental_fragment(run_every=1e-3 if st.session_state.play else None)
-@st.experimental_fragment()
+@st.fragment()
 def draw_com_drifts_plot():
     """Render the interactive 3D center-of-mass (COM) drift visualization and update the session time range slider.
 

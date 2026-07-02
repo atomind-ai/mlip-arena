@@ -56,7 +56,9 @@ def load_wbm_structures():
 
 @task(
     name="EOS bulk - WBM",
-    task_run_name=lambda: f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['model'].name}",
+    task_run_name=lambda: (
+        f"{task_run.task_name}: {task_run.parameters['atoms'].get_chemical_formula()} - {task_run.parameters['model'].name}"
+    ),
     cache_policy=TASK_SOURCE + INPUTS,
 )
 def eos_bulk(atoms: Atoms, model: MLIPEnum):

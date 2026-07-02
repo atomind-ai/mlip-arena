@@ -477,6 +477,8 @@ NequIP-OAM-L:
     - homonuclear-diatomics
     - ev
     - eos_bulk
+    - stability
+    - combustion
   github: https://github.com/mir-group/nequip
   doi:
   date: 2024-08-28

@@ -2,8 +2,15 @@
 *.extxyz
 *.traj
 *.db
-datasets/
+# Fine-grained benchmark ignore rules to avoid missing scripts/processed results
 benchmarks/
+!benchmarks/c2db/*.parquet
+!benchmarks/**/*_processed.parquet
+!benchmarks/stability/*-heating.parquet
+!benchmarks/stability/*-compression.parquet
+!benchmarks/combustion/**/*.json
+!benchmarks/diatomics/**/*.json
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

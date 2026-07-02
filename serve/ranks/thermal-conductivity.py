@@ -45,7 +45,7 @@ def render():
         .format("{:.3f}", subset=["SRME[𝜅]"])
     )
 
-    st.dataframe(s, use_container_width=True)
+    st.dataframe(s, width="stretch")
 
     with st.expander("Explanation", icon=":material/info:"):
         st.caption(

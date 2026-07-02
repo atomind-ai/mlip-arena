@@ -13,6 +13,7 @@ from mlip_arena.flows.eos_bulk import run_db as EOSFlow
 from mlip_arena.flows.ev import run_db as EVFlow
 from mlip_arena.flows.conservation import differential_entropy_along_nve_trajectory
 from mlip_arena.flows.stability import compression, heating
+from mlip_arena.flows.combustion import hydrogen_combustion
 from report import summarize, get_model_name
 
 
@@ -132,6 +133,29 @@ def stability(calculator: str | BaseCalculator, calculator_kwargs: dict | None =
         logger.warning(f"Error processing model {model_name} (compression): {e}")
 
 
+@flow
+def combustion(calculator: str | BaseCalculator, calculator_kwargs: dict | None = None):
+    ctx = FlowRunContext.get()
+    parent_task_runner = ctx.task_runner
+
+    model_name = get_model_name(calculator)
+
+    from mlip_arena.models import REGISTRY, MLIPEnum
+
+    if hasattr(MLIPEnum, model_name):
+        family = REGISTRY[model_name]["family"]
+    else:
+        family = "custom"
+    family = family.lower()
+
+    run_dir_combustion = Path(__file__).parent / "combustion" / family
+
+    hydrogen_combustion.with_options(
+        name=f"combustion-{model_name}",
+        task_runner=parent_task_runner,
+    )(run_dir=run_dir_combustion, calculator=calculator)
+
+
 # ==============================================================================
 # 1. JOB CONFIGURATION
 # ==============================================================================
@@ -215,7 +239,16 @@ if __name__ == "__main__":
     #     # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
     # )
 
-    stability.with_options(
+    # stability.with_options(
+    #     task_runner=DaskTaskRunner(address=client.scheduler.address),
+    #     log_prints=True,
+    #     persist_result=False,
+    # )(
+    #     calculator=calculator,
+    #     # calculator_kwargs=calculator_kwargs # Uncomment for custom ASE Calculator class
+    # )
+
+    combustion.with_options(
         task_runner=DaskTaskRunner(address=client.scheduler.address),
         log_prints=True,
         persist_result=False,

@@ -15,12 +15,10 @@ def summarize(model_name: str | None = None):
     # Dynamic registry lookup from registry.yaml to avoid importing heavy modules if not needed
     family_map = {}
     try:
-        import yaml
+        from mlip_arena.models import REGISTRY
 
-        with open(DATA_DIR.parent / "mlip_arena" / "models" / "registry.yaml", "r") as f:
-            registry = yaml.safe_load(f)
-            for k, v in registry.items():
-                family_map[k] = v.get("family", "custom").lower()
+        for k, v in REGISTRY.items():
+            family_map[k] = v.get("family", "custom").lower()
     except Exception:
         pass
 

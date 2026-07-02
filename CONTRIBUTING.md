@@ -32,6 +32,23 @@ If you have pretrained MLIP models that you would like to contribute to the MLIP
 
 Please reuse, extend, or chain the general tasks defined and add new folder and script under `/benchmarks`.
 
+## Running and Submitting Benchmark Jobs
+
+To submit a benchmark job for a registered model (e.g. on HPC resources like NERSC Perlmutter):
+
+1. **Configure submit.py**:
+   In `benchmarks/submit.py`, configure:
+   - `calculator = "MODEL_NAME"` (using the key defined in `mlip_arena/models/registry.yaml`).
+   - `SLURM_CONFIG`: configure your charge account, queue/partition, walltime, and environment setup commands.
+2. **Select Flow**:
+   In the main execution block at the bottom of `benchmarks/submit.py`, uncomment the benchmark flows you wish to run (e.g. `stability`, `combustion`, `asymptotic_behaviors`, `distribution_shifts`).
+3. **Execute Job**:
+   Run the submission script from the `benchmarks/` directory:
+   ```bash
+   python submit.py
+   ```
+   This initializes a Dask cluster over SLURM workers, schedules and executes tasks on compute nodes, and generates post-processed summary files upon completion.
+
 ## Documentation Development
 
 We use [Mintlify](https://mintlify.com/) for our documentation website under the `docs/` folder.

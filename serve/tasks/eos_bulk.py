@@ -251,7 +251,7 @@ if all_plots:
     for i, (model_name, fig, structures) in enumerate(all_plots):
         if i % ncols == 0:
             cols = st.columns(ncols)
-        cols[i % ncols].plotly_chart(fig, use_container_width=True)
+        cols[i % ncols].plotly_chart(fig, width="stretch")
 
         # Display number of structures in this plot
         # cols[i % ncols].caption(f"{len(structures)} / 1000 structures")

@@ -93,6 +93,7 @@ sevennet = [
 extra = [
     "MDAnalysis",
     "quests",
+    "numba>=0.59.0",
     #"ipykernel",
     #"ipywidgets",
 ]
